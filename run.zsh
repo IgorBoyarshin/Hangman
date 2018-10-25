@@ -1,5 +1,7 @@
 #!/usr/bin/zsh
 
+cd src
+
 make
 
 ./main
