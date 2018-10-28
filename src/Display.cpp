@@ -1,14 +1,10 @@
 #include "Display.h"
 
 
-Display::Display() : m_Width(0), m_Height(0) {
+Display::Display() : m_Height(0), m_Width(0), m_ActiveWindowType(WindowType::Game),
+        m_Cursor({0, 0}) {
     init();
 }
-/* Display::Display(unsigned int width, unsigned int height)  */
-/*         : m_Width(width), m_Height(height) { */
-/*     init(); */
-/* } */
-
 
 Display::~Display() {
     cleanup();
@@ -27,7 +23,7 @@ void Display::cleanup() const noexcept {
 }
 
 
-void Display::drawField() const noexcept {
+void Display::drawBorder() const noexcept {
     static const chtype HORIZONTAL_BORDER = ACS_HLINE;
     static const chtype VERTICAL_BORDER = ACS_VLINE;
     static const chtype CORNER_LEFT_UP = ACS_ULCORNER;

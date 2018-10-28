@@ -1,7 +1,7 @@
 # The name of the main file and executable
 mainFileName = main
 # Files that have .h and .cpp versions
-classFiles = Client Server Display
+classFiles = Client Server Display Game
 # Files that only have the .h version
 justHeaderFiles =
 # Compilation flags
@@ -30,7 +30,7 @@ $(mainFileName): $(filesObj)
 
 # Utils
 clean:
-	rm -f *.o $(mainFileName)
+	rm -f *.o *.gch .*.gch $(mainFileName)
 
 cleanExe:
 	rm -f $(mainFileName)
