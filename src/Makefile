@@ -1,14 +1,14 @@
 # The name of the main file and executable
 mainFileName = main
 # Files that have .h and .cpp versions
-classFiles = Client Server
+classFiles = Client Server Display
 # Files that only have the .h version
 justHeaderFiles =
 # Compilation flags
 OPTIMIZATION_FLAG = -O0
 LANGUAGE_LEVEL = -std=c++17
 COMPILER_FLAGS = -Wall -Wextra -Wno-unused-parameter
-LINKER_FLAGS =
+LINKER_FLAGS = -lncurses
 
 
 # Auxiliary
