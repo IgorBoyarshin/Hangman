@@ -27,7 +27,7 @@ void Display::cleanup() const noexcept {
 }
 
 
-void Display::drawField() noexcept {
+void Display::drawField() const noexcept {
     static const chtype HORIZONTAL_BORDER = ACS_HLINE;
     static const chtype VERTICAL_BORDER = ACS_VLINE;
     static const chtype CORNER_LEFT_UP = ACS_ULCORNER;
