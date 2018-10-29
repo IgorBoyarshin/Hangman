@@ -1,7 +1,7 @@
 # The name of the main file and executable
 mainFileName = main
 # Files that have .h and .cpp versions
-classFiles = Client Server
+classFiles = Client Server Log
 # Files that only have the .h version
 justHeaderFiles =
 # Compilation flags

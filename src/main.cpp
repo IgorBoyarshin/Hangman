@@ -2,10 +2,15 @@
 
 #include "Client.h"
 #include "Server.h"
+#include "Log.h"
 
 
 int main() {
     std::cout << "---------- Start ----------" << std::endl;
+
+    Log log;
+    std::cout << log.setLevel(Log::LogLevel::Info) << "test" << std::endl;
+
 
     const std::string serverAddress = "192.168.1.3";
     const unsigned int serverPort = 2345;
