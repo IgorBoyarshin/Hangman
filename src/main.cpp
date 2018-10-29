@@ -11,12 +11,11 @@
 int main() {
     std::cout << "---------- Start ----------" << std::endl;
 
-    Display display;
-    start_color();
-    display.drawField();
+    {
+        Game game;
 
-    Game game;
-
+    // start_color();
+    //
     // move(3,3);
     // std::string str = "Colors: " + std::to_string(COLORS) + "; Pairs: " + std::to_string(COLOR_PAIRS);
     // addstr(str.c_str());
@@ -43,8 +42,9 @@ int main() {
     // addstr("text");
     // refresh();
 
-            nodelay(stdscr, FALSE);
-    getch();
+        nodelay(stdscr, FALSE);
+        getch();
+    }
 
     std::cout << "----------  End  ----------" << std::endl;
     return 0;
