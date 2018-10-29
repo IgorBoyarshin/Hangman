@@ -68,7 +68,47 @@ class Game {
             }
         }
 
+        // TODO: Tests here
         void processInputSymbol(int c) {
+            if (const std::optional<Display::Stateful> statefulUnderCursorOpt = display.underCursor();
+                    statefulUnderCursorOpt) {
+                // Have some Stateful under cursor (Field or Button)
+                if (statefulUnderCursorOpt->isField()) {
+                    // If we're over Stateful => it can't be Idle
+                    // TODO: assert it
+                    if (statefulUnderCursorOpt->highlighted() && c == KEY_ENTER) {
+                        statefulUnderCursorOpt->focus();
+                    } else if (statefulUnderCursorOpt->focused()) {
+                        if (c == KEY_ENTER) {
+                            statefulUnderCursorOpt->doAction();
+                        } else {
+                            Field& field = static_cast<Field>(*statefulUnderCursorOpt);
+                            if (c == KEY_BACKSPACE) {
+                                field.removeBeforeCursor(display.getCursor());
+                            } else if (c == KEY_DC) {
+                                field.removeUnderCursor(display.getCursor());
+                            } else if (isStandartChar(c)) {
+                                field.insertUnderCursor(c);
+                            }
+                            // Else => don't know how to handle it => do nothing
+                        }
+                    }
+                    return;
+                } else if (statefulUnderCursorOpt->isButton()) {
+                    // If we're over Stateful => it can't be Idle
+                    // TODO: assert it
+                    // A button is never Focused, mb assert it
+                    if (statefulUnderCursorOpt->)
+                    Button& button = static_cast<Button>(*statefulUnderCursorOpt);
+                } else {
+                    assert(false && "Unhandled stateful");
+                    // TODO: replace with Log.assert()
+                }
+            }
+
+
+
+
             if (isUpperCase(c)) {
                 // TODO: process shortcut, expect when writing a message
                 return;
@@ -78,26 +118,26 @@ class Game {
                 quit();
             }
 
-            /* if (insideField) { */
-            /*     if (field.focused()) { */
-            /*         if (symbol) { */
-            /*             focusedfield.tryAppend(c); */
-            /*         } else if (ENTER) { */
-            /*             field.unfocus(); */
-            /*         } else if (ESC) { */
-            /*             // TODO: field.cancel() */
-            /*         } */
-            /*     } else { // field not focused */
-            /*         if (ENTER) { */
-            /*             field.focus(); */
-            /*         } */
-            /*     } */
-            /*     return; */
-            /* } */
-            /*  */
-            /* if (insideButton) { */
-            /*  */
-            /* } */
+            if (insideField) {
+                if (field.focused()) {
+                    if (symbol) {
+                        focusedfield.tryAppend(c);
+                    } else if (ENTER) {
+                        field.unfocus();
+                    } else if (ESC) {
+                        // TODO: field.cancel()
+                    }
+                } else { // field not focused
+                    if (ENTER) {
+                        field.focus();
+                    }
+                }
+                return;
+            }
+
+            if (insideButton) {
+
+            }
 
             // Not inside anything interactable or not applicable to them
 

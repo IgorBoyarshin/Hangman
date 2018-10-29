@@ -34,94 +34,74 @@ class Display {
             About
         };
 
-        enum class State {
-            Idle,
-            Highlighted,
-            Focused
+        class Drawable {
+            public:
+                virtual void draw() const noexcept = 0;
         };
 
-        class Stateful {
-            private:
-                State m_State;
-
+        class Interactable {
             public:
-                Stateful() : m_State(State::Idle) {}
-
-                virtual bool isUnder(const Coord& coord) const noexcept = 0;
+                // Returns whether the input was handled. If it wasn't => may
+                // need to handle it in the outter layer
+                virtual bool handleInputSymbol() noexcept = 0;
 
                 virtual void handleCursorOver() noexcept = 0;
-                virtual void handleCursorAway() noexcept = 0;
+                virtual void handleCursorAray() noexcept = 0;
 
-                // TODO: check if needed
-                virtual void makeIdle() noexcept = 0;
-                /* void makeIdle() noexcept { */
-                /*     if (m_State == State::Focused) { */
-                /*         // TODO: replace with Log.assert */
-                /*         // Why would you call makeIdle() from this state?? */
-                /*         assert(false && "Called makeIdle() from State::Focused."); */
-                /*     } */
-                /*     m_State = State::Idle; */
-                /*     draw(); */
-                /* } */
-
-
-
-                // TODO: check if needed
-                bool idle() const noexcept {
-                    return m_State == State::Idle;
-                }
-
-                // TODO: check if needed
-                bool highlighted() const noexcept {
-                    return m_State == State::Highlighted;
-                }
-
-                // TODO: check if needed
-                bool focused() const noexcept {
-                    return m_State == State::Focused;
-                }
-
-
-
-
-                virtual void focus() noexcept = 0;
-                /* void focus() noexcept { */
-                /*     // TODO: replace with Log.assert */
-                /*     // Don't let it be Focus upon call to prevent weird cases */
-                /*     assert(m_State == State::Highlighted); */
-                /*  */
-                /*     m_Focused = true; */
-                /*     draw(); */
-                /* } */
-
-                /* void unfocus() noexcept { */
-                /*     // TODO: replace with Log.assert */
-                /*  */
-                /*     if (m_State == m_Focused) { */
-                /*         m_State = State::Highlighted; */
-                /*     } */
-                /*     draw(); */
-                /* } */
+                // Called when the current Window is changed or reset to signal
+                // the element that it needs to return to an idle state
+                virtual void unfocus() noexcept = 0;
         };
+
 
         class Label {
 
         };
 
-        class Button : public Stateful {
+        class Button : public Interactable {
 
         };
 
-        class Field : public Stateful {
+        class Field : public Drawable, public Interactable {
+            private:
+                enum class State {
+                    Idle,
+                    Highlighted,
+                    Focused
+                };
+
+                State m_State = State::Idle; // TODO: into constructor
+
             public:
                 Coord coord;
+
+            public:
+                bool handleInputSymbol() noexcept override {
+                    return true;
+                }
+                void handleCursorOver() noexcept override {
+                    if (m_State == State::Idle) {
+                        m_State = State::Highlighted;
+                        draw();
+                    }
+                }
+                void handleCursorAray() noexcept override {
+                    if (m_State == State::Highlighted) {
+                        m_State = State::Idle;
+                        draw();
+                    }
+                }
+                void unfocus() noexcept override {
+                    m_State = State::Idle;
+                    // TODO: check that the field is OK
+                }
 
             private:
                 unsigned int m_Size;
                 const unsigned int m_MaxSize;
                 std::string m_Value;
 
-                void draw() {
+                void draw() const noexcept override {
                     // TODO
                     refresh();
                 }
@@ -234,6 +214,10 @@ class Display {
         Display();
         virtual ~Display();
 
+        Coord getCursor() const noexcept {
+            return m_Cursor;
+        }
+
         void setActiveWindow(WindowType windowType) {
             if (m_ActiveWindowType == windowType) return;
             m_Windows[m_ActiveWindowType].makeAllIdle();
@@ -286,6 +270,82 @@ class Display {
 
         void drawBorder() const noexcept;
 };
+
+
+
+        /* enum class State { */
+        /*     Idle, */
+        /*     Highlighted, */
+        /*     Focused */
+        /* }; */
+        /*  */
+        /* class Stateful { */
+        /*     private: */
+        /*         State m_State; */
+        /*  */
+        /*     public: */
+        /*         Stateful() : m_State(State::Idle) {} */
+        /*  */
+        /*         virtual bool isUnder(const Coord& coord) const noexcept = 0; */
+        /*  */
+        /*         virtual void handleCursorOver() noexcept = 0; */
+        /*         virtual void handleCursorAway() noexcept = 0; */
+        /*  */
+        /*         // TODO: check if needed */
+        /*         virtual void makeIdle() noexcept = 0; */
+        /*         #<{(| void makeIdle() noexcept { |)}># */
+        /*         #<{(|     if (m_State == State::Focused) { |)}># */
+        /*         #<{(|         // TODO: replace with Log.assert |)}># */
+        /*         #<{(|         // Why would you call makeIdle() from this state?? |)}># */
+        /*         #<{(|         assert(false && "Called makeIdle() from State::Focused."); |)}># */
+        /*         #<{(|     } |)}># */
+        /*         #<{(|     m_State = State::Idle; |)}># */
+        /*         #<{(|     draw(); |)}># */
+        /*         #<{(| } |)}># */
+        /*  */
+        /*  */
+        /*  */
+        /*         // TODO: check if needed */
+        /*         bool idle() const noexcept { */
+        /*             return m_State == State::Idle; */
+        /*         } */
+        /*  */
+        /*         // TODO: check if needed */
+        /*         bool highlighted() const noexcept { */
+        /*             return m_State == State::Highlighted; */
+        /*         } */
+        /*  */
+        /*         // TODO: check if needed */
+        /*         bool focused() const noexcept { */
+        /*             return m_State == State::Focused; */
+        /*         } */
+        /*  */
+        /*  */
+        /*  */
+        /*  */
+        /*         virtual void focus() noexcept = 0; */
+        /*         #<{(| void focus() noexcept { |)}># */
+        /*         #<{(|     // TODO: replace with Log.assert |)}># */
+        /*         #<{(|     // Don't let it be Focus upon call to prevent weird cases |)}># */
+        /*         #<{(|     assert(m_State == State::Highlighted); |)}># */
+        /*         #<{(|  |)}># */
+        /*         #<{(|     m_Focused = true; |)}># */
+        /*         #<{(|     draw(); |)}># */
+        /*         #<{(| } |)}># */
+        /*  */
+        /*         #<{(| void unfocus() noexcept { |)}># */
+        /*         #<{(|     // TODO: replace with Log.assert |)}># */
+        /*         #<{(|  |)}># */
+        /*         #<{(|     if (m_State == m_Focused) { |)}># */
+        /*         #<{(|         m_State = State::Highlighted; |)}># */
+        /*         #<{(|     } |)}># */
+        /*         #<{(|     draw(); |)}># */
+        /*         #<{(| } |)}># */
+        /* }; */
+
+
+
+
 
 
 #endif
