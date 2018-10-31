@@ -1,11 +1,15 @@
 #include "Log.h"
 
 
+Log Log::m_LogInstance{};
+
+
 Log::Log() : Log(OutputLevel::None) {}
 
 
-Log::Log(OutputLevel outputLevel) : m_ClassName(""), m_FuncName("") {
-    m_OutputLevel = outputLevel;
+Log::Log(OutputLevel outputLevel) : 
+    m_ClassName(""), m_FuncName(""), m_LogLevel(LogLevel::Info) {
+        m_OutputLevel = outputLevel;
 }
 
 
@@ -27,6 +31,23 @@ Log& Log::setLevel(LogLevel level) {
     m_LogLevel = level;
 
     return *this;
+}
+
+
+Log& Log::info() {
+    return m_LogInstance.setLevel(LogLevel::Info);
+}
+
+
+Log& Log::error() {
+    return m_LogInstance.setLevel(LogLevel::Error);
+}
+
+
+std::ostream& operator<<(Log& log, const std::string& str) {
+    std::cout << log << str;
+
+    return std::cout;
 }
 
 

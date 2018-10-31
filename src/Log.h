@@ -16,18 +16,21 @@ class Log {
         std::string m_FuncName;
         LogLevel m_LogLevel;
 
-    public:
         Log();
         Log(OutputLevel outputLevel);
 
-    // private:
+        static Log m_LogInstance;
+
+    public:
         Log& setClass(std::string className);
         Log& setFunc(std::string funcName);
         Log& setLevel(LogLevel level);
+        static Log& info();
+        static Log& error();
 
-
-    friend std::ostream& operator<<(std::ostream& stream, const Log& log);
-    friend std::ostream& operator<<(std::ostream& stream, const LogLevel& level);
+        friend std::ostream& operator<<(Log& log, const std::string& str);
+        friend std::ostream& operator<<(std::ostream& stream, const Log& log);
+        friend std::ostream& operator<<(std::ostream& stream, const LogLevel& level);
 };
 
 
