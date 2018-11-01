@@ -30,14 +30,14 @@ void Game::init() {
     cbreak(); // no buffering (i.e. no waiting for carriage return)
 
     initDisplay();
-    m_Display.setActiveWindow(Display::WindowType::Game);
-    m_Display.draw();
 }
 
 void Game::initDisplay() {
     m_Display.initWindow(Display::WindowType::Game)
-        .addButton({3, 5}, "Button1", [](){/*feedback func*/})
-        .addLabel({4, 2}, "Text");
+        .addField({{3,3}, 8, "abc"});
+        // .addButton({3, 5}, "Button1", [](){#<{(|feedback func|)}>#})
+        // .addLabel({4, 2}, "Text");
+    m_Display.setActiveWindow(Display::WindowType::Game);
 }
 
 void Game::cleanup() {
@@ -54,6 +54,7 @@ void Game::cleanup() {
 void Game::loop() {
     while(true) {
         handleInput();
+        m_Display.draw();
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
 }
@@ -77,8 +78,9 @@ void Game::processInputSymbol(int c) {
     if (auto interactableUnderCursorOpt =
             m_Display.getInteractableUnderCursor();
             interactableUnderCursorOpt) {
-        if (const bool inputHandled =
-                interactableUnderCursorOpt->get().handleInputSymbol(c, m_Display.getCursor());
+        if (const bool inputHandled = interactableUnderCursorOpt->get()
+                    .handleInputSymbol(c, m_Display.getCursor(),
+                        std::bind(&Display::setCursor, &m_Display, std::placeholders::_1));
                 inputHandled) {
             return;
         }

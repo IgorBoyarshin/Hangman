@@ -11,6 +11,14 @@
 #include <cassert> // TODO: remove once all calls to assert() and replace with Log.assert()
 
 
+inline bool isLetter(char c) noexcept {
+    return (('A' <= c) && (c <= 'Z')) || (('a' <= c) && (c <= 'z'));
+}
+inline bool isNumber(char c) noexcept {
+    return ('0' <= c) && (c <= '9');
+}
+
+
 class Display {
     public:
         struct Coord {
@@ -23,12 +31,42 @@ class Display {
                 Coord(int y, int x);
 
                 Coord& operator+=(const Coord& coord) noexcept;
+                Coord operator+(const Coord& coord) const noexcept;
+        };
+
+        struct Color {
+            public:
+                unsigned int fg;
+                unsigned int bg;
+
+                Color(unsigned int fg, unsigned int bg) noexcept;
+
+                // TODO: replace with a more elegant solution
+                static unsigned int BLACK;
+                static unsigned int RED;
+                static unsigned int GREEN;
+                static unsigned int YELLOW;
+                static unsigned int BLUE;
+                static unsigned int PURPLE;
+                static unsigned int CYAN;
+                static unsigned int WHITE;
         };
 
         enum class WindowType {
             Settings,
             Game,
             About
+        };
+
+        class ColorFactory {
+            public:
+                static void setColor(const Color& color) noexcept;
+
+            private:
+                static unsigned int m_NextAvailableIndex;
+                // [FG][BG] = ColorPair
+                static std::unordered_map<unsigned int,
+                    std::unordered_map<unsigned int, unsigned int>> m_Colors;
         };
 
         class Drawable {
@@ -40,7 +78,8 @@ class Display {
             public:
                 // Returns whether the input was handled. If it wasn't => may
                 // need to handle it in the outter layer
-                virtual bool handleInputSymbol(int c, const Coord& coord) noexcept = 0;
+                virtual bool handleInputSymbol(int c, const Coord& coord,
+                        const std::function<bool(const Coord&)>& setCursor) noexcept = 0;
 
                 virtual void handleCursorOver() noexcept = 0;
                 virtual void handleCursorAway() noexcept = 0;
@@ -48,6 +87,8 @@ class Display {
                 // Called when the current Window is changed or reset to signal
                 // the element that it needs to return to an idle state
                 virtual void unfocus() noexcept = 0;
+
+                virtual bool isUnder(const Coord& coord) const noexcept = 0;
         };
 
 
@@ -67,25 +108,29 @@ class Display {
                     Focused
                 };
 
+                Coord m_Position;
+                const unsigned int m_Width;
+                std::string m_Value;
+                State m_State;
+
+            private:
+                void setColorByState() const noexcept;
+
             public:
-                bool handleInputSymbol(int c, const Coord& coord) noexcept override;
+                bool handleInputSymbol(int c, const Coord& coord,
+                        const std::function<bool(const Coord&)>& setCursor) noexcept override;
                 void handleCursorOver() noexcept override;
                 void handleCursorAway() noexcept override;
                 void unfocus() noexcept override;
                 void draw() const noexcept override;
+                bool isUnder(const Coord& coord) const noexcept override;
 
-            private:
-                Coord m_Coord;
-                unsigned int m_Size;
-                const unsigned int m_MaxSize;
-                std::string m_Value;
-                State m_State = State::Idle;
 
             public:
                 // TODO: reorder to make more sense
-                Field(const Coord& coord,
-                        unsigned int initialSize, unsigned int maxSize,
-                        const std::string& initialValue = "");
+                Field(const Coord& position,
+                      unsigned int width,
+                      const std::string& initialValue = "");
 
                 // bool append(char c) noexcept {
                 //     if (m_Size < m_MaxSize) {
@@ -107,6 +152,7 @@ class Display {
                 // std::vector<Button> m_Buttons;
                 std::vector<Field> m_Fields;
 
+            private:
                 // TODO: move outside the class
                 std::string toString(Display::WindowType windowType);
 
@@ -116,19 +162,22 @@ class Display {
                 //
                 // }
 
-                void reset() noexcept;
+                /* void reset() noexcept; */
                 void unfocus();
 
-                Window& addLabel(const Coord& coord, std::string text);
-                Window& addField(
-                        const Coord& coord,
-                        unsigned int initialSize, unsigned int maxSize,
-                        std::string initialValue = "");
-                Window& addButton(const Coord& coord, std::string name,
-                                    std::function<void()> feedback);
+                Window& addField(Field field) noexcept;
+                /* Window& addLabel(const Coord& coord, std::string text); */
+                /* Window& addField( */
+                /*         const Coord& coord, */
+                /*         unsigned int initialSize, unsigned int maxSize, */
+                /*         std::string initialValue = ""); */
+                /* Window& addButton(const Coord& coord, std::string name, */
+                /*                     std::function<void()> feedback); */
 
                 std::optional<std::reference_wrapper<Interactable>>
                         getInteractableUnder(const Coord& coord) noexcept;
+
+                void draw() const noexcept;
         };
 
 
@@ -169,10 +218,9 @@ class Display {
         bool shiftCursor(Coord shift) noexcept ;
         // Check where the cursor ends up and toggle appropriate Stateful objects
         bool setCursor(const Coord& coord) noexcept;
-
-        void draw();
-
+        void draw() const noexcept;
         void drawBorder() const noexcept;
+        void drawCursor() const noexcept;
 };
 
 

@@ -32,8 +32,7 @@ class Game {
         void loop();
         /* void quit(); */
         void handleInput();
-        // TODO: Tests here
-        void processInputSymbol(int c);
+        void processInputSymbol(int c); // TODO: Tests here
 
     public:
         Game();
