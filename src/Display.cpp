@@ -140,6 +140,9 @@ bool Display::Button::handleInputSymbol(int c, const Coord& coord,
             m_State = State::Highlighted;
             draw();
 
+            // Discard any input characters that happened during our sleep
+            flushinp();
+
             // Execute provided beedback function
             m_Feedback();
 
