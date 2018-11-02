@@ -55,13 +55,56 @@ void Display::ColorFactory::setColor(const Color& color) noexcept {
     attron(COLOR_PAIR(m_Colors[fg][bg]));
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Display::Tag
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+const unsigned int Display::Tag::m_EmptyTag = 0;
+unsigned int Display::Tag::m_NextAvailableIndex = Display::Tag::m_EmptyTag + 1;
+
+Display::Tag::Tag(unsigned int value) noexcept : value(value) {}
+
+bool Display::Tag::isEmpty() const noexcept {
+    return value == m_EmptyTag;
+}
+
+unsigned int Display::Tag::operator()() const noexcept {
+    return value;
+}
+
+Display::Tag Display::Tag::createEmpty() noexcept {
+    return {m_EmptyTag};
+}
+
+Display::Tag Display::Tag::createNew() noexcept {
+    return {m_NextAvailableIndex++};
+}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Display::UiElement
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Display::UiElement::UiElement(const Coord& position, const Tag& tag) noexcept
+    : m_Position(position), m_Tag(tag) {}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Display::Label
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Display::Label::Label(
+        const Display::Coord& position,
+        const Tag& tag,
+        const std::string& initialValue/* = ""*/) noexcept
+        : UiElement(position, tag), m_Value(initialValue) {}
+
+void Display::Label::draw() const noexcept {
+    ColorFactory::setColor({Color::WHITE, Color::BLACK});
+    move(m_Position.y, m_Position.x);
+    addstr(m_Value.c_str());
+}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::Field
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Display::Field::Field(
         const Display::Coord& position,
+        const Tag& tag,
         unsigned int width,
-        const std::string& initialValue/* = ""*/)
-        : m_Position(position),
+        const std::string& initialValue/* = ""*/) noexcept
+        : UiElement(position, tag),
           m_Width(width), m_Value(initialValue),
           m_State(State::Idle) {}
 
@@ -177,20 +220,6 @@ void Display::Field::draw() const noexcept {
         const char c = (x < m_Value.size()) ? m_Value[x] : ' ';
         addch(c);
     }
-    /* if (m_Value.size() > 0) { */
-    /*     addstr(m_Value.c_str()); */
-    /*     if (m_State == State::Focused && m_Value.size() < m_MaxWidth) { */
-    /*         // Indicate that there is space to grow */
-    /*         move(m_Position.y, m_Position.x + m_Value.size()); */
-    /*         addch(' '); */
-    /*     } */
-    /* } else { */
-    /*     if (m_State == State::Focused) { */
-    /*         addch(' '); */
-    /*     } else { */
-    /*         for (unsigned int x = 0; x < m_HintWidth; x++) addch(' '); */
-    /*     } */
-    /* } */
     attroff(A_UNDERLINE);
 
     refresh();
@@ -237,28 +266,14 @@ void Display::Window::unfocus() {
     }
 }
 
-Display::Window& Display::Window::addField(Field field) noexcept {
+Display::Window& Display::Window::addField(const Field& field) noexcept {
     m_Fields.push_back(field);
     return *this;
 }
-/* Display::Window& Display::Window::addLabel(const Coord& coord, std::string text) { */
-/*     // TODO */
-/*     return *this; */
-/* } */
-/*  */
-/* Display::Window& Display::Window::addField( */
-/*         const Coord& coord, */
-/*         unsigned int initialSize, unsigned int maxSize, */
-/*         std::string initialValue#<{(| = ""|)}>#) { */
-/*     // TODO */
-/*     return *this; */
-/* } */
-/*  */
-/* Display::Window& Display::Window::addButton(const Coord& coord, std::string name, */
-/*         std::function<void()> feedback) { */
-/*     // TODO */
-/*     return *this; */
-/* } */
+Display::Window& Display::Window::addLabel(const Label& label) noexcept {
+    m_Labels.push_back(label);
+    return *this;
+}
 
 std::optional<std::reference_wrapper<Display::Interactable>>
         Display::Window::getInteractableUnder(const Coord& coord) noexcept {
@@ -315,23 +330,15 @@ void Display::setActiveWindow(WindowType windowType) {
     setCursor({0, 0}); // default cursor position in new window
 }
 
-// Resets the contents of the specified window and returns it
-Display::Window& Display::initWindow(WindowType windowType) {
-    m_Windows[windowType] = {};
-    return m_Windows[windowType];
-}
-
-// Returns the specified window
 Display::Window& Display::populateWindow(WindowType windowType) {
+    if (m_Windows.find(windowType) == m_Windows.end()) m_Windows[windowType] = {};
     return m_Windows[windowType];
 }
 
-// Either completes completely or not at all
 bool Display::shiftCursor(Coord shift) noexcept {
     return setCursor(shift += m_Cursor); // attention: not the other way around
 }
 
-// TODO: Check where the cursor ends up and toggle appropriate Stateful objects
 bool Display::setCursor(const Coord& coord) noexcept {
     if (inbounds(coord)) {
         m_Cursor = coord;
@@ -353,6 +360,7 @@ void Display::draw() const noexcept {
 
 void Display::Window::draw() const noexcept {
     for (const Field& field : m_Fields) field.draw();
+    for (const Label& label : m_Labels) label.draw();
 }
 
 

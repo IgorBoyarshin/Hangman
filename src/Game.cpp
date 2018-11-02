@@ -33,10 +33,10 @@ void Game::init() {
 }
 
 void Game::initDisplay() {
-    m_Display.initWindow(Display::WindowType::Game)
-        .addField({{3,3}, 8, "abc"});
-        // .addButton({3, 5}, "Button1", [](){#<{(|feedback func|)}>#})
-        // .addLabel({4, 2}, "Text");
+    m_Display.populateWindow(Display::WindowType::Game)
+        .addLabel({{2,2}, Display::Tag::createNew(), "Modify me"})
+        .addField({{3,3}, Display::Tag::createNew(), 8, "abc"});
+
     m_Display.setActiveWindow(Display::WindowType::Game);
 }
 

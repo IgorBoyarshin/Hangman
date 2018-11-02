@@ -58,6 +58,7 @@ class Display {
             About
         };
 
+        // TODO: rename
         class ColorFactory {
             public:
                 static void setColor(const Color& color) noexcept;
@@ -69,9 +70,34 @@ class Display {
                     std::unordered_map<unsigned int, unsigned int>> m_Colors;
         };
 
-        class Drawable {
+        struct Tag {
+            private:
+                static const unsigned int m_EmptyTag;
+                static unsigned int m_NextAvailableIndex;
+
+            public:
+                const unsigned int value;
+
+                unsigned int operator()() const noexcept;
+                bool isEmpty() const noexcept;
+
+                static Tag createEmpty() noexcept;
+                static Tag createNew() noexcept;
+
+            private:
+                Tag(unsigned int value) noexcept;
+        };
+
+        class UiElement {
+            protected:
+                Coord m_Position;
+                const Tag m_Tag;
+
+                UiElement(const Coord& position, const Tag& tag) noexcept;
+
             public:
                 virtual void draw() const noexcept = 0;
+                Tag getTag() const noexcept;
         };
 
         class Interactable {
@@ -92,15 +118,22 @@ class Display {
         };
 
 
-        // class Label : public Drawable {
-        //
-        // };
+        class Label : public UiElement {
+            private:
+                std::string m_Value;
+
+            public:
+                void draw() const noexcept override;
+
+            public:
+                Label(const Coord& position, const Tag& tag, const std::string& value = "") noexcept;
+        };
 
         // class Button : public Interactable {
         //
         // };
 
-        class Field : public Drawable, public Interactable {
+        class Field : public UiElement, public Interactable {
             private:
                 enum class State {
                     Idle,
@@ -108,7 +141,6 @@ class Display {
                     Focused
                 };
 
-                Coord m_Position;
                 const unsigned int m_Width;
                 std::string m_Value;
                 State m_State;
@@ -125,30 +157,16 @@ class Display {
                 void draw() const noexcept override;
                 bool isUnder(const Coord& coord) const noexcept override;
 
-
             public:
-                // TODO: reorder to make more sense
                 Field(const Coord& position,
+                      const Tag& tag,
                       unsigned int width,
-                      const std::string& initialValue = "");
-
-                // bool append(char c) noexcept {
-                //     if (m_Size < m_MaxSize) {
-                //         m_Value += c;
-                //         m_Size++;
-                //         return true;
-                //     }
-                //
-                //     return false;
-                // }
-
+                      const std::string& initialValue = "") noexcept;
         };
 
         class Window {
             private:
-                /* const std::string m_Name; */
-
-                // std::vector<Label> m_Labels;
+                std::vector<Label> m_Labels;
                 // std::vector<Button> m_Buttons;
                 std::vector<Field> m_Fields;
 
@@ -158,21 +176,10 @@ class Display {
 
 
             public:
-                // Window(WindowType windowType) : m_Name(toString(windowType)) {
-                //
-                // }
-
-                /* void reset() noexcept; */
                 void unfocus();
 
-                Window& addField(Field field) noexcept;
-                /* Window& addLabel(const Coord& coord, std::string text); */
-                /* Window& addField( */
-                /*         const Coord& coord, */
-                /*         unsigned int initialSize, unsigned int maxSize, */
-                /*         std::string initialValue = ""); */
-                /* Window& addButton(const Coord& coord, std::string name, */
-                /*                     std::function<void()> feedback); */
+                Window& addField(const Field& field) noexcept;
+                Window& addLabel(const Label& label) noexcept;
 
                 std::optional<std::reference_wrapper<Interactable>>
                         getInteractableUnder(const Coord& coord) noexcept;
@@ -208,15 +215,12 @@ class Display {
 
         void setActiveWindow(WindowType windowType);
 
-        // Resets the contents of the specified window and returns it
-        Window& initWindow(WindowType windowType);
-
-        // Returns the specified window
+        // Returns the specified window, initializing one if it is the first access
         Window& populateWindow(WindowType windowType);
 
         // Either completes completely or not at all
         bool shiftCursor(Coord shift) noexcept ;
-        // Check where the cursor ends up and toggle appropriate Stateful objects
+        // TODO: Check where the cursor ends up and toggle appropriate Stateful objects
         bool setCursor(const Coord& coord) noexcept;
         void draw() const noexcept;
         void drawBorder() const noexcept;
