@@ -97,6 +97,99 @@ void Display::Label::draw() const noexcept {
     addstr(m_Value.c_str());
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Display::Button
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Display::Button::Button(
+        const Display::Coord& position,
+        const Tag& tag,
+        const std::string& value,
+        const std::function<void()> feedback) noexcept
+        : UiElement(position, tag),
+          m_Value(value),
+          m_State(State::Idle),
+          m_Feedback(feedback) {}
+
+void Display::Button::setColorByState() const noexcept {
+    switch (m_State) {
+        case State::Idle:
+            ColorFactory::setColor({Color::GREEN, Color::BLACK});
+            break;
+        case State::Highlighted:
+            ColorFactory::setColor({Color::BLACK, Color::GREEN});
+            break;
+        case State::Focused:
+            ColorFactory::setColor({Color::BLACK, Color::RED});
+            break;
+        default:
+            // TODO: Log.assert(false)
+            ColorFactory::setColor({0,0});
+    }
+}
+
+bool Display::Button::handleInputSymbol(int c, const Coord& coord,
+        const std::function<bool(const Coord&)>& setCursor) noexcept {
+    // TODO: assert: isUnder(coord)
+    static const unsigned int ENTER = 10;
+    if (m_State == State::Highlighted) {
+        if (c == ENTER) {
+            // TODO: Fix cursor movement while changing state
+            m_State = State::Focused;
+            draw();
+            std::this_thread::sleep_for(std::chrono::milliseconds(140));
+
+            m_State = State::Highlighted;
+            draw();
+
+            // Execute provided beedback function
+            m_Feedback();
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void Display::Button::handleCursorOver() noexcept {
+    if (m_State == State::Idle) {
+        m_State = State::Highlighted;
+        draw();
+    }
+}
+
+void Display::Button::handleCursorAway() noexcept {
+    if (m_State == State::Highlighted) {
+        m_State = State::Idle;
+        draw();
+    }
+}
+
+void Display::Button::unfocus() noexcept {
+    m_State = State::Idle;
+    // TODO: mb draw()??
+    // TODO: check that the button is OK
+}
+
+void Display::Button::draw() const noexcept {
+    setColorByState();
+    move(m_Position.y, m_Position.x);
+    // attron(A_STANDOUT);
+    addstr(m_Value.c_str());
+    // attroff(A_STANDOUT);
+
+    refresh();
+}
+
+// TODO: test
+bool Display::Button::isUnder(const Coord& coord) const noexcept {
+    if (coord.y == m_Position.y) {
+        return (m_Position.x <= coord.x &&
+                coord.x < m_Position.x + static_cast<int>(m_Value.size()));
+    }
+
+    return false;
+}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::Field
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Display::Field::Field(
@@ -134,11 +227,6 @@ bool Display::Field::handleInputSymbol(int c, const Coord& coord,
 
     if (m_State == State::Highlighted) {
         if (c == ENTER) {
-            // undraw previous area
-            /* move(m_Position.y, m_Position.x); */
-            /* ColorFactory::setColor({Color::WHITE, Color::BLACK}); */
-            /* for (unsigned int x = 0; x < m_Width; x++) addch(' '); */
-
             // will change current Display's Cursor, exactly what we want
             setCursor(m_Position + Coord{0,
                     static_cast<int>(cursorInsideValue ? dx : m_Value.size())});
@@ -252,13 +340,6 @@ std::string Display::Window::toString(Display::WindowType windowType) {
     }
 }
 
-/* void Display::Window::reset() noexcept { */
-/*     // TODO: check that the order corresponds to the order of declaration */
-/*     // m_Labels.clear(); */
-/*     // m_Buttons.clear(); */
-/*     m_Fields.clear(); */
-/* } */
-
 void Display::Window::unfocus() {
     // TODO: complete for others
     for (Interactable& interactable : m_Fields) {
@@ -274,12 +355,19 @@ Display::Window& Display::Window::addLabel(const Label& label) noexcept {
     m_Labels.push_back(label);
     return *this;
 }
+Display::Window& Display::Window::addButton(const Button& button) noexcept {
+    m_Buttons.push_back(button);
+    return *this;
+}
 
 std::optional<std::reference_wrapper<Display::Interactable>>
         Display::Window::getInteractableUnder(const Coord& coord) noexcept {
     // There are currently 2 types of Interactable: Field and Button
-    for (Field& field : m_Fields) {
-        if (field.isUnder(coord)) return {{field}};
+    for (Interactable& interactable : m_Fields) {
+        if (interactable.isUnder(coord)) return {{interactable}};
+    }
+    for (Interactable& interactable : m_Buttons) {
+        if (interactable.isUnder(coord)) return {{interactable}};
     }
 
     return std::nullopt;
@@ -361,6 +449,7 @@ void Display::draw() const noexcept {
 void Display::Window::draw() const noexcept {
     for (const Field& field : m_Fields) field.draw();
     for (const Label& label : m_Labels) label.draw();
+    for (const Button& button : m_Buttons) button.draw();
 }
 
 

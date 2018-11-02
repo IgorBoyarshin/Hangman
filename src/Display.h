@@ -10,6 +10,10 @@
 #include <unordered_map>
 #include <cassert> // TODO: remove once all calls to assert() and replace with Log.assert()
 
+// For sleeping
+#include <chrono>
+#include <thread>
+
 
 inline bool isLetter(char c) noexcept {
     return (('A' <= c) && (c <= 'Z')) || (('a' <= c) && (c <= 'z'));
@@ -129,9 +133,36 @@ class Display {
                 Label(const Coord& position, const Tag& tag, const std::string& value = "") noexcept;
         };
 
-        // class Button : public Interactable {
-        //
-        // };
+        class Button : public UiElement, public Interactable {
+            private:
+                enum class State {
+                    Idle,
+                    Highlighted,
+                    Focused
+                };
+
+                const std::string m_Value;
+                State m_State;
+                std::function<void()> m_Feedback;
+
+            private:
+                void setColorByState() const noexcept;
+
+            public:
+                bool handleInputSymbol(int c, const Coord& coord,
+                        const std::function<bool(const Coord&)>& setCursor) noexcept override;
+                void handleCursorOver() noexcept override;
+                void handleCursorAway() noexcept override;
+                void unfocus() noexcept override;
+                void draw() const noexcept override;
+                bool isUnder(const Coord& coord) const noexcept override;
+
+            public:
+                Button(const Coord& position,
+                      const Tag& tag,
+                      const std::string& value,
+                      const std::function<void()> feedback) noexcept;
+        };
 
         class Field : public UiElement, public Interactable {
             private:
@@ -167,7 +198,7 @@ class Display {
         class Window {
             private:
                 std::vector<Label> m_Labels;
-                // std::vector<Button> m_Buttons;
+                std::vector<Button> m_Buttons;
                 std::vector<Field> m_Fields;
 
             private:
@@ -178,8 +209,10 @@ class Display {
             public:
                 void unfocus();
 
+                // TODO reorder
                 Window& addField(const Field& field) noexcept;
                 Window& addLabel(const Label& label) noexcept;
+                Window& addButton(const Button& button) noexcept;
 
                 std::optional<std::reference_wrapper<Interactable>>
                         getInteractableUnder(const Coord& coord) noexcept;
