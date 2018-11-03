@@ -33,17 +33,27 @@ void Game::init() {
 }
 
 void Game::initDisplay() {
-    m_Display.populateWindow(Display::WindowType::Game)
-        .addLabel({{2,2}, Display::Tag::createNew(), "Modify me"})
-        .addButton({{4,1}, Display::Tag::createNew(), "Press Me", [this](){
-                static int row = 5;
-                if (row >= 8) return; else row++;
-                m_Display.populateWindow(Display::WindowType::Game)
-                    .addLabel({{row,3}, Display::Tag::createNew(), "New text " + std::to_string(row - 5)});
-                }})
-        .addField({{3,3}, Display::Tag::createNew(), 8, "abc"});
+    m_Display.populateWindow(WindowType::Game)
+        .addLabel({{5,2}, Display::Tag::createNew(), "Inside Game"})
+        .addButton({{6,1}, {5, 12}, Display::Tag::createNew(), "Press Me", [this](){
+                static int row = 10;
+                if (row >= 13) return; else row++;
+                m_Display.populateWindow(WindowType::Game)
+                    .addLabel({{row,3}, Display::Tag::createNew(), "New text " + std::to_string(row - 10)});
+                }});
+        // .addField({{9,3}, Display::Tag::createNew(), 8, "abc"});
 
-    m_Display.setActiveWindow(Display::WindowType::Game);
+    m_Display.populateWindow(WindowType::Settings)
+        .addLabel({{5,6}, Display::Tag::createNew(), "Inside Settings"})
+        .addButton({{6,5}, {3, 10}, Display::Tag::createNew(), "Press Me", [this](){
+                static int row = 10;
+                if (row >= 13) return; else row++;
+                m_Display.populateWindow(WindowType::Game)
+                    .addLabel({{row,7}, Display::Tag::createNew(), "New text " + std::to_string(row - 10)});
+                }})
+        .addField({{9,7}, Display::Tag::createNew(), 8, "abc"});
+
+    m_Display.setActiveWindow(WindowType::Game);
 }
 
 void Game::cleanup() {

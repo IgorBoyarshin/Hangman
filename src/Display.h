@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <array>
 #include <optional>
 #include <functional>
 #include <unordered_map>
@@ -22,6 +23,20 @@ inline bool isNumber(char c) noexcept {
     return ('0' <= c) && (c <= '9');
 }
 
+enum class WindowType : unsigned int {
+    Settings = 0,
+    Game,
+    About,
+    Count
+};
+
+inline constexpr unsigned int toInt(const WindowType& windowType) noexcept {
+    return static_cast<unsigned int>(windowType);
+}
+
+inline constexpr WindowType toWindowType(unsigned int index) noexcept {
+    return static_cast<WindowType>(index);
+}
 
 class Display {
     public:
@@ -56,11 +71,6 @@ class Display {
                 static unsigned int WHITE;
         };
 
-        enum class WindowType {
-            Settings,
-            Game,
-            About
-        };
 
         // TODO: rename
         class ColorFactory {
@@ -106,6 +116,24 @@ class Display {
 
         class Interactable {
             public:
+                enum class State {
+                    Idle,
+                    Highlighted,
+                    Focused
+                };
+
+            protected:
+                State m_State;
+                Interactable(const State& state) noexcept;
+
+            private:
+                bool m_Active;
+
+            public:
+                inline bool active() const noexcept { return m_Active; }
+                inline void setActive() noexcept { m_Active = true; }
+                inline void setPassive() noexcept { m_Active = false; }
+
                 // Returns whether the input was handled. If it wasn't => may
                 // need to handle it in the outter layer
                 virtual bool handleInputSymbol(int c, const Coord& coord,
@@ -133,19 +161,38 @@ class Display {
                 Label(const Coord& position, const Tag& tag, const std::string& value = "") noexcept;
         };
 
+        struct StateColors {
+            public:
+                Color idle;
+                Color highlighted;
+                Color focused;
+
+                StateColors(const Color& idle,
+                        const Color& highlighted,
+                        const Color& focused) noexcept;
+
+                /* Color get(const Interactable::State& state) const noexcept; */
+        };
+
+        struct WindowColors {
+            public:
+                const StateColors headColors;
+                const Color borderColor;
+
+                WindowColors(const StateColors& headColors,
+                        const Color& borderColor) noexcept;
+        };
+
         class Button : public UiElement, public Interactable {
             private:
-                enum class State {
-                    Idle,
-                    Highlighted,
-                    Focused
-                };
-
+                const Coord m_Dimensions;
                 const std::string m_Value;
-                State m_State;
                 std::function<void()> m_Feedback;
 
+                StateColors m_StateColors;
+
             private:
+                static StateColors getDefaultStateColors() noexcept;
                 void setColorByState() const noexcept;
 
             public:
@@ -159,22 +206,21 @@ class Display {
 
             public:
                 Button(const Coord& position,
+                      const Coord& dimensions,
                       const Tag& tag,
                       const std::string& value,
                       const std::function<void()> feedback) noexcept;
+
+                Button& setStateColors(const StateColors& stateColors) noexcept;
+                /* Button& setIdleColor(const Color& color) noexcept; */
+                /* Button& setHighlightedColor(const Color& color) noexcept; */
+                /* Button& setFocusedColor(const Color& color) noexcept; */
         };
 
         class Field : public UiElement, public Interactable {
             private:
-                enum class State {
-                    Idle,
-                    Highlighted,
-                    Focused
-                };
-
                 const unsigned int m_Width;
                 std::string m_Value;
-                State m_State;
 
             private:
                 void setColorByState() const noexcept;
@@ -201,13 +247,26 @@ class Display {
                 std::vector<Button> m_Buttons;
                 std::vector<Field> m_Fields;
 
-            private:
-                // TODO: move outside the class
-                std::string toString(Display::WindowType windowType);
-
+                const Coord m_Dimensions;
+                const std::pair<unsigned int, unsigned int> m_HeadRange;
+                const Color m_BorderColor;
 
             public:
+                static const unsigned int headBottomY;
+                static const unsigned int borderStartY;
+
+            private:
+                void drawSelf() const noexcept;
+                void drawUi() const noexcept;
+
+            public:
+                Window(const Coord& dimensions,
+                        const std::pair<unsigned int, unsigned int>& headRange,
+                        const Color& borderColor) noexcept;
                 void unfocus();
+
+                static WindowColors getColorsForWindow(const WindowType& windowtype) noexcept;
+
 
                 // TODO reorder
                 Window& addField(const Field& field) noexcept;
@@ -225,20 +284,29 @@ class Display {
         unsigned int m_Height; // amount of rows
         unsigned int m_Width;  // amount of columns
 
-        std::unordered_map<WindowType, Window> m_Windows;
+        // TODO: come up with a way to make it an std::array
+        std::vector<Window> m_Windows;
         WindowType m_ActiveWindowType;
         Coord m_Cursor;
+
+        std::vector<Button> m_WindowHeads;
 
         inline bool inbounds(const Coord& coord) const noexcept {
             return (0 <= coord.y) && (coord.y <= static_cast<int>(m_Height))
                 && (0 <= coord.x) && (coord.x <= static_cast<int>(m_Width));
         }
 
+        /* unsigned int getOrderByWindowType(const WindowType& windowType) const noexcept; */
+        /* WindowType getWindowTypeByOrder(unsigned int order) const noexcept; */
+        /* Color getWindowColor(const WindowType& windowType) const noexcept; */
+
+        /* std::pair<unsigned int, unsigned int> getWindowHeadRange(unsigned int order) const noexcept; */
+
         void init() noexcept;
         void cleanup() const noexcept;
 
     public:
-        Display();
+        Display() noexcept;
         virtual ~Display();
 
         Coord getCursor() const noexcept;
@@ -256,9 +324,13 @@ class Display {
         // TODO: Check where the cursor ends up and toggle appropriate Stateful objects
         bool setCursor(const Coord& coord) noexcept;
         void draw() const noexcept;
-        void drawBorder() const noexcept;
+        /* void drawBorder() const noexcept; */
+        void drawWindows() const noexcept;
         void drawCursor() const noexcept;
 };
+
+
+std::string toString(WindowType windowType);
 
 
 #endif

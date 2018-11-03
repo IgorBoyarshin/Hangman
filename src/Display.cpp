@@ -83,6 +83,11 @@ Display::Tag Display::Tag::createNew() noexcept {
 Display::UiElement::UiElement(const Coord& position, const Tag& tag) noexcept
     : m_Position(position), m_Tag(tag) {}
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Display::Interactable
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Display::Interactable::Interactable(const State& state) noexcept
+    : m_State(state), m_Active(true) {}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::Label
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Display::Label::Label(
@@ -97,28 +102,51 @@ void Display::Label::draw() const noexcept {
     addstr(m_Value.c_str());
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Display::StateColors
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Display::StateColors::StateColors(const Color& idle,
+                        const Color& highlighted,
+                        const Color& focused) noexcept
+    : idle(idle), highlighted(highlighted), focused(focused) {}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::Button
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Display::Button::Button(
         const Display::Coord& position,
+        const Display::Coord& dimensions,
         const Tag& tag,
         const std::string& value,
         const std::function<void()> feedback) noexcept
         : UiElement(position, tag),
-          m_Value(value),
-          m_State(State::Idle),
-          m_Feedback(feedback) {}
+        Interactable(State::Idle),
+        m_Dimensions(dimensions),
+        m_Value(value),
+        m_Feedback(feedback),
+        m_StateColors(getDefaultStateColors()) {}
+
+Display::Button& Display::Button::setStateColors(const StateColors& stateColors) noexcept {
+    m_StateColors = stateColors;
+    return *this;
+}
+
+Display::StateColors Display::Button::getDefaultStateColors() noexcept {
+    return {
+        {Color::GREEN, Color::BLACK},
+        {Color::BLACK, Color::GREEN},
+        {Color::BLACK, Color::RED}
+    };
+}
 
 void Display::Button::setColorByState() const noexcept {
     switch (m_State) {
         case State::Idle:
-            ColorFactory::setColor({Color::GREEN, Color::BLACK});
+            ColorFactory::setColor(m_StateColors.idle);
             break;
         case State::Highlighted:
-            ColorFactory::setColor({Color::BLACK, Color::GREEN});
+            ColorFactory::setColor(m_StateColors.highlighted);
             break;
         case State::Focused:
-            ColorFactory::setColor({Color::BLACK, Color::RED});
+            ColorFactory::setColor(m_StateColors.focused);
             break;
         default:
             // TODO: Log.assert(false)
@@ -154,6 +182,7 @@ bool Display::Button::handleInputSymbol(int c, const Coord& coord,
 }
 
 void Display::Button::handleCursorOver() noexcept {
+    if (!active()) return;
     if (m_State == State::Idle) {
         m_State = State::Highlighted;
         draw();
@@ -175,22 +204,58 @@ void Display::Button::unfocus() noexcept {
 
 void Display::Button::draw() const noexcept {
     setColorByState();
-    move(m_Position.y, m_Position.x);
-    // attron(A_STANDOUT);
+
+    const Coord textRelativeCoord{
+        static_cast<int>(m_Dimensions.y / 2),
+        static_cast<int>(m_Dimensions.x - m_Value.size()) / 2
+    };
+
+    // Draw upper border
+    if (m_Dimensions.y >= 2) {
+        move(m_Position.y, m_Position.x);
+        addch(ACS_ULCORNER);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) addch(ACS_HLINE);
+        addch(ACS_URCORNER);
+    }
+    // Draw void between upper border and text
+    for (int y = 1; y < textRelativeCoord.y; y++) {
+        move(m_Position.y + y, m_Position.x);
+        addch(ACS_VLINE);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) addch(' ');
+        addch(ACS_VLINE);
+    }
+    // Draw text
+    attron(A_BOLD);
+    move(m_Position.y + textRelativeCoord.y, m_Position.x);
+    addch(ACS_VLINE);
+    for (int x = 1; x < textRelativeCoord.x; x++) addch(' ');
     addstr(m_Value.c_str());
-    // attroff(A_STANDOUT);
+    for (int x = m_Position.x + textRelativeCoord.x + m_Value.size();
+            x < m_Position.x + m_Dimensions.x - 1; x++) addch(' ');
+    addch(ACS_VLINE);
+    attroff(A_BOLD);
+    // Draw void between text and bottom border
+    for (int y = textRelativeCoord.y + 1; y < m_Dimensions.y - 1; y++) {
+        move(m_Position.y + y, m_Position.x);
+        addch(ACS_VLINE);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) addch(' ');
+        addch(ACS_VLINE);
+    }
+    // Draw bottom border
+    if (m_Dimensions.y >= 3) {
+        move(m_Position.y + m_Dimensions.y - 1, m_Position.x);
+        addch(ACS_LLCORNER);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) addch(ACS_HLINE);
+        addch(ACS_LRCORNER);
+    }
 
     refresh();
 }
 
 // TODO: test
 bool Display::Button::isUnder(const Coord& coord) const noexcept {
-    if (coord.y == m_Position.y) {
-        return (m_Position.x <= coord.x &&
-                coord.x < m_Position.x + static_cast<int>(m_Value.size()));
-    }
-
-    return false;
+    return (m_Position.x <= coord.x && coord.x < m_Position.x + m_Dimensions.x) &&
+            (m_Position.y <= coord.y && coord.y < m_Position.y + m_Dimensions.y);
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::Field
@@ -201,8 +266,9 @@ Display::Field::Field(
         unsigned int width,
         const std::string& initialValue/* = ""*/) noexcept
         : UiElement(position, tag),
-          m_Width(width), m_Value(initialValue),
-          m_State(State::Idle) {}
+        Interactable(State::Idle),
+        m_Width(width),
+        m_Value(initialValue) {}
 
 void Display::Field::setColorByState() const noexcept {
     switch (m_State) {
@@ -326,27 +392,69 @@ bool Display::Field::isUnder(const Coord& coord) const noexcept {
     return false;
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Display::WindowColors
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Display::WindowColors::WindowColors(const StateColors& headColors,
+                        const Color& borderColor) noexcept :
+    headColors(headColors), borderColor(borderColor) {}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::Window
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-std::string Display::Window::toString(Display::WindowType windowType) {
-    switch (windowType) {
-        case Display::WindowType::Settings:
-            return "Settings";
-        case Display::WindowType::Game:
-            return "Game";
-        case Display::WindowType::About:
-            return "About";
-        default:
-            // TODO: Log.asert(false);
-            // TODO: maybe throw??
-            return "";
-    }
-}
+const unsigned int Display::Window::headBottomY = 2;
+const unsigned int Display::Window::borderStartY = headBottomY + 1;
+
+Display::Window::Window(
+        const Coord& dimensions,
+        const std::pair<unsigned int, unsigned int>& headRange,
+        const Color& borderColor) noexcept
+    : m_Dimensions(dimensions), m_HeadRange(headRange), m_BorderColor(borderColor) {}
 
 void Display::Window::unfocus() {
     // TODO: complete for others
     for (Interactable& interactable : m_Fields) {
         interactable.unfocus();
+    }
+}
+
+Display::WindowColors Display::Window::getColorsForWindow(const WindowType& windowtype) noexcept {
+    switch (windowtype) {
+        case WindowType::Settings:
+            return {
+                {
+                    {Color::BLACK, Color::CYAN},
+                    {Color::CYAN, Color::BLACK},
+                    {Color::RED, Color::CYAN}
+                },
+                {Color::BLACK, Color::CYAN}
+            };
+        case WindowType::Game:
+            return {
+                {
+                    {Color::BLACK, Color::YELLOW},
+                    {Color::YELLOW, Color::BLACK},
+                    {Color::RED, Color::YELLOW}
+                },
+                {Color::BLACK, Color::YELLOW}
+            };
+        case WindowType::About:
+            return {
+                {
+                    {Color::BLACK, Color::PURPLE},
+                    {Color::PURPLE, Color::BLACK},
+                    {Color::RED, Color::PURPLE}
+                },
+                {Color::BLACK, Color::PURPLE}
+            };
+        default:
+            // TODO: assert(false)
+            return {
+                {
+                    {Color::BLACK, Color::CYAN},
+                    {Color::BLUE, Color::CYAN},
+                    {Color::RED, Color::CYAN}
+                },
+                {Color::PURPLE, Color::BLACK}
+            };
     }
 }
 
@@ -375,11 +483,84 @@ std::optional<std::reference_wrapper<Display::Interactable>>
 
     return std::nullopt;
 }
+
+void Display::Window::drawSelf() const noexcept {
+    ColorFactory::setColor(m_BorderColor);
+
+    // Left
+    for (int y = 0; y < m_Dimensions.y; y++) {
+        move(borderStartY + y, 0);
+        addch(' ');
+    }
+    // Bottom
+    move(borderStartY + m_Dimensions.y - 1, 0);
+    for (int x = 0; x < m_Dimensions.x; x++) {
+        addch(' ');
+    }
+    // Right
+    for (int y = 0; y < m_Dimensions.y; y++) {
+        move(borderStartY + y, m_Dimensions.x - 1);
+        addch(' ');
+    }
+    // Top
+    move(borderStartY, 0);
+    for (int x = 0; x < m_Dimensions.x; x++) {
+        addch(' ');
+    }
+}
+
+void Display::Window::drawUi() const noexcept {
+    for (const Field& field : m_Fields) field.draw();
+    for (const Label& label : m_Labels) label.draw();
+    for (const Button& button : m_Buttons) button.draw();
+}
+
+void Display::Window::draw() const noexcept {
+    drawSelf();
+    drawUi();
+}
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Display::Display() : m_Height(0), m_Width(0),
-        m_ActiveWindowType(WindowType::Game), m_Cursor({0, 0}) {
+Display::Display() noexcept : m_Height(20), m_Width(60),
+    m_ActiveWindowType(WindowType::Game), m_Cursor({0, 0}) {
+    const auto getWindowHeadRange = [width = m_Width](unsigned int order) noexcept {
+        const unsigned int windowsAmount = toInt(WindowType::Count);
+        const unsigned int windowWidth = (width / windowsAmount);
+        const bool lastWindow = (order == windowsAmount - 1);
+        return std::pair<unsigned int, unsigned int>{
+            order * windowWidth,
+            lastWindow ? (width - 1) : ((order + 1) * windowWidth - 1)
+        };
+    };
+
+    for (unsigned int i = 0; i < toInt(WindowType::Count); i++) {
+        const auto windowHeadRange = getWindowHeadRange(i);
+        const WindowType windowType = toWindowType(i);
+        const auto [headColors, windowColor] = Window::getColorsForWindow(windowType);
+
+        m_Windows.emplace_back(
+            Coord{
+                static_cast<int>(m_Height - Window::borderStartY),
+                static_cast<int>(m_Width)
+            }, // TODO: move into Game
+            windowHeadRange,
+            windowColor
+        );
+        m_WindowHeads.push_back(Button{
+            Coord{0, static_cast<int>(windowHeadRange.first)},
+            Coord{
+                Window::borderStartY,
+                static_cast<int>(windowHeadRange.second - windowHeadRange.first + 1)
+            },
+            Display::Tag::createEmpty(),
+            toString(windowType),
+            [](){}
+        }.setStateColors(headColors));
+    }
+
+    setActiveWindow(WindowType::Game);
+
     init();
 }
 
@@ -392,12 +573,7 @@ void Display::init() noexcept {
     noecho();
     start_color();
     keypad(stdscr, TRUE); // enable extended keys
-    getmaxyx(stdscr, m_Height, m_Width);
-
-    // TODO: move into separate function
-    m_Windows[WindowType::Settings] = {};
-    m_Windows[WindowType::Game] = {};
-    m_Windows[WindowType::About] = {};
+    // getmaxyx(stdscr, m_Height, m_Width);
 }
 
 
@@ -411,19 +587,24 @@ Display::Coord Display::getCursor() const noexcept {
 
 std::optional<std::reference_wrapper<Display::Interactable>>
         Display::getInteractableUnderCursor() noexcept {
-    return m_Windows[m_ActiveWindowType].getInteractableUnder(m_Cursor);
+    for (Interactable& interactable : m_WindowHeads) {
+        if (interactable.isUnder(m_Cursor)) return {{interactable}};
+    }
+    return m_Windows[toInt(m_ActiveWindowType)].getInteractableUnder(m_Cursor);
 }
 
 void Display::setActiveWindow(WindowType windowType) {
-    if (m_ActiveWindowType == windowType) return;
-    m_Windows[m_ActiveWindowType].unfocus();
+    /* if (m_ActiveWindowType == windowType) return; */
+    m_Windows[toInt(m_ActiveWindowType)].unfocus();
+    m_WindowHeads[toInt(m_ActiveWindowType)].setActive();
+
     m_ActiveWindowType = windowType;
+    m_WindowHeads[toInt(windowType)].setPassive();
     setCursor({0, 0}); // default cursor position in new window
 }
 
 Display::Window& Display::populateWindow(WindowType windowType) {
-    if (m_Windows.find(windowType) == m_Windows.end()) m_Windows[windowType] = {};
-    return m_Windows[windowType];
+    return m_Windows[toInt(windowType)];
 }
 
 bool Display::shiftCursor(Coord shift) noexcept {
@@ -441,29 +622,48 @@ bool Display::setCursor(const Coord& coord) noexcept {
 }
 
 void Display::draw() const noexcept {
-    drawBorder();
-    m_Windows.at(m_ActiveWindowType).draw();
+    // drawBorder();
+    drawWindows();
 
     // Must come last
     drawCursor();
     refresh();
 }
 
-void Display::Window::draw() const noexcept {
-    for (const Field& field : m_Fields) field.draw();
-    for (const Label& label : m_Labels) label.draw();
-    for (const Button& button : m_Buttons) button.draw();
+void Display::drawWindows() const noexcept {
+    // Draw windows' heads === buttons
+    for (const Button& button : m_WindowHeads) button.draw();
+    // Draw actual current window
+    m_Windows[toInt(m_ActiveWindowType)].draw();
+
+    refresh();
 }
 
-
-void Display::drawBorder() const noexcept {
-    ColorFactory::setColor({Color::RED, Color::BLACK});
-    border(ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE,
-            ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
-}
-
+/* void Display::drawBorder() const noexcept { */
+/*     ColorFactory::setColor({Color::RED, Color::BLACK}); */
+/*     border(ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, */
+/*             ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER); */
+/* } */
+/*  */
 
 void Display::drawCursor() const noexcept {
     move(m_Cursor.y, m_Cursor.x);
     refresh();
+}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Other
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+std::string toString(WindowType windowType) {
+    switch (windowType) {
+        case WindowType::Settings:
+            return "Settings";
+        case WindowType::Game:
+            return "Game";
+        case WindowType::About:
+            return "About";
+        default:
+            // TODO: Log.asert(false);
+            // TODO: maybe throw??
+            return "";
+    }
 }
