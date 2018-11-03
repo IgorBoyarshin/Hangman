@@ -296,12 +296,6 @@ class Display {
                 && (0 <= coord.x) && (coord.x <= static_cast<int>(m_Width));
         }
 
-        /* unsigned int getOrderByWindowType(const WindowType& windowType) const noexcept; */
-        /* WindowType getWindowTypeByOrder(unsigned int order) const noexcept; */
-        /* Color getWindowColor(const WindowType& windowType) const noexcept; */
-
-        /* std::pair<unsigned int, unsigned int> getWindowHeadRange(unsigned int order) const noexcept; */
-
         void init() noexcept;
         void cleanup() const noexcept;
 

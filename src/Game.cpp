@@ -48,7 +48,7 @@ void Game::initDisplay() {
         .addButton({{6,5}, {3, 10}, Display::Tag::createNew(), "Press Me", [this](){
                 static int row = 10;
                 if (row >= 13) return; else row++;
-                m_Display.populateWindow(WindowType::Game)
+                m_Display.populateWindow(WindowType::Settings)
                     .addLabel({{row,7}, Display::Tag::createNew(), "New text " + std::to_string(row - 10)});
                 }})
         .addField({{9,7}, Display::Tag::createNew(), 8, "abc"});

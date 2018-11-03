@@ -156,6 +156,7 @@ void Display::Button::setColorByState() const noexcept {
 
 bool Display::Button::handleInputSymbol(int c, const Coord& coord,
         const std::function<bool(const Coord&)>& setCursor) noexcept {
+    if (!active()) return false;
     // TODO: assert: isUnder(coord)
     static const unsigned int ENTER = 10;
     if (m_State == State::Highlighted) {
@@ -165,11 +166,11 @@ bool Display::Button::handleInputSymbol(int c, const Coord& coord,
             draw();
             std::this_thread::sleep_for(std::chrono::milliseconds(140));
 
-            m_State = State::Highlighted;
-            draw();
-
             // Discard any input characters that happened during our sleep
             flushinp();
+
+            m_State = State::Highlighted;
+            draw();
 
             // Execute provided beedback function
             m_Feedback();
@@ -411,9 +412,8 @@ Display::Window::Window(
 
 void Display::Window::unfocus() {
     // TODO: complete for others
-    for (Interactable& interactable : m_Fields) {
-        interactable.unfocus();
-    }
+    for (Interactable& interactable : m_Fields) interactable.unfocus();
+    for (Interactable& interactable : m_Buttons) interactable.unfocus();
 }
 
 Display::WindowColors Display::Window::getColorsForWindow(const WindowType& windowtype) noexcept {
@@ -523,7 +523,7 @@ void Display::Window::draw() const noexcept {
 // Display
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Display::Display() noexcept : m_Height(20), m_Width(60),
-    m_ActiveWindowType(WindowType::Game), m_Cursor({0, 0}) {
+    m_ActiveWindowType(WindowType::Game), m_Cursor({Window::borderStartY + 1, 1}) {
     const auto getWindowHeadRange = [width = m_Width](unsigned int order) noexcept {
         const unsigned int windowsAmount = toInt(WindowType::Count);
         const unsigned int windowWidth = (width / windowsAmount);
@@ -555,7 +555,9 @@ Display::Display() noexcept : m_Height(20), m_Width(60),
             },
             Display::Tag::createEmpty(),
             toString(windowType),
-            [](){}
+            [windowType, this](){
+                setActiveWindow(windowType);
+            }
         }.setStateColors(headColors));
     }
 
@@ -594,13 +596,15 @@ std::optional<std::reference_wrapper<Display::Interactable>>
 }
 
 void Display::setActiveWindow(WindowType windowType) {
-    /* if (m_ActiveWindowType == windowType) return; */
     m_Windows[toInt(m_ActiveWindowType)].unfocus();
+    m_WindowHeads[toInt(windowType)].unfocus();
     m_WindowHeads[toInt(m_ActiveWindowType)].setActive();
 
     m_ActiveWindowType = windowType;
-    m_WindowHeads[toInt(windowType)].setPassive();
-    setCursor({0, 0}); // default cursor position in new window
+    m_WindowHeads[toInt(m_ActiveWindowType)].setPassive();
+    /* setCursor({0, 0}); // default cursor position in new window */
+    // setCursor({Window::borderStartY + 1, 1});
+    erase();
 }
 
 Display::Window& Display::populateWindow(WindowType windowType) {
@@ -638,13 +642,6 @@ void Display::drawWindows() const noexcept {
 
     refresh();
 }
-
-/* void Display::drawBorder() const noexcept { */
-/*     ColorFactory::setColor({Color::RED, Color::BLACK}); */
-/*     border(ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, */
-/*             ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER); */
-/* } */
-/*  */
 
 void Display::drawCursor() const noexcept {
     move(m_Cursor.y, m_Cursor.x);
