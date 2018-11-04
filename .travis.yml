@@ -33,8 +33,7 @@ env:
     - CXX=g++-7
 branches:
     only:
-        - travis
-        # - master
-        # - dev
+        - dev
+        - master
 notifications:
   email: false
