@@ -1,0 +1,24 @@
+sudo: false
+language: cpp
+os:
+    - linux
+compiler:
+    - gcc
+before_install:
+    - echo "Just testing..."
+    - if [ 5 -ge 2 ]; then  echo "5 > 2"; fi
+install: echo "Just testing..."
+script:
+    - make
+    - ./main
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+        packages:
+            - g++-4.8
+branches:
+    only:
+        - travis
+        # - master
+        # - dev
