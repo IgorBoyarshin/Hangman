@@ -6,15 +6,14 @@ compiler:
     - g++
 before_install:
     - echo ":> Running before_install..."
-    - if [ 5 -ge 2 ]; then  echo "5 > 2"; fi
+    # - if [ 5 -ge 2 ]; then  echo "5 > 2"; fi
 install:
     - echo ":> Running install..."
 script:
     - echo ":> Running script..."
-    - export CC=gcc-7
-    - export CXX=g++-7 
+    # - export CC=gcc-7
+    # - export CXX=g++-7 
     - env
-    - g++ --version
     - cd src
     - make
     - ./main
@@ -29,8 +28,13 @@ addons:
             - libncursesw5-dev
             # - ncurses-dev
             # - libncurses-dev
+env:
+    - CC=gcc-7
+    - CXX=g++-7
 branches:
     only:
         - travis
         # - master
         # - dev
+notifications:
+  email: false
