@@ -16,7 +16,7 @@ filesObj = $(addsuffix .o, $(mainFileName) $(classFiles))
 filesH = $(addsuffix .h, $(classFiles) $(justHeaderFiles))
 
 
-all: cleanExe $(mainFileName)
+all: cleanExe describe $(mainFileName)
 
 
 # Compiler
@@ -28,9 +28,20 @@ $(mainFileName): $(filesObj)
 	g++ $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) $(LINKER_FLAGS) $^ -o $@
 
 
+# Generate a piece of code that has accessible constant that holds
+# the current project version (tag)
+describe:
+	@echo ":> Generating version.h"
+	@echo "#ifndef VERSION_H" > version.h
+	@echo "#define VERSION_H" >> version.h
+	@echo "#include <string>" >> version.h
+	@echo "const std::string GLOBAL_VERSION{\"$(shell git describe)\"};" >> version.h
+	@echo "#endif" >> version.h
+
+
 # Utils
 clean:
-	rm -f *.o *.gch .*.gch $(mainFileName)
+	rm -f *.o *.gch .*.gch $(mainFileName) version.h
 
 cleanExe:
 	rm -f $(mainFileName)

@@ -1,14 +1,17 @@
 #include <iostream>
 
+#include "version.h"
 #include "Game.h"
 #include "Log.h"
+
 
 
 int main() {
     std::cout << "---------- Start ----------" << std::endl;
 
+    Log::info() << "Project Version = " << GLOBAL_VERSION << std::endl;
     {
-        Game game;
+        // Game game;
 
         // nodelay(stdscr, FALSE);
         // getch();
