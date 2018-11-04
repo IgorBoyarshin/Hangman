@@ -21,11 +21,11 @@ all: cleanExe describe $(mainFileName)
 
 # Compiler
 %.o: %.cpp $(filesH)
-	g++ $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
 
 # Linker
 $(mainFileName): $(filesObj)
-	g++ $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) $(LINKER_FLAGS) $^ -o $@
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) $^ -o $@ $(LINKER_FLAGS)
 
 
 # Generate a piece of code that has accessible constant that holds

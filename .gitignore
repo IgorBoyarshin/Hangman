@@ -4,3 +4,4 @@ a.out
 .*.gch
 version.h
 main
+*.png
