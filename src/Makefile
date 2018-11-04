@@ -25,7 +25,7 @@ all: cleanExe describe $(mainFileName)
 
 # Linker
 $(mainFileName): $(filesObj)
-	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) $(LINKER_FLAGS) $^ -o $@
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) $^ -o $@ $(LINKER_FLAGS)
 
 
 # Generate a piece of code that has accessible constant that holds
