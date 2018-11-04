@@ -1,5 +1,7 @@
 # Hangman #
 
+[![Build Status](https://travis-ci.org/IgorBoyarshin/Hangman.svg?branch=dev)](https://travis-ci.org/IgorBoyarshin/Hangman)
+
 Welcome to the **Hangman**, a game where you get to hang your friends!
 
 ## Requirements ##
