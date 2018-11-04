@@ -5,3 +5,5 @@ a.out
 version.h
 main
 *.png
+test/gtest
+*.a
