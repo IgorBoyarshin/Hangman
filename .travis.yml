@@ -11,6 +11,11 @@ install:
     - echo ":> Running install..."
 script:
     - echo ":> Running script..."
+    - printenv
+    - export CC=gcc-7
+    - export CXX=g++-7 
+    - env
+    - g++ --version
     - cd src
     - make
     - ./main
@@ -20,7 +25,11 @@ addons:
         sources:
             - ubuntu-toolchain-r-test
         packages:
-            - g++-4.8
+            - g++-7
+            - libncurses5-dev
+            - libncursesw5-dev
+            - ncurses-dev
+            - libncurses-dev
 branches:
     only:
         - travis
