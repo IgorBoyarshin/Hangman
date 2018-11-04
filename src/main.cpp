@@ -11,7 +11,7 @@ int main() {
 
     Log::info() << "Project Version = " << GLOBAL_VERSION << std::endl;
     {
-        Game game;
+        // Game game;
 
         // nodelay(stdscr, FALSE);
         // getch();
