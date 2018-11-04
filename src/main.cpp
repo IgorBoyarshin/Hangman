@@ -1,11 +1,7 @@
 #include <iostream>
 
-/* #include "Display.h" */
 #include "Game.h"
-
-// For sleeping
-#include <chrono>
-#include <thread>
+#include "Log.h"
 
 
 int main() {
@@ -17,6 +13,10 @@ int main() {
         // nodelay(stdscr, FALSE);
         // getch();
     }
+    /* Log::error() << "df" << std::endl; */
+
+    // Log log;
+    // log.setLevel(Log::LogLevel::Info) << std::endl;
 
     std::cout << "----------  End  ----------" << std::endl;
     return 0;
