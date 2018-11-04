@@ -1,7 +1,7 @@
 # The name of the main file and executable
 mainFileName = main
 # Files that have .h and .cpp versions
-classFiles = Client Server Display Game Log
+classFiles = Client Server Display Game Log test
 # Files that only have the .h version
 justHeaderFiles =
 # Compilation flags
