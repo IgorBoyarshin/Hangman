@@ -36,8 +36,10 @@ class Game {
         void handleInput();
         void processInputSymbol(int c); // TODO: Tests here
 
+        bool m_Terminated;
+
     public:
-        Game(Communicator* communicator);
+        Game(Drawer* drawer, Communicator* communicator);
         virtual ~Game();
 
         void init();

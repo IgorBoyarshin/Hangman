@@ -4,7 +4,7 @@
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::UiElement
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-std::shared_ptr<Drawer> Display::UiElement::m_Drawer = nullptr;
+Drawer* Display::UiElement::m_Drawer = nullptr;
 
 Display::UiElement::UiElement(const Coord& position, const Tag& tag) noexcept
     : m_Position(position), m_Tag(tag) {}
@@ -459,7 +459,7 @@ void Display::Window::draw() const noexcept {
 const unsigned int Display::m_HeadHeight = 3;
 
 
-Display::Display(unsigned int height, unsigned int width, std::shared_ptr<Drawer> drawer) noexcept
+Display::Display(unsigned int height, unsigned int width, Drawer* drawer) noexcept
         : m_Height(height), m_Width(width),
         m_ActiveWindowType(WindowType::Game), m_Cursor({m_HeadHeight + 1, 1}),
         m_Drawer(drawer) {
@@ -505,8 +505,6 @@ Display::Display(unsigned int height, unsigned int width, std::shared_ptr<Drawer
             }
         }.setStateColors(headColors));
     }
-
-    init();
 }
 
 Display::~Display() {
@@ -526,7 +524,7 @@ void Display::init() noexcept {
 
 
 void Display::cleanup() const noexcept {
-    m_Drawer->_endwin();
+    // endwin();
 }
 
 Coord Display::getCursor() const noexcept {

@@ -126,23 +126,24 @@ gmock.a : gmock-all.o
 # function.
 
 Game.o : $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(GTEST_HEADERS)
-	@echo "Running 1"
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Game.cpp
 
+Renderer.o : $(SOURCE_DIR)/Renderer.cpp $(SOURCE_DIR)/Renderer.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Renderer.cpp
+
+utils.o : $(SOURCE_DIR)/utils.cpp $(SOURCE_DIR)/utils.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/utils.cpp
+
 Display.o : $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(GTEST_HEADERS)
-	@echo "Running 1"
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Display.cpp
 
 Igorek.o : $(SOURCE_DIR)/Igorek.cpp $(SOURCE_DIR)/Igorek.h $(GTEST_HEADERS)
-	@echo "Running 1"
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Igorek.cpp
 
-$(TEST_NAME).o : $(SOURCE_DIR)/Communicator.h $(TEST_DIR)/$(TEST_NAME).cpp $(SOURCE_DIR)/Igorek.cpp $(SOURCE_DIR)/Igorek.h $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(GTEST_HEADERS)
-	@echo "Running 2"
+$(TEST_NAME).o : $(SOURCE_DIR)/Drawer.h $(SOURCE_DIR)/Communicator.h $(TEST_DIR)/$(TEST_NAME).cpp $(SOURCE_DIR)/Igorek.cpp $(SOURCE_DIR)/Igorek.h $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) -I$(SOURCE_DIR) $(CXXFLAGS) -c $(TEST_DIR)/$(TEST_NAME).cpp
 
-$(TEST_NAME) : Display.o Game.o Igorek.o $(TEST_NAME).o gtest.a gmock.a
-	@echo "Running 3"
+$(TEST_NAME) : Renderer.o Display.o Game.o Igorek.o utils.o $(TEST_NAME).o gtest.a gmock.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread -lncurses $^ -o $@ -L.
 
 # ./$(TEST_NAME)

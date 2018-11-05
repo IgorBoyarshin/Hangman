@@ -4,6 +4,10 @@
 Renderer::Renderer(unsigned int height, unsigned int width)
         : m_Height(height), m_Width(width) {}
 
+Renderer::~Renderer() {
+    cleanup();
+}
+
 
 void Renderer::_move(unsigned int y, unsigned int x) {
     move(y, x);
@@ -33,10 +37,6 @@ void Renderer::_refresh() {
     refresh();
 }
 
-void Renderer::_endwin() {
-    endwin();
-}
-
 
 void Renderer::_keypad() {
     keypad(stdscr, TRUE);
@@ -56,6 +56,10 @@ void Renderer::_start_color() {
 
 void Renderer::_erase() {
     erase();
+}
+
+void Renderer::cleanup() {
+    // endwin();
 }
 
 

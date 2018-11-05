@@ -6,6 +6,7 @@
 class Renderer : public Drawer {
     public:
         Renderer(unsigned int height, unsigned int width);
+        virtual ~Renderer();
 
         // TODO: change into more abstract ones
         void _move(unsigned int y, unsigned int x) override;
@@ -15,7 +16,6 @@ class Renderer : public Drawer {
         void _attron(int attr) override;
         void _attroff(int attr) override;
         void _refresh() override;
-        void _endwin() override;
         void _keypad() override;
         void _initscr() override;
         void _noecho() override;
@@ -23,6 +23,7 @@ class Renderer : public Drawer {
         void _erase() override;
 
         void setColor(const Color& color) override;
+        void cleanup() override;
 
     public:
         /* static const int _ACS_ULCORNER; */

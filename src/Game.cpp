@@ -1,8 +1,8 @@
 #include "Game.h"
 
 
-Game::Game(Communicator* communicator)
-    : m_Display({20, 60, std::make_shared<Renderer>(20, 60)}), m_Communicator(communicator) {}
+Game::Game(Drawer* drawer, Communicator* communicator)
+    : m_Display({20, 60, drawer}), m_Communicator(communicator), m_Terminated(false) {}
 
 Game::~Game() {
     cleanup();
@@ -27,6 +27,7 @@ void Game::init() {
     noecho();
     cbreak(); // no buffering (i.e. no waiting for carriage return)
 
+    m_Display.init();
     initDisplay();
 }
 
@@ -55,7 +56,7 @@ void Game::initDisplay() {
 }
 
 void Game::cleanup() {
-    endwin();
+    // endwin();
     // TODO: need to finish Client/Server??
 }
 
@@ -66,7 +67,7 @@ void Game::cleanup() {
 /* } */
 
 void Game::loop() {
-    while(true) {
+    while(!m_Terminated) {
         handleInput();
         m_Display.draw();
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
@@ -85,8 +86,9 @@ void Game::handleInput() {
 
 void Game::processInputSymbol(int c) {
     if (c == 'q') {
+        m_Terminated = true;
         cleanup();
-        exit(0);
+        return;
     }
 
     if (auto interactableUnderCursorOpt =

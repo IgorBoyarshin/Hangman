@@ -3,6 +3,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#include "../src/Drawer.h"
 #include "../src/Igorek.h"
 #include "../src/Game.h"
 #include "../src/Display.h"
@@ -12,6 +13,8 @@
 using ::testing::Return;
 using ::testing::_;
 using ::testing::AtLeast;
+
+
 
 
 int main(int argc, char **argv)

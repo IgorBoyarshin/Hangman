@@ -49,7 +49,7 @@ class Display {
                 Coord m_Position;
                 const Tag m_Tag;
 
-                static std::shared_ptr<Drawer> m_Drawer;
+                static Drawer* m_Drawer;
 
                 UiElement(const Coord& position, const Tag& tag) noexcept;
 
@@ -57,7 +57,7 @@ class Display {
                 virtual void draw() const noexcept = 0;
                 Tag getTag() const noexcept;
 
-                inline static void setDrawer(const std::shared_ptr<Drawer>& drawer) {
+                inline static void setDrawer(Drawer* drawer) {
                     m_Drawer = drawer;
                 }
         };
@@ -238,7 +238,7 @@ class Display {
         std::vector<Window> m_Windows;
         WindowType m_ActiveWindowType;
         Coord m_Cursor;
-        std::shared_ptr<Drawer> m_Drawer;
+        Drawer* m_Drawer;
 
         std::vector<Button> m_WindowHeads;
 
@@ -252,7 +252,7 @@ class Display {
     public:
         void init() noexcept;
 
-        Display(unsigned int height, unsigned int width, const std::shared_ptr<Drawer> drawer) noexcept;
+        Display(unsigned int height, unsigned int width, Drawer* drawer) noexcept;
         virtual ~Display();
 
         Coord getCursor() const noexcept;

@@ -16,7 +16,6 @@ class Drawer {
         virtual void _attron(int attr) = 0;
         virtual void _attroff(int attr) = 0;
         virtual void _refresh() = 0;
-        virtual void _endwin() = 0;
         virtual void _keypad() = 0;
         virtual void _initscr() = 0;
         virtual void _noecho() = 0;
@@ -26,7 +25,7 @@ class Drawer {
         virtual void setColor(const Color& color) = 0;
 
         // virtual void draw() = 0;
-        // virtual void clear() = 0;
+        virtual void cleanup() = 0;
         // virtual void setup() = 0;
         // virtual void rectangle(const Coord& upperLeft, const Coord& bottomRight) = 0;
 

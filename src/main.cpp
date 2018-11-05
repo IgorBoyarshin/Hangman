@@ -12,12 +12,17 @@ int main() {
 
     Log::info() << "Project Version = " << GLOBAL_VERSION << std::endl;
     {
-        Game game{new NetworkManager};
+        Renderer* renderer = new Renderer(20, 60);
+        NetworkManager* networkManager = new NetworkManager;
+        Game game{renderer, networkManager};
         game.init();
         game.loop();
+        endwin();
  
         // nodelay(stdscr, FALSE);
         // getch();
+        delete renderer;
+        delete networkManager;
     }
 
     std::cout << "----------  End  ----------" << std::endl;
