@@ -1,7 +1,6 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#include <ncurses.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -9,7 +8,12 @@
 #include <optional>
 #include <functional>
 #include <unordered_map>
+#include <memory> // shared_ptr
 #include <cassert> // TODO: remove once all calls to assert() and replace with Log.assert()
+#include "utils.h"
+#include "Drawer.h"
+#include <ncurses.h>
+#include <bitset>
 
 // For sleeping
 #include <chrono>
@@ -40,78 +44,22 @@ inline constexpr WindowType toWindowType(unsigned int index) noexcept {
 
 class Display {
     public:
-        struct Coord {
-            public:
-                // Origin: (0,0) === Upper-left corner
-                int y; // row
-                int x; // column
-
-                Coord();
-                Coord(int y, int x);
-
-                Coord& operator+=(const Coord& coord) noexcept;
-                Coord operator+(const Coord& coord) const noexcept;
-        };
-
-        struct Color {
-            public:
-                unsigned int fg;
-                unsigned int bg;
-
-                Color(unsigned int fg, unsigned int bg) noexcept;
-
-                // TODO: replace with a more elegant solution
-                static unsigned int BLACK;
-                static unsigned int RED;
-                static unsigned int GREEN;
-                static unsigned int YELLOW;
-                static unsigned int BLUE;
-                static unsigned int PURPLE;
-                static unsigned int CYAN;
-                static unsigned int WHITE;
-        };
-
-
-        // TODO: rename
-        class ColorFactory {
-            public:
-                static void setColor(const Color& color) noexcept;
-
-            private:
-                static unsigned int m_NextAvailableIndex;
-                // [FG][BG] = ColorPair
-                static std::unordered_map<unsigned int,
-                    std::unordered_map<unsigned int, unsigned int>> m_Colors;
-        };
-
-        struct Tag {
-            private:
-                static const unsigned int m_EmptyTag;
-                static unsigned int m_NextAvailableIndex;
-
-            public:
-                const unsigned int value;
-
-                unsigned int operator()() const noexcept;
-                bool isEmpty() const noexcept;
-
-                static Tag createEmpty() noexcept;
-                static Tag createNew() noexcept;
-
-            private:
-                Tag(unsigned int value) noexcept;
-        };
-
         class UiElement {
             protected:
                 Coord m_Position;
                 const Tag m_Tag;
+
+                static std::shared_ptr<Drawer> m_Drawer;
 
                 UiElement(const Coord& position, const Tag& tag) noexcept;
 
             public:
                 virtual void draw() const noexcept = 0;
                 Tag getTag() const noexcept;
+
+                inline static void setDrawer(const std::shared_ptr<Drawer>& drawer) {
+                    m_Drawer = drawer;
+                }
         };
 
         class Interactable {
@@ -139,8 +87,8 @@ class Display {
                 virtual bool handleInputSymbol(int c, const Coord& coord,
                         const std::function<bool(const Coord&)>& setCursor) noexcept = 0;
 
-                virtual void handleCursorOver() noexcept = 0;
-                virtual void handleCursorAway() noexcept = 0;
+                virtual void handleCursorOver() = 0;
+                virtual void handleCursorAway() = 0;
 
                 // Called when the current Window is changed or reset to signal
                 // the element that it needs to return to an idle state
@@ -198,8 +146,8 @@ class Display {
             public:
                 bool handleInputSymbol(int c, const Coord& coord,
                         const std::function<bool(const Coord&)>& setCursor) noexcept override;
-                void handleCursorOver() noexcept override;
-                void handleCursorAway() noexcept override;
+                void handleCursorOver() override;
+                void handleCursorAway() override;
                 void unfocus() noexcept override;
                 void draw() const noexcept override;
                 bool isUnder(const Coord& coord) const noexcept override;
@@ -209,7 +157,7 @@ class Display {
                       const Coord& dimensions,
                       const Tag& tag,
                       const std::string& value,
-                      const std::function<void()> feedback) noexcept;
+                      const std::function<void()> feedback);
 
                 Button& setStateColors(const StateColors& stateColors) noexcept;
                 /* Button& setIdleColor(const Color& color) noexcept; */
@@ -228,8 +176,8 @@ class Display {
             public:
                 bool handleInputSymbol(int c, const Coord& coord,
                         const std::function<bool(const Coord&)>& setCursor) noexcept override;
-                void handleCursorOver() noexcept override;
-                void handleCursorAway() noexcept override;
+                void handleCursorOver() override;
+                void handleCursorAway() override;
                 void unfocus() noexcept override;
                 void draw() const noexcept override;
                 bool isUnder(const Coord& coord) const noexcept override;
@@ -241,7 +189,7 @@ class Display {
                       const std::string& initialValue = "") noexcept;
         };
 
-        class Window {
+        class Window : public UiElement {
             private:
                 std::vector<Label> m_Labels;
                 std::vector<Button> m_Buttons;
@@ -251,16 +199,17 @@ class Display {
                 const std::pair<unsigned int, unsigned int> m_HeadRange;
                 const Color m_BorderColor;
 
-            public:
-                static const unsigned int headBottomY;
-                static const unsigned int borderStartY;
+            // public:
+            //     static const unsigned int headBottomY;
+            //     static const unsigned int borderStartY;
 
             private:
                 void drawSelf() const noexcept;
                 void drawUi() const noexcept;
 
             public:
-                Window(const Coord& dimensions,
+                Window(const Coord& position,
+                        const Coord& dimensions,
                         const std::pair<unsigned int, unsigned int>& headRange,
                         const Color& borderColor) noexcept;
                 void unfocus();
@@ -276,18 +225,20 @@ class Display {
                 std::optional<std::reference_wrapper<Interactable>>
                         getInteractableUnder(const Coord& coord) noexcept;
 
-                void draw() const noexcept;
+                void draw() const noexcept override;
         };
 
 
     private:
         unsigned int m_Height; // amount of rows
         unsigned int m_Width;  // amount of columns
+        static const unsigned int m_HeadHeight;
 
         // TODO: come up with a way to make it an std::array
         std::vector<Window> m_Windows;
         WindowType m_ActiveWindowType;
         Coord m_Cursor;
+        std::shared_ptr<Drawer> m_Drawer;
 
         std::vector<Button> m_WindowHeads;
 
@@ -296,11 +247,12 @@ class Display {
                 && (0 <= coord.x) && (coord.x <= static_cast<int>(m_Width));
         }
 
-        void init() noexcept;
         void cleanup() const noexcept;
 
     public:
-        Display(unsigned int height, unsigned int width) noexcept;
+        void init() noexcept;
+
+        Display(unsigned int height, unsigned int width, const std::shared_ptr<Drawer> drawer) noexcept;
         virtual ~Display();
 
         Coord getCursor() const noexcept;

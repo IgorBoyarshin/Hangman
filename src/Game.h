@@ -1,7 +1,10 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <ncurses.h>
 #include "Display.h"
+#include "Renderer.h"
+#include "Communicator.h"
 
 // For sleeping
 #include <chrono>
@@ -25,18 +28,24 @@ bool isUpperCase(int c);
 class Game {
     private:
         Display m_Display;
+        Communicator* m_Communicator;
 
-        void init();
         void initDisplay();
         void cleanup();
-        void loop();
         /* void quit(); */
         void handleInput();
         void processInputSymbol(int c); // TODO: Tests here
 
     public:
-        Game();
+        Game(Communicator* communicator);
         virtual ~Game();
+
+        void init();
+        void loop();
+
+        bool connect(const std::string& ip, const std::string port);
+        bool send(const std::string& message);
+        std::optional<std::string> receive();
 };
 
 

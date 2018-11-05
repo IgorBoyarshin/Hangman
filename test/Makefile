@@ -137,7 +137,7 @@ Igorek.o : $(SOURCE_DIR)/Igorek.cpp $(SOURCE_DIR)/Igorek.h $(GTEST_HEADERS)
 	@echo "Running 1"
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Igorek.cpp
 
-$(TEST_NAME).o : $(TEST_DIR)/$(TEST_NAME).cpp $(SOURCE_DIR)/Igorek.cpp $(SOURCE_DIR)/Igorek.h $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(GTEST_HEADERS)
+$(TEST_NAME).o : $(SOURCE_DIR)/Communicator.h $(TEST_DIR)/$(TEST_NAME).cpp $(SOURCE_DIR)/Igorek.cpp $(SOURCE_DIR)/Igorek.h $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(GTEST_HEADERS)
 	@echo "Running 2"
 	$(CXX) $(CPPFLAGS) -I$(SOURCE_DIR) $(CXXFLAGS) -c $(TEST_DIR)/$(TEST_NAME).cpp
 

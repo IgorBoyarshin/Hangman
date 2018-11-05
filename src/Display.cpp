@@ -2,84 +2,10 @@
 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Display::Coord
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Display::Coord::Coord() : Coord(0, 0) {}
-
-
-Display::Coord::Coord(int y, int x) : y(y), x(x) {}
-
-
-Display::Coord& Display::Coord::operator+=(const Display::Coord& coord) noexcept {
-    y += coord.y;
-    x += coord.x;
-    return *this;
-}
-
-Display::Coord Display::Coord::operator+(const Display::Coord& rhs) const noexcept {
-    return {y + rhs.y, x + rhs.x};
-}
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Display::Coord
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Display::Color::Color(unsigned int fg, unsigned int bg) noexcept : fg(fg), bg(bg) {};
-
-unsigned int Display::Color::BLACK = 0;
-unsigned int Display::Color::RED = 1;
-unsigned int Display::Color::GREEN = 2;
-unsigned int Display::Color::YELLOW = 3;
-unsigned int Display::Color::BLUE = 4;
-unsigned int Display::Color::PURPLE = 5;
-unsigned int Display::Color::CYAN = 6;
-unsigned int Display::Color::WHITE = 7;
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Display::ColorFactory
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-unsigned int Display::ColorFactory::m_NextAvailableIndex = 1;
-std::unordered_map<unsigned int, std::unordered_map<unsigned int, unsigned int>>
-    Display::ColorFactory::m_Colors{};
-
-// TODO: Test
-void Display::ColorFactory::setColor(const Color& color) noexcept {
-    const unsigned int fg = color.fg;
-    const unsigned int bg = color.bg;
-
-    if (m_Colors.find(fg) == m_Colors.end() ||
-            m_Colors[fg].find(bg) == m_Colors[fg].end()) {
-        // If either doesn't exist => no such pair yet => create
-        init_pair(m_NextAvailableIndex, fg, bg);
-        if (m_Colors.find(fg) == m_Colors.end()) m_Colors[fg] = {};
-        m_Colors[fg][bg] = m_NextAvailableIndex++;
-    }
-
-    attron(COLOR_PAIR(m_Colors[fg][bg]));
-}
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Display::Tag
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-const unsigned int Display::Tag::m_EmptyTag = 0;
-unsigned int Display::Tag::m_NextAvailableIndex = Display::Tag::m_EmptyTag + 1;
-
-Display::Tag::Tag(unsigned int value) noexcept : value(value) {}
-
-bool Display::Tag::isEmpty() const noexcept {
-    return value == m_EmptyTag;
-}
-
-unsigned int Display::Tag::operator()() const noexcept {
-    return value;
-}
-
-Display::Tag Display::Tag::createEmpty() noexcept {
-    return {m_EmptyTag};
-}
-
-Display::Tag Display::Tag::createNew() noexcept {
-    return {m_NextAvailableIndex++};
-}
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::UiElement
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+std::shared_ptr<Drawer> Display::UiElement::m_Drawer = nullptr;
+
 Display::UiElement::UiElement(const Coord& position, const Tag& tag) noexcept
     : m_Position(position), m_Tag(tag) {}
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -91,15 +17,15 @@ Display::Interactable::Interactable(const State& state) noexcept
 // Display::Label
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Display::Label::Label(
-        const Display::Coord& position,
+        const Coord& position,
         const Tag& tag,
         const std::string& initialValue/* = ""*/) noexcept
         : UiElement(position, tag), m_Value(initialValue) {}
 
 void Display::Label::draw() const noexcept {
-    ColorFactory::setColor({Color::WHITE, Color::BLACK});
-    move(m_Position.y, m_Position.x);
-    addstr(m_Value.c_str());
+    m_Drawer->setColor({Color::WHITE, Color::BLACK});
+    m_Drawer->_move(m_Position.y, m_Position.x);
+    m_Drawer->_addstr(m_Value);
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::StateColors
@@ -112,11 +38,11 @@ Display::StateColors::StateColors(const Color& idle,
 // Display::Button
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Display::Button::Button(
-        const Display::Coord& position,
-        const Display::Coord& dimensions,
+        const Coord& position,
+        const Coord& dimensions,
         const Tag& tag,
         const std::string& value,
-        const std::function<void()> feedback) noexcept
+        const std::function<void()> feedback)
         : UiElement(position, tag),
         Interactable(State::Idle),
         m_Dimensions(dimensions),
@@ -140,17 +66,17 @@ Display::StateColors Display::Button::getDefaultStateColors() noexcept {
 void Display::Button::setColorByState() const noexcept {
     switch (m_State) {
         case State::Idle:
-            ColorFactory::setColor(m_StateColors.idle);
+            m_Drawer->setColor(m_StateColors.idle);
             break;
         case State::Highlighted:
-            ColorFactory::setColor(m_StateColors.highlighted);
+            m_Drawer->setColor(m_StateColors.highlighted);
             break;
         case State::Focused:
-            ColorFactory::setColor(m_StateColors.focused);
+            m_Drawer->setColor(m_StateColors.focused);
             break;
         default:
             // TODO: Log.assert(false)
-            ColorFactory::setColor({0,0});
+            m_Drawer->setColor({0,0});
     }
 }
 
@@ -167,7 +93,7 @@ bool Display::Button::handleInputSymbol(int c, const Coord& coord,
             std::this_thread::sleep_for(std::chrono::milliseconds(140));
 
             // Discard any input characters that happened during our sleep
-            flushinp();
+            m_Drawer->_flushinp();
 
             m_State = State::Highlighted;
             draw();
@@ -182,7 +108,7 @@ bool Display::Button::handleInputSymbol(int c, const Coord& coord,
     return false;
 }
 
-void Display::Button::handleCursorOver() noexcept {
+void Display::Button::handleCursorOver() {
     if (!active()) return;
     if (m_State == State::Idle) {
         m_State = State::Highlighted;
@@ -190,7 +116,7 @@ void Display::Button::handleCursorOver() noexcept {
     }
 }
 
-void Display::Button::handleCursorAway() noexcept {
+void Display::Button::handleCursorAway() {
     if (m_State == State::Highlighted) {
         m_State = State::Idle;
         draw();
@@ -213,44 +139,46 @@ void Display::Button::draw() const noexcept {
 
     // Draw upper border
     if (m_Dimensions.y >= 2) {
-        move(m_Position.y, m_Position.x);
-        addch(ACS_ULCORNER);
-        for (int x = 1; x < m_Dimensions.x - 1; x++) addch(ACS_HLINE);
-        addch(ACS_URCORNER);
+        m_Drawer->_move(m_Position.y, m_Position.x);
+        m_Drawer->_addch(ACS_ULCORNER);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->_addch(ACS_HLINE);
+        m_Drawer->_addch(ACS_URCORNER);
     }
     // Draw void between upper border and text
     for (int y = 1; y < textRelativeCoord.y; y++) {
-        move(m_Position.y + y, m_Position.x);
-        addch(ACS_VLINE);
-        for (int x = 1; x < m_Dimensions.x - 1; x++) addch(' ');
-        addch(ACS_VLINE);
+        m_Drawer->_move(m_Position.y + y, m_Position.x);
+        m_Drawer->_addch(ACS_VLINE);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->_addch(' ');
+        m_Drawer->_addch(ACS_VLINE);
     }
     // Draw text
-    attron(A_BOLD);
-    move(m_Position.y + textRelativeCoord.y, m_Position.x);
-    addch(ACS_VLINE);
-    for (int x = 1; x < textRelativeCoord.x; x++) addch(' ');
-    addstr(m_Value.c_str());
+    m_Drawer->_attron(A_BOLD);
+    m_Drawer->_move(m_Position.y + textRelativeCoord.y, m_Position.x);
+    m_Drawer->_addch(ACS_VLINE);
+
+    // m_Drawer->_addch(vv);
+    for (int x = 1; x < textRelativeCoord.x; x++) m_Drawer->_addch(' ');
+    m_Drawer->_addstr(m_Value);
     for (int x = m_Position.x + textRelativeCoord.x + m_Value.size();
-            x < m_Position.x + m_Dimensions.x - 1; x++) addch(' ');
-    addch(ACS_VLINE);
-    attroff(A_BOLD);
+            x < m_Position.x + m_Dimensions.x - 1; x++) m_Drawer->_addch(' ');
+    m_Drawer->_addch(ACS_VLINE);
+    m_Drawer->_attroff(A_BOLD);
     // Draw void between text and bottom border
     for (int y = textRelativeCoord.y + 1; y < m_Dimensions.y - 1; y++) {
-        move(m_Position.y + y, m_Position.x);
-        addch(ACS_VLINE);
-        for (int x = 1; x < m_Dimensions.x - 1; x++) addch(' ');
-        addch(ACS_VLINE);
+        m_Drawer->_move(m_Position.y + y, m_Position.x);
+        m_Drawer->_addch(ACS_VLINE);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->_addch(' ');
+        m_Drawer->_addch(ACS_VLINE);
     }
     // Draw bottom border
     if (m_Dimensions.y >= 3) {
-        move(m_Position.y + m_Dimensions.y - 1, m_Position.x);
-        addch(ACS_LLCORNER);
-        for (int x = 1; x < m_Dimensions.x - 1; x++) addch(ACS_HLINE);
-        addch(ACS_LRCORNER);
+        m_Drawer->_move(m_Position.y + m_Dimensions.y - 1, m_Position.x);
+        m_Drawer->_addch(ACS_LLCORNER);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->_addch(ACS_HLINE);
+        m_Drawer->_addch(ACS_LRCORNER);
     }
 
-    refresh();
+    m_Drawer->_refresh();
 }
 
 // TODO: test
@@ -262,7 +190,7 @@ bool Display::Button::isUnder(const Coord& coord) const noexcept {
 // Display::Field
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Display::Field::Field(
-        const Display::Coord& position,
+        const Coord& position,
         const Tag& tag,
         unsigned int width,
         const std::string& initialValue/* = ""*/) noexcept
@@ -274,17 +202,17 @@ Display::Field::Field(
 void Display::Field::setColorByState() const noexcept {
     switch (m_State) {
         case State::Idle:
-            ColorFactory::setColor({Color::WHITE, Color::BLACK});
+            m_Drawer->setColor({Color::WHITE, Color::BLACK});
             break;
         case State::Highlighted:
-            ColorFactory::setColor({Color::BLACK, Color::YELLOW});
+            m_Drawer->setColor({Color::BLACK, Color::YELLOW});
             break;
         case State::Focused:
-            ColorFactory::setColor({Color::WHITE, Color::BLUE});
+            m_Drawer->setColor({Color::WHITE, Color::BLUE});
             break;
         default:
             // TODO: Log.assert(false)
-            ColorFactory::setColor({0,0});
+            m_Drawer->setColor({0,0});
     }
 }
 
@@ -350,14 +278,14 @@ bool Display::Field::handleInputSymbol(int c, const Coord& coord,
     return false;
 }
 
-void Display::Field::handleCursorOver() noexcept {
+void Display::Field::handleCursorOver() {
     if (m_State == State::Idle) {
         m_State = State::Highlighted;
         draw();
     }
 }
 
-void Display::Field::handleCursorAway() noexcept {
+void Display::Field::handleCursorAway() {
     if (m_State == State::Highlighted) {
         m_State = State::Idle;
         draw();
@@ -372,15 +300,15 @@ void Display::Field::unfocus() noexcept {
 void Display::Field::draw() const noexcept {
     setColorByState();
 
-    move(m_Position.y, m_Position.x);
-    attron(A_UNDERLINE);
+    m_Drawer->_move(m_Position.y, m_Position.x);
+    m_Drawer->_attron(A_UNDERLINE);
     for (unsigned int x = 0; x < m_Width; x++) {
         const char c = (x < m_Value.size()) ? m_Value[x] : ' ';
-        addch(c);
+        m_Drawer->_addch(c);
     }
-    attroff(A_UNDERLINE);
+    m_Drawer->_attroff(A_UNDERLINE);
 
-    refresh();
+    m_Drawer->_refresh();
 }
 
 // TODO: test
@@ -401,14 +329,16 @@ Display::WindowColors::WindowColors(const StateColors& headColors,
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::Window
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-const unsigned int Display::Window::headBottomY = 2;
-const unsigned int Display::Window::borderStartY = headBottomY + 1;
-
+/* const unsigned int Display::Window::headBottomY = 2; */
+/* const unsigned int Display::Window::borderStartY = headBottomY + 1; */
+/*  */
 Display::Window::Window(
+        const Coord& position,
         const Coord& dimensions,
         const std::pair<unsigned int, unsigned int>& headRange,
         const Color& borderColor) noexcept
-    : m_Dimensions(dimensions), m_HeadRange(headRange), m_BorderColor(borderColor) {}
+    : UiElement(position, Tag::createEmpty()), m_Dimensions(dimensions),
+    m_HeadRange(headRange), m_BorderColor(borderColor) {}
 
 void Display::Window::unfocus() {
     // TODO: complete for others
@@ -485,27 +415,31 @@ std::optional<std::reference_wrapper<Display::Interactable>>
 }
 
 void Display::Window::drawSelf() const noexcept {
-    ColorFactory::setColor(m_BorderColor);
+    m_Drawer->setColor(m_BorderColor);
 
     // Left
     for (int y = 0; y < m_Dimensions.y; y++) {
-        move(borderStartY + y, 0);
-        addch(' ');
+        /* move(borderStartY + y, 0); */
+        m_Drawer->_move(m_Position.y + y, 0);
+        m_Drawer->_addch(' ');
     }
     // Bottom
-    move(borderStartY + m_Dimensions.y - 1, 0);
+    // move(borderStartY + m_Dimensions.y - 1, 0);
+    m_Drawer->_move(m_Position.y + m_Dimensions.y - 1, 0);
     for (int x = 0; x < m_Dimensions.x; x++) {
-        addch(' ');
+        m_Drawer->_addch(' ');
     }
     // Right
     for (int y = 0; y < m_Dimensions.y; y++) {
-        move(borderStartY + y, m_Dimensions.x - 1);
-        addch(' ');
+        // move(borderStartY + y, m_Dimensions.x - 1);
+        m_Drawer->_move(m_Position.y + y, m_Dimensions.x - 1);
+        m_Drawer->_addch(' ');
     }
     // Top
-    move(borderStartY, 0);
+    /* move(borderStartY, 0); */
+    m_Drawer->_move(m_Position.y, 0);
     for (int x = 0; x < m_Dimensions.x; x++) {
-        addch(' ');
+        m_Drawer->_addch(' ');
     }
 }
 
@@ -522,9 +456,15 @@ void Display::Window::draw() const noexcept {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Display::Display(unsigned int height, unsigned int width) noexcept
-    : m_Height(height), m_Width(width),
-    m_ActiveWindowType(WindowType::Game), m_Cursor({Window::borderStartY + 1, 1}) {
+const unsigned int Display::m_HeadHeight = 3;
+
+
+Display::Display(unsigned int height, unsigned int width, std::shared_ptr<Drawer> drawer) noexcept
+        : m_Height(height), m_Width(width),
+        m_ActiveWindowType(WindowType::Game), m_Cursor({m_HeadHeight + 1, 1}),
+        m_Drawer(drawer) {
+    UiElement::setDrawer(drawer);
+
     const auto getWindowHeadRange = [width = m_Width](unsigned int order) noexcept {
         const unsigned int windowsAmount = toInt(WindowType::Count);
         const unsigned int windowWidth = (width / windowsAmount);
@@ -542,7 +482,11 @@ Display::Display(unsigned int height, unsigned int width) noexcept
 
         m_Windows.emplace_back(
             Coord{
-                static_cast<int>(m_Height - Window::borderStartY),
+                m_HeadHeight,
+                0
+            },
+            Coord{
+                static_cast<int>(m_Height - m_HeadHeight),
                 static_cast<int>(m_Width)
             }, // TODO: move into Game
             windowHeadRange,
@@ -551,18 +495,16 @@ Display::Display(unsigned int height, unsigned int width) noexcept
         m_WindowHeads.push_back(Button{
             Coord{0, static_cast<int>(windowHeadRange.first)},
             Coord{
-                Window::borderStartY,
+                m_HeadHeight,
                 static_cast<int>(windowHeadRange.second - windowHeadRange.first + 1)
             },
-            Display::Tag::createEmpty(),
+            Tag::createEmpty(),
             toString(windowType),
             [windowType, this](){
                 setActiveWindow(windowType);
             }
         }.setStateColors(headColors));
     }
-
-    setActiveWindow(WindowType::Game);
 
     init();
 }
@@ -572,19 +514,22 @@ Display::~Display() {
 }
 
 void Display::init() noexcept {
-    initscr();
-    noecho();
-    start_color();
-    keypad(stdscr, TRUE); // enable extended keys
+    m_Drawer->_initscr();
+    m_Drawer->_noecho();
+    m_Drawer->_start_color();
+    m_Drawer->_keypad(); // enable extended keys
+    /* m_Drawer->_keypad(stdscr, TRUE); // enable extended keys */
     // getmaxyx(stdscr, m_Height, m_Width);
+
+    setActiveWindow(WindowType::Game);
 }
 
 
 void Display::cleanup() const noexcept {
-    endwin();
+    m_Drawer->_endwin();
 }
 
-Display::Coord Display::getCursor() const noexcept {
+Coord Display::getCursor() const noexcept {
     return m_Cursor;
 }
 
@@ -605,7 +550,7 @@ void Display::setActiveWindow(WindowType windowType) {
     m_WindowHeads[toInt(m_ActiveWindowType)].setPassive();
     /* setCursor({0, 0}); // default cursor position in new window */
     // setCursor({Window::borderStartY + 1, 1});
-    erase();
+    m_Drawer->_erase();
 }
 
 Display::Window& Display::populateWindow(WindowType windowType) {
@@ -619,8 +564,8 @@ bool Display::shiftCursor(Coord shift) noexcept {
 bool Display::setCursor(const Coord& coord) noexcept {
     if (inbounds(coord)) {
         m_Cursor = coord;
-        move(m_Cursor.y, m_Cursor.x);
-        refresh();
+        m_Drawer->_move(m_Cursor.y, m_Cursor.x);
+        m_Drawer->_refresh();
         return true;
     }
     return false;
@@ -632,7 +577,7 @@ void Display::draw() const noexcept {
 
     // Must come last
     drawCursor();
-    refresh();
+    m_Drawer->_refresh();
 }
 
 void Display::drawWindows() const noexcept {
@@ -641,12 +586,12 @@ void Display::drawWindows() const noexcept {
     // Draw actual current window
     m_Windows[toInt(m_ActiveWindowType)].draw();
 
-    refresh();
+    m_Drawer->_refresh();
 }
 
 void Display::drawCursor() const noexcept {
-    move(m_Cursor.y, m_Cursor.x);
-    refresh();
+    m_Drawer->_move(m_Cursor.y, m_Cursor.x);
+    m_Drawer->_refresh();
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Other

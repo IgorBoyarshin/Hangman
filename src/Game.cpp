@@ -1,10 +1,8 @@
 #include "Game.h"
 
 
-Game::Game() : m_Display({20, 60}) {
-    init();
-    loop();
-}
+Game::Game(Communicator* communicator)
+    : m_Display({20, 60, std::make_shared<Renderer>(20, 60)}), m_Communicator(communicator) {}
 
 Game::~Game() {
     cleanup();
@@ -34,24 +32,24 @@ void Game::init() {
 
 void Game::initDisplay() {
     m_Display.populateWindow(WindowType::Game)
-        .addLabel({{5,2}, Display::Tag::createNew(), "Inside Game"})
-        .addButton({{6,1}, {5, 12}, Display::Tag::createNew(), "Press Me", [this](){
+        .addLabel({{5,2}, Tag::createNew(), "Inside Game"})
+        .addButton({{6,1}, {5, 12}, Tag::createNew(), "Press Me", [this](){
                 static int row = 10;
                 if (row >= 13) return; else row++;
                 m_Display.populateWindow(WindowType::Game)
-                    .addLabel({{row,3}, Display::Tag::createNew(), "New text " + std::to_string(row - 10)});
+                    .addLabel({{row,3}, Tag::createNew(), "New text " + std::to_string(row - 10)});
                 }});
         // .addField({{9,3}, Display::Tag::createNew(), 8, "abc"});
 
     m_Display.populateWindow(WindowType::Settings)
-        .addLabel({{5,6}, Display::Tag::createNew(), "Inside Settings"})
-        .addButton({{6,5}, {3, 10}, Display::Tag::createNew(), "Press Me", [this](){
+        .addLabel({{5,6}, Tag::createNew(), "Inside Settings"})
+        .addButton({{6,5}, {3, 10}, Tag::createNew(), "Press Me", [this](){
                 static int row = 10;
                 if (row >= 13) return; else row++;
                 m_Display.populateWindow(WindowType::Settings)
-                    .addLabel({{row,7}, Display::Tag::createNew(), "New text " + std::to_string(row - 10)});
+                    .addLabel({{row,7}, Tag::createNew(), "New text " + std::to_string(row - 10)});
                 }})
-        .addField({{9,7}, Display::Tag::createNew(), 8, "abc"});
+        .addField({{9,7}, Tag::createNew(), 8, "abc"});
 
     m_Display.setActiveWindow(WindowType::Game);
 }
@@ -104,7 +102,7 @@ void Game::processInputSymbol(int c) {
 
     // Input hasn't been handled => needs our attention
     if (isMovementChar(c)) {
-        const Display::Coord shift = [c]() -> Display::Coord {
+        const Coord shift = [c]() -> Coord {
             if (c == 'j' || c == KEY_DOWN) {
                 return {+1, 0};
             } else if (c == 'k' || c == KEY_UP) {
@@ -138,4 +136,21 @@ void Game::processInputSymbol(int c) {
             }
         }
     }
+}
+
+bool Game::connect(const std::string& ip, const std::string port) {
+    if (!m_Communicator) return false;
+    return m_Communicator->establishConnection(ip, port);
+}
+
+bool Game::send(const std::string& message) {
+    if (!m_Communicator) return false;
+    if (!m_Communicator->connectionEstablished()) return false;
+    return m_Communicator->sendMessage(message);
+}
+
+std::optional<std::string> Game::receive() {
+    if (!m_Communicator) return std::nullopt;
+    if (!m_Communicator->connectionEstablished()) return std::nullopt;
+    return {m_Communicator->receiveMessage()};
 }
