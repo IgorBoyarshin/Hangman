@@ -144,7 +144,7 @@ $(TEST_NAME).o : $(SOURCE_DIR)/Drawer.h $(SOURCE_DIR)/Communicator.h $(TEST_DIR)
 	$(CXX) $(CPPFLAGS) -I$(SOURCE_DIR) $(CXXFLAGS) -c $(TEST_DIR)/$(TEST_NAME).cpp
 
 $(TEST_NAME) : Renderer.o Display.o Game.o Igorek.o utils.o $(TEST_NAME).o gtest.a gmock.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread -lncurses $^ -o $@ -L.
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@ -L. -lncurses
 
 # ./$(TEST_NAME)
 
