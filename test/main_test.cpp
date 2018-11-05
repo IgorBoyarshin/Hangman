@@ -16,6 +16,36 @@ using ::testing::_;
 using ::testing::AtLeast;
 
 
+class MockCommunicator : public Communicator {
+    public:
+        MOCK_METHOD0(receiveMessage, std::optional<std::string>());
+        MOCK_METHOD1(sendMessage, bool(const std::string&));
+        MOCK_METHOD2(establishConnection, bool(const std::string&, const std::string&));
+        MOCK_METHOD0(connectionEstablished, bool());
+};
+
+class MockDrawer : public Drawer {
+    public:
+        MOCK_METHOD2(_move, void(unsigned int, unsigned int));
+        MOCK_METHOD1(_addstr, void(const std::string&));
+        MOCK_METHOD0(_flushinp, void());
+        MOCK_METHOD1(_addch, void(int));
+        MOCK_METHOD1(_attron, void(int));
+        MOCK_METHOD1(_attroff, void(int));
+        MOCK_METHOD0(_refresh, void());
+        MOCK_METHOD0(_endwin, void());
+        MOCK_METHOD0(_keypad, void());
+        MOCK_METHOD0(_initscr, void());
+        MOCK_METHOD0(_noecho, void());
+        MOCK_METHOD0(_start_color, void());
+        MOCK_METHOD0(_erase, void());
+
+        MOCK_METHOD1(setColor, void(const Color&));
+        MOCK_METHOD0(cleanup, void());
+};
+
+
+
 TEST (CharDisplayTest, CheckIsLetter) {
     ASSERT_TRUE(isLetter('m'));
     ASSERT_FALSE(isLetter('&'));
@@ -72,6 +102,27 @@ TEST (CharGameTest, CheckIsUpperCase) {
     ASSERT_FALSE(isUpperCase('k'));
     ASSERT_FALSE(isUpperCase(KEY_UP));
     ASSERT_TRUE(isUpperCase('K'));
+}
+
+// MOCKS HERE
+
+TEST(MockTests, DrawerTest) {
+    MockDrawer mockDrawer;
+    MockCommunicator mockCommunicator;
+
+    EXPECT_CALL(mockDrawer, _initscr())
+        .Times(1);
+    EXPECT_CALL(mockDrawer, _noecho())
+        .Times(1);
+    EXPECT_CALL(mockDrawer, _keypad())
+        .Times(1);
+    EXPECT_CALL(mockDrawer, _start_color())
+        .Times(1);
+    EXPECT_CALL(mockDrawer, _erase())
+        .Times(AtLeast(1));
+
+    Game game(&mockDrawer, &mockCommunicator);
+    game.init();
 }
 
 

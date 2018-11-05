@@ -79,7 +79,6 @@ GMOCK_HEADERS = $(GMOCK_DIR)/include/gmock/*.h \
 # House-keeping build targets.
 all : $(TEST_NAME)
 	@echo "Running all"
-	./$(TEST_NAME)
 
 clean :
 	rm -rf $(TEST_NAME) gtest.a gtest_main.a *.o gmock.a
