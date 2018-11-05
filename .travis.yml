@@ -10,11 +10,15 @@ before_install:
 install:
     - echo ":> Running install..."
 script:
-    - echo ":> Running script..."
+    - echo ":> Running tests..."
     - export CC=gcc-7
     - export CXX=g++-7 
     - chmod +x runTests.zsh
     - ./runTests.zsh
+    - echo ":> Running linter..."
+    - chmod +x runLinter.zsh
+    - ./runLinter.zsh
+    - echo ":> Ignoring output value for now"
 
 # - cd src
 # - make
