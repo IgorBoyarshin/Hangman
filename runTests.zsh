@@ -4,7 +4,7 @@ cd test
 
 make
 
-./gtest
+./main_test
 
 # rm -f *.o
 #rm -f *.gch

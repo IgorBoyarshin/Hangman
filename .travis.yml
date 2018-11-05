@@ -14,9 +14,12 @@ script:
     - export CC=gcc-7
     - export CXX=g++-7 
     - env
-    - cd src
-    - make
-    - ./main
+    - chmod +x runTests.zsh
+    - ./runTests.zsh
+
+# - cd src
+# - make
+# - ./main
 
 addons:
     apt:
