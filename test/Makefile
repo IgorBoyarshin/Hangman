@@ -23,7 +23,7 @@ GMOCK_DIR = ../lib/googletest/googlemock
 CPPFLAGS += -isystem $(GTEST_DIR)/include -isystem $(GMOCK_DIR)/include
 
 # Flags passed to the C++ compiler.
-CXXFLAGS += -g -std=gnu++11 -Wall -Wextra -pthread
+CXXFLAGS += -g -std=gnu++17 -Wall -Wextra -pthread
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
@@ -125,17 +125,25 @@ gmock.a : gmock-all.o
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
+Game.o : $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(GTEST_HEADERS)
+	@echo "Running 1"
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Game.cpp
+
+Display.o : $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(GTEST_HEADERS)
+	@echo "Running 1"
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Display.cpp
+
 Igorek.o : $(SOURCE_DIR)/Igorek.cpp $(SOURCE_DIR)/Igorek.h $(GTEST_HEADERS)
 	@echo "Running 1"
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/test.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Igorek.cpp
 
-$(TEST_NAME).o : $(TEST_DIR)/$(TEST_NAME).cpp $(SOURCE_DIR)/Igorek.cpp $(SOURCE_DIR)/Igorek.h $(GTEST_HEADERS)
+$(TEST_NAME).o : $(TEST_DIR)/$(TEST_NAME).cpp $(SOURCE_DIR)/Igorek.cpp $(SOURCE_DIR)/Igorek.h $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(GTEST_HEADERS)
 	@echo "Running 2"
 	$(CXX) $(CPPFLAGS) -I$(SOURCE_DIR) $(CXXFLAGS) -c $(TEST_DIR)/$(TEST_NAME).cpp
 
-$(TEST_NAME) : test.o $(TEST_NAME).o gtest.a gmock.a
+$(TEST_NAME) : Display.o Game.o Igorek.o $(TEST_NAME).o gtest.a gmock.a
 	@echo "Running 3"
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@ -L.
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread -lncurses $^ -o $@ -L.
 
 # ./$(TEST_NAME)
 

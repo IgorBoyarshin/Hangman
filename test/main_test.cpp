@@ -6,6 +6,8 @@
 /* #include "../lib/googletest/googlemock/include/gmock/gmock.h" */
 
 #include "../src/Igorek.h"
+#include "../src/Game.h"
+#include "../src/Display.h"
 
 
 using ::testing::Return;
@@ -36,6 +38,10 @@ class MockIgorek : public Igorek {
 TEST (SumTest, PositiveNums) {
     EXPECT_EQ (8, sum(3, 5));
     EXPECT_NE (4, sum(0, 3));
+
+    Display::Button button{{6,1}, {5, 12}, Display::Tag::createNew(), "Press Me", [this](){}};
+    EXPECT_TRUE(button.isUnder({7,2}));
+
 
     MockIgorek mockIgorek;
     EXPECT_CALL(mockIgorek, mul(_, 3))
