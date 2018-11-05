@@ -522,7 +522,8 @@ void Display::Window::draw() const noexcept {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Display::Display() noexcept : m_Height(20), m_Width(60),
+Display::Display(unsigned int height, unsigned int width) noexcept
+    : m_Height(height), m_Width(width),
     m_ActiveWindowType(WindowType::Game), m_Cursor({Window::borderStartY + 1, 1}) {
     const auto getWindowHeadRange = [width = m_Width](unsigned int order) noexcept {
         const unsigned int windowsAmount = toInt(WindowType::Count);

@@ -1,7 +1,7 @@
 #include "Game.h"
 
 
-Game::Game() : m_Display({}) {
+Game::Game() : m_Display({20, 60}) {
     init();
     loop();
 }

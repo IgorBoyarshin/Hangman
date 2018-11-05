@@ -300,7 +300,7 @@ class Display {
         void cleanup() const noexcept;
 
     public:
-        Display() noexcept;
+        Display(unsigned int height, unsigned int width) noexcept;
         virtual ~Display();
 
         Coord getCursor() const noexcept;
