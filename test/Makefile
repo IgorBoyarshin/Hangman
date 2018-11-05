@@ -15,69 +15,138 @@
 # Points to the root of Google Test, relative to where this file is.
 # Remember to tweak this if you move this file.
 GTEST_DIR = ../lib/googletest/googletest
-
-# Where to find user code.
-# USER_DIR = ../samples
+GMOCK_DIR = ../lib/googletest/googlemock
 
 # Flags passed to the preprocessor.
 # Set Google Test's header directory as a system directory, such that
 # the compiler doesn't generate warnings in Google Test headers.
-CPPFLAGS += -isystem $(GTEST_DIR)/include
+CPPFLAGS += -isystem $(GTEST_DIR)/include -isystem $(GMOCK_DIR)/include
 
 # Flags passed to the C++ compiler.
-CXXFLAGS += -g -Wall -Wextra -pthread -std=c++17
+CXXFLAGS += -g -std=gnu++11 -Wall -Wextra -pthread
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-TESTS = gtest
+TEST_NAME = main_test
 
 SOURCE_DIR = ../src
-TEST_DIR = ../test
+LIB_DIR = ../lib
+TEST_DIR = .
+
+# # Setup static library name.
+# KERNEL_NAME = $(shell uname -s)
+# MACHINE_NAME = $(shell uname -m)
+
+# ifeq ($(KERNEL_NAME),Linux)
+# ifeq ($(MACHINE_NAME),i386)
+# LIB_ENCODE=encode_linux_i386
+# endif
+# ifeq ($(MACHINE_NAME),x86_64)
+# LIB_ENCODE=encode_linux_x86_64
+# endif
+# endif
+#
+# ifneq (,$(findstring CYGWIN,$(KERNEL_NAME)))
+# ifeq ($(MACHINE_NAME),x86_64)
+# LIB_ENCODE=encode_cygwin_x86_64
+# endif
+# ifeq ($(MACHINE_NAME),i686)
+# LIB_ENCODE=encode_cygwin_i686
+# endif
+# endif
+#
+# ifneq (,$(findstring MINGW,$(KERNEL_NAME)))
+# endif
+#
+# ifneq (,$(findstring Darwin,$(KERNEL_NAME)))
+# ifeq ($(MACHINE_NAME),x86_64)
+# LIB_ENCODE=encode_mac_x86_64
+# endif
+# endif
+#
+# ifeq "$(shell echo $(LIB_ENCODE))" ""
+# $(error Static library for $(KERNEL_NAME) $(MACHINE_NAME) platform is not shipped.)
+# endif
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
 GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
                 $(GTEST_DIR)/include/gtest/internal/*.h
 
+GMOCK_HEADERS = $(GMOCK_DIR)/include/gmock/*.h \
+                $(GMOCK_DIR)/include/gmock/internal/*.h
+
 # House-keeping build targets.
-all : $(TESTS)
+all : $(TEST_NAME)
+	@echo "Running all"
+	./$(TEST_NAME)
 
 clean :
-	rm -f $(TESTS) gtest.a gtest_main.a *.o
+	rm -rf $(TEST_NAME) gtest.a gtest_main.a *.o gmock.a
 
 # Builds gtest.a and gtest_main.a.
 
 # Usually you shouldn't tweak such internal variables, indicated by a
 # trailing _.
-GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS)
+# GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS)
+GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h
+GMOCK_SRCS_ = $(GMOCK_DIR)/src/*.cc
+# GMOCK_SRCS_ = $(GMOCK_DIR)/src/*.cc $(GMOCK_DIR)/src/*.h
 
 # For simplicity and to avoid depending on Google Test's
 # implementation details, the dependencies specified below are
 # conservative and not optimized.  This is fine as Google Test
 # compiles fast and for ordinary users its source rarely changes.
-gtest-all.o : $(GTEST_SRCS_)
-	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -c \
-            $(GTEST_DIR)/src/gtest-all.cc
+gtest-all.o : $(GTEST_SRCS_) $(GTEST_HEADERS)
+	@echo "Running oo 1"
+	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -c $(GTEST_DIR)/src/gtest-all.cc
 
-gtest_main.o : $(GTEST_SRCS_)
-	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -c \
-            $(GTEST_DIR)/src/gtest_main.cc
+gmock-all.o : $(GMOCK_SRCS_) $(GTEST_HEADERS) gtest-all.o
+	@echo "Running oo 2"
+	$(CXX) $(CPPFLAGS) -I$(GMOCK_DIR) -I$(GTEST_DIR) $(CXXFLAGS) -c $(GMOCK_DIR)/src/gmock-all.cc
+
+# gtest_main.o : $(GTEST_SRCS_)
+# 	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -c \
+#             $(GTEST_DIR)/src/gtest_main.cc
 
 gtest.a : gtest-all.o
+	@echo "Running aa 1"
 	$(AR) $(ARFLAGS) $@ $^
 
-gtest_main.a : gtest-all.o gtest_main.o
+gmock.a : gmock-all.o
+	@echo "Running aa 2"
 	$(AR) $(ARFLAGS) $@ $^
+
+# gtest_main.a : gtest-all.o gtest_main.o
+# 	$(AR) $(ARFLAGS) $@ $^
+
 
 # Builds a sample test.  A test should link with either gtest.a or
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
-test.o : $(SOURCE_DIR)/test.cpp $(SOURCE_DIR)/test.h $(GTEST_HEADERS)
+Igorek.o : $(SOURCE_DIR)/Igorek.cpp $(SOURCE_DIR)/Igorek.h $(GTEST_HEADERS)
+	@echo "Running 1"
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/test.cpp
 
-gtest.o : $(TEST_DIR)/gtest.cpp $(SOURCE_DIR)/test.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/gtest.cpp
+$(TEST_NAME).o : $(TEST_DIR)/$(TEST_NAME).cpp $(SOURCE_DIR)/Igorek.cpp $(SOURCE_DIR)/Igorek.h $(GTEST_HEADERS)
+	@echo "Running 2"
+	$(CXX) $(CPPFLAGS) -I$(SOURCE_DIR) $(CXXFLAGS) -c $(TEST_DIR)/$(TEST_NAME).cpp
 
-gtest : test.o gtest.o gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+$(TEST_NAME) : test.o $(TEST_NAME).o gtest.a gmock.a
+	@echo "Running 3"
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@ -L.
+
+# ./$(TEST_NAME)
+
+
+# coder.o : $(SOURCE_DIR)/coder.cpp $(SOURCE_DIR)/coder.h $(GTEST_HEADERS)
+# 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/coder.cpp
+
+# coder_gTest.o : $(TEST_DIR)/coder_gTest.cpp $(SOURCE_DIR)/coder.h $(GTEST_HEADERS)
+# 	$(CXX) $(CPPFLAGS) -I$(SOURCE_DIR) $(CXXFLAGS) -c $(TEST_DIR)/coder_gTest.cpp
+
+# coder_gTest : coder.o coder_gTest.o gtest_main.a
+# 	@echo "Building $@ for $(KERNEL_NAME) $(MACHINE_NAME)"
+# 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@ -L. -L$(LIB_DIR) -l$(LIB_ENCODE)
+# 	./$(TESTS)
