@@ -45,6 +45,36 @@ class MockDrawer : public Drawer {
 };
 
 
+TEST(MockTest2, CommunicatorFunctions) {
+    // MockDrawer mockDrawer;
+    Renderer renderer(10,20);
+    MockCommunicator mockCommunicator;
+
+    EXPECT_CALL(mockCommunicator, connectionEstablished())
+        .Times(AtLeast(4))
+        .WillOnce(Return(false))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(mockCommunicator, establishConnection(_, _))
+        .WillOnce(Return(true))
+        .WillOnce(Return(false));
+    EXPECT_CALL(mockCommunicator, receiveMessage())
+        .Times(AtLeast(1))
+        .WillOnce(Return(std::optional<std::string>{std::string{"report"}}));
+    EXPECT_CALL(mockCommunicator, sendMessage(_))
+        .WillOnce(Return(true))
+        .WillRepeatedly(Return(false)); // Emulate internet connection loss
+
+    Game game(&renderer, &mockCommunicator);
+
+    EXPECT_FALSE(game.send("message without established connection"));
+    EXPECT_TRUE(game.connect("192.162.0.1", "1234"));
+    EXPECT_TRUE(game.send("message with connection established"));
+    EXPECT_FALSE(game.send("won't transmit"));
+    EXPECT_TRUE(game.receive());
+    EXPECT_FALSE(game.connect("0.162.0.1", "1234"));
+}
+
+
 TEST (ButtonTest, IsUnderTest) {
     Display::Button button{{6,1}, {5, 12}, Tag::createNew(), "Press Me", [](){}};
     ASSERT_TRUE(button.isUnder({7,2}));
