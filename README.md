@@ -19,5 +19,5 @@ Open up your terminal and type in the following commands:
 ```sh
 $ git clone https://github.com/IgorBoyarshin/Hangman
 $ cd Hangman
-$ make
+$ ./run.zsh
 ```
