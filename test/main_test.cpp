@@ -45,6 +45,33 @@ class MockDrawer : public Drawer {
 };
 
 
+TEST (ButtonTest, IsUnderTest) {
+    Display::Button button{{6,1}, {5, 12}, Tag::createNew(), "Press Me", [](){}};
+    ASSERT_TRUE(button.isUnder({7,2}));
+    ASSERT_FALSE(button.isUnder({13,20}));
+}
+
+
+TEST (CursorTest, InBoundsTest) {
+    Display display{60, 100, new Renderer(10,10)};
+
+    ASSERT_TRUE(display.setCursor({30, 30}));
+    ASSERT_TRUE(display.setCursor({60, 99}));
+    ASSERT_FALSE(display.setCursor({30, 101}));
+}
+
+
+TEST (WindowTest, IsInteructableTest) {
+    Display::Window window{{0,0}, {60, 100}, {20, 30}, {Color::CYAN, Color::BLACK}};
+    window.addLabel({{5, 2}, Tag::createNew(), "Test Window"})
+        .addButton({{6, 1}, {5, 12}, Tag::createNew(), "Press Me", [](){}})
+        .addField({{12, 1}, Tag::createNew(), 20, "Some field"});
+
+    ASSERT_TRUE(window.getInteractableUnder({8, 5}));
+    ASSERT_TRUE(window.getInteractableUnder({12, 19}));
+    ASSERT_FALSE(window.getInteractableUnder({5, 3}));
+}
+
 
 TEST (CharDisplayTest, CheckIsLetter) {
     ASSERT_TRUE(isLetter('m'));
