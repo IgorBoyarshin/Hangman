@@ -1,0 +1,45 @@
+sudo: false
+language: cpp
+os:
+    - linux
+compiler:
+    - g++
+before_install:
+    - echo ":> Running before_install..."
+    # - if [ 5 -ge 2 ]; then  echo "5 > 2"; fi
+install:
+    - echo ":> Running install..."
+script:
+    - echo ":> Running tests..."
+    - export CC=gcc-7
+    - export CXX=g++-7 
+    - chmod +x runTests.zsh
+    - ./runTests.zsh
+    - echo ":> Running linter..."
+    - chmod +x runLinter.zsh
+    - ./runLinter.zsh
+    - echo ":> Ignoring output value for now"
+
+# - cd src
+# - make
+# - ./main
+
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+        packages:
+            - g++-7
+            - libncurses5-dev
+            - libncursesw5-dev
+            # - ncurses-dev
+            # - libncurses-dev
+# env:
+#     - CC=gcc-7
+#     - CXX=g++-7
+branches:
+    only:
+        - dev
+        - master
+notifications:
+  email: false

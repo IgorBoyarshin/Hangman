@@ -1,1 +1,9 @@
 a.out
+*.o
+*.gch
+.*.gch
+version.h
+main
+*.png
+test/main_test
+*.a
