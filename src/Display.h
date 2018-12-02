@@ -239,6 +239,7 @@ class Display {
         /* void drawBorder() const noexcept; */
         void drawWindows() const noexcept;
         void drawCursor() const noexcept;
+        void drawGallows() const noexcept;
     private:
         bool inbounds(const Coord& coord) const noexcept;
         void cleanup() const noexcept;

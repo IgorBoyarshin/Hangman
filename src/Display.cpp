@@ -573,12 +573,27 @@ void Display::drawWindows() const noexcept {
     // Draw actual current window
     m_Windows[toInt(m_ActiveWindowType)].draw();
 
+    drawGallows();
+
     m_Drawer->_refresh();
 }
 
 void Display::drawCursor() const noexcept {
     m_Drawer->_move(m_Cursor.y, m_Cursor.x);
     m_Drawer->_refresh();
+}
+
+void Display::drawGallows() const noexcept {
+    m_Drawer->setColor({Color::RED, Color::GREEN});
+    m_Drawer->_attron(A_BOLD);
+    m_Drawer->_move(10, 20);
+    m_Drawer->_addch(ACS_URCORNER);
+    m_Drawer->_addch('M');
+    m_Drawer->_addch('a');
+    m_Drawer->_addch('S');
+    m_Drawer->_addch('i');
+    m_Drawer->_addch('K');
+    m_Drawer->_addch(ACS_URCORNER);
 }
 
 bool Display::inbounds(const Coord& coord) const noexcept {
