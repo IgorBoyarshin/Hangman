@@ -1,6 +1,6 @@
 // Unit tests for classes of the Hangman project.
 
-#include "gtest/gtest.h"
+/* #include "gtest/gtest.h" */
 #include "gmock/gmock.h"
 
 #include "../src/utils.h"
