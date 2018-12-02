@@ -16,8 +16,6 @@ Log::Log(OutputLevel outputLevel) :
 
 
 Log::~Log() {
-    Log::info() << ":> Calling Log Destructor";
-    Log::info() << "" << std::endl;
     m_File.close();
 }
 
