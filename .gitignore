@@ -7,3 +7,4 @@ main
 *.png
 test/main_test
 *.a
+*.log

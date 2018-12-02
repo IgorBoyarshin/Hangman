@@ -8,8 +8,17 @@ Log::Log() : Log(OutputLevel::None) {}
 
 
 Log::Log(OutputLevel outputLevel) : 
-    m_ClassName(""), m_FuncName(""), m_LogLevel(LogLevel::Info) {
+    m_ClassName(""), m_FuncName(""), m_LogLevel(LogLevel::Info),
+    m_Destination(Destination::Console) {
         m_OutputLevel = outputLevel;
+        m_File.open("default.log", std::ios::trunc);
+}
+
+
+Log::~Log() {
+    Log::info() << ":> Calling Log Destructor";
+    Log::info() << "" << std::endl;
+    m_File.close();
 }
 
 
@@ -34,6 +43,13 @@ Log& Log::setLevel(LogLevel level) {
 }
 
 
+Log& Log::setDestination(Destination destination) {
+    m_Destination = destination;
+
+    return *this;
+}
+
+
 Log& Log::info() {
     return m_LogInstance.setLevel(LogLevel::Info);
 }
@@ -44,10 +60,24 @@ Log& Log::error() {
 }
 
 
-std::ostream& operator<<(Log& log, const std::string& str) {
-    std::cout << log << str;
+Log& Log::inst() {
+    return m_LogInstance;
+}
 
-    return std::cout;
+
+std::ostream& operator<<(Log& log, const std::string& str) {
+    switch (log.m_Destination) {
+        case Log::Destination::Console:
+            std::cout << log << str;
+            return std::cout;
+        case Log::Destination::File:
+            log.m_File << log << str;
+            return log.m_File;
+        default:
+            // TODO: error
+            exit(-1);
+            break;
+    }
 }
 
 
