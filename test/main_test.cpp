@@ -43,8 +43,9 @@ class MockDrawer : public Drawer {
         MOCK_METHOD1(setColor, void(const Color&));
         MOCK_METHOD0(cleanup, void());
 };
-
-
+// ----------------------------------------------------------------------------
+// ---------------- Mock Tests
+// ----------------------------------------------------------------------------
 TEST(MockTest2, CommunicatorFunctions) {
     // MockDrawer mockDrawer;
     Renderer renderer(10,20);
@@ -75,6 +76,27 @@ TEST(MockTest2, CommunicatorFunctions) {
 }
 
 
+TEST(MockTests, DrawerTest) {
+    MockDrawer mockDrawer;
+    MockCommunicator mockCommunicator;
+
+    EXPECT_CALL(mockDrawer, _initscr())
+        .Times(1);
+    EXPECT_CALL(mockDrawer, _noecho())
+        .Times(1);
+    EXPECT_CALL(mockDrawer, _keypad())
+        .Times(1);
+    EXPECT_CALL(mockDrawer, _start_color())
+        .Times(1);
+    EXPECT_CALL(mockDrawer, _erase())
+        .Times(AtLeast(1));
+
+    Game game(&mockDrawer, &mockCommunicator);
+    game.init();
+}
+// ----------------------------------------------------------------------------
+// ---------------- Regular Tests
+// ----------------------------------------------------------------------------
 TEST (ButtonTest, IsUnderTest) {
     Display::Button button{{6,1}, {5, 12}, Tag::createNew(), "Press Me", [](){}};
     ASSERT_TRUE(button.isUnder({7,2}));
@@ -161,32 +183,10 @@ TEST (CharGameTest, CheckIsUpperCase) {
     ASSERT_TRUE(isUpperCase('K'));
 }
 
-// MOCKS HERE
 
-TEST(MockTests, DrawerTest) {
-    MockDrawer mockDrawer;
-    MockCommunicator mockCommunicator;
+int main(int argc, char **argv) {
+    printf("Running main() from main_test.cpp\n");
 
-    EXPECT_CALL(mockDrawer, _initscr())
-        .Times(1);
-    EXPECT_CALL(mockDrawer, _noecho())
-        .Times(1);
-    EXPECT_CALL(mockDrawer, _keypad())
-        .Times(1);
-    EXPECT_CALL(mockDrawer, _start_color())
-        .Times(1);
-    EXPECT_CALL(mockDrawer, _erase())
-        .Times(AtLeast(1));
-
-    Game game(&mockDrawer, &mockCommunicator);
-    game.init();
-}
-
-
-int main(int argc, char **argv)
-{
-  printf("Running main() from main_test.cpp\n");
-
-  testing::InitGoogleMock(&argc, argv);
-  return RUN_ALL_TESTS();
+    testing::InitGoogleMock(&argc, argv);
+    return RUN_ALL_TESTS();
 }

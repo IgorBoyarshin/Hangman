@@ -1,11 +1,13 @@
 #include "Drawer.h"
 #include <unordered_map>
+#include <iostream>
 #include <ncurses.h>
+#include "Log.h"
 
 
 class Renderer : public Drawer {
     public:
-        Renderer(unsigned int height, unsigned int width);
+        Renderer();
         virtual ~Renderer();
 
         // TODO: change into more abstract ones
@@ -45,7 +47,4 @@ class Renderer : public Drawer {
         // [FG][BG] = ColorPair
         std::unordered_map<unsigned int,
             std::unordered_map<unsigned int, unsigned int>> m_Colors;
-
-        const unsigned int m_Height;
-        const unsigned int m_Width;
 };

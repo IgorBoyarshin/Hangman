@@ -1,11 +1,15 @@
 #include "Game.h"
 
 
-Game::Game(Drawer* drawer, Communicator* communicator)
-    : m_Display({20, 60, drawer}), m_Communicator(communicator), m_Terminated(false) {}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Misc
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+bool isStandartChar(int c) {
+    return (c == static_cast<char>(c));
+}
 
-Game::~Game() {
-    cleanup();
+bool isExtendedChar(int c) {
+    return !isStandartChar(c);
 }
 
 bool isMovementChar(int c) {
@@ -13,15 +17,25 @@ bool isMovementChar(int c) {
            (c == KEY_DOWN) || (c == KEY_UP) || (c == KEY_LEFT) || (c == KEY_RIGHT);
 }
 
-// TODO: TEST
 bool isUpperCase(int c) {
     if (isStandartChar(c)) {
         return ('A' <= c) && (c <= 'Z');
     }
-
-    // Otherwise extended char => can't determine
-    return false;
+    return false; // Otherwise extended char => can't determine
 }
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Game
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Game::Game(unsigned int width, unsigned int height,
+        Drawer* drawer, Communicator* communicator)
+    : m_Display({width, height, drawer}),
+      m_Communicator(communicator),
+      m_Terminated(false) {}
+
+Game::~Game() {
+    cleanup();
+}
+
 
 void Game::init() {
     noecho();
@@ -30,6 +44,15 @@ void Game::init() {
     m_Display.init();
     initDisplay();
 }
+
+void Game::loop() {
+    while(!m_Terminated) {
+        handleInput();
+        m_Display.draw();
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    }
+}
+
 
 void Game::initDisplay() {
     m_Display.populateWindow(WindowType::Game)
@@ -58,20 +81,6 @@ void Game::initDisplay() {
 void Game::cleanup() {
     // endwin();
     // TODO: need to finish Client/Server??
-}
-
-/* void Game::quit() { */
-/*     // TODO: Log: quitting by user */
-/*     cleanup(); */
-/*     exit(0); */
-/* } */
-
-void Game::loop() {
-    while(!m_Terminated) {
-        handleInput();
-        m_Display.draw();
-        std::this_thread::sleep_for(std::chrono::milliseconds(30));
-    }
 }
 
 void Game::handleInput() {
@@ -138,21 +147,4 @@ void Game::processInputSymbol(int c) {
             }
         }
     }
-}
-
-bool Game::connect(const std::string& ip, const std::string port) {
-    if (!m_Communicator) return false;
-    return m_Communicator->establishConnection(ip, port);
-}
-
-bool Game::send(const std::string& message) {
-    if (!m_Communicator) return false;
-    if (!m_Communicator->connectionEstablished()) return false;
-    return m_Communicator->sendMessage(message);
-}
-
-std::optional<std::string> Game::receive() {
-    if (!m_Communicator) return std::nullopt;
-    if (!m_Communicator->connectionEstablished()) return std::nullopt;
-    return {m_Communicator->receiveMessage()};
 }

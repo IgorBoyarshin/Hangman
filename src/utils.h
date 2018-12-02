@@ -4,15 +4,19 @@
 #include <unordered_map>
 
 
+bool isLetter(char c) noexcept;
+bool isNumber(char c) noexcept;
+
+
 struct Coord {
     public:
         // Origin: (0,0) === Upper-left corner
         int y; // row
         int x; // column
 
+    public:
         Coord();
         Coord(int y, int x);
-
         Coord& operator+=(const Coord& coord) noexcept;
         Coord operator+(const Coord& coord) const noexcept;
 };
@@ -23,8 +27,6 @@ struct Color {
         unsigned int fg;
         unsigned int bg;
 
-        Color(unsigned int fg, unsigned int bg) noexcept;
-
         // TODO: replace with a more elegant solution
         static unsigned int BLACK;
         static unsigned int RED;
@@ -34,38 +36,26 @@ struct Color {
         static unsigned int PURPLE;
         static unsigned int CYAN;
         static unsigned int WHITE;
+
+    public:
+        Color(unsigned int fg, unsigned int bg) noexcept;
 };
-
-
-/* // TODO: rename */
-/* class ColorFactory { */
-/*     public: */
-/*         static void setColor(const Color& color) noexcept; */
-/*  */
-/*     private: */
-/*         static unsigned int m_NextAvailableIndex; */
-/*         // [FG][BG] = ColorPair */
-/*         static std::unordered_map<unsigned int, */
-/*             std::unordered_map<unsigned int, unsigned int>> m_Colors; */
-/* }; */
 
 
 struct Tag {
     private:
         static const unsigned int m_EmptyTag;
         static unsigned int m_NextAvailableIndex;
-
     public:
         const unsigned int value;
 
-        unsigned int operator()() const noexcept;
-        bool isEmpty() const noexcept;
-
-        static Tag createEmpty() noexcept;
-        static Tag createNew() noexcept;
-
     private:
         Tag(unsigned int value) noexcept;
+    public:
+        unsigned int operator()() const noexcept;
+        bool isEmpty() const noexcept;
+        static Tag createEmpty() noexcept;
+        static Tag createNew() noexcept;
 };
 
 

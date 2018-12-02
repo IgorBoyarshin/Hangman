@@ -1,8 +1,8 @@
 #include "Renderer.h"
 
 
-Renderer::Renderer(unsigned int height, unsigned int width)
-        : m_Height(height), m_Width(width) {}
+Renderer::Renderer() {}
+
 
 Renderer::~Renderer() {
     cleanup();
@@ -59,7 +59,7 @@ void Renderer::_erase() {
 }
 
 void Renderer::cleanup() {
-    // endwin();
+    endwin();
 }
 
 

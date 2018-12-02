@@ -3,6 +3,8 @@
 
 #include "utils.h"
 #include <ncurses.h>
+#include <iostream>
+#include "Log.h"
 
 
 class Drawer {

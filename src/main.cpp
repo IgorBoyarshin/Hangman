@@ -10,17 +10,19 @@
 int main() {
     std::cout << "---------- Start ----------" << std::endl;
 
+    Log::inst().setDestination(Log::Destination::File);
     Log::info() << "Project Version = " << GLOBAL_VERSION << std::endl;
     {
-        Renderer* renderer = new Renderer(20, 60);
-        NetworkManager* networkManager = new NetworkManager;
-        Game game{renderer, networkManager};
+        const unsigned int WIDTH = 20;
+        const unsigned int HEIGHT = 60;
+        Drawer* drawer = new Renderer;
+        Communicator* communicator = new NetworkManager;
+        Game game{WIDTH, HEIGHT, drawer, communicator};
         game.init();
         game.loop();
-        endwin();
 
-        delete renderer;
-        delete networkManager;
+        delete drawer;
+        delete communicator;
     }
 
     std::cout << "----------  End  ----------" << std::endl;
