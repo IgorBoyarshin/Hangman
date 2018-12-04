@@ -585,68 +585,65 @@ void Display::drawCursor() const noexcept {
 
 void Display::drawGallows() const noexcept {
     m_Drawer->setColor({Color::YELLOW, Color::BLACK});
-    // m_Drawer->_attron(A_BOLD);
-    // m_Drawer->_move(5, 3);
-    // m_Drawer->_addch('P');
-    // m_Drawer->_addch('l');
-    // m_Drawer->_addch('a');
-    // m_Drawer->_addch('y');
-    // m_Drawer->_addch('e');
-    // m_Drawer->_addch('r');
-    // m_Drawer->_addch('N');
-    // m_Drawer->_addch('i');
-    // m_Drawer->_addch('c');
-    // m_Drawer->_addch('k');
-    // m_Drawer->_addch(':');
-    // m_Drawer->_move(12, 24);
-    // m_Drawer->_addch(ACS_HLINE);
-    // m_Drawer->_addch(ACS_HLINE);
-    // m_Drawer->_addch(ACS_HLINE);
-    // m_Drawer->_addch(ACS_HLINE);
-    // m_Drawer->_addch(ACS_HLINE);
-    // m_Drawer->_move(7, 26);
-    // m_Drawer->_addch(ACS_VLINE);
-    // m_Drawer->_move(8, 26);
-    // m_Drawer->_addch(ACS_VLINE);
-    // m_Drawer->_move(9, 26);
-    // m_Drawer->_addch(ACS_VLINE);
-    // m_Drawer->_move(10, 26);
-    // m_Drawer->_addch(ACS_VLINE);
-    // m_Drawer->_move(11, 26);
-    // m_Drawer->_addch(ACS_VLINE);
-    // m_Drawer->_move(12, 26);
-    // m_Drawer->_addch(ACS_VLINE);
-    // m_Drawer->_move(7, 26);
-    // m_Drawer->_addch(ACS_HLINE);
-    // m_Drawer->_addch(ACS_HLINE);
-    // m_Drawer->_addch(ACS_HLINE);
-    // m_Drawer->_addch(ACS_HLINE);
-    // m_Drawer->_addch(ACS_HLINE);
-    // m_Drawer->_addch(ACS_HLINE);
-    // m_Drawer->_addch(ACS_HLINE);
-    // m_Drawer->_addch(ACS_HLINE);
-    // m_Drawer->_move(8, 33);
-    // m_Drawer->_addch(ACS_VLINE);
-    
-    // m_Drawer->_move(10, 20);
-    // m_Drawer->_addch(ACS_URCORNER);
-    // m_Drawer->_addch('M');
-    // m_Drawer->_addch('a');
-    // m_Drawer->_addch('S');
-    // m_Drawer->_addch('i');
-    // m_Drawer->_addch('K');
-    // m_Drawer->_addch(ACS_URCORNER);
-    
     m_Drawer->setAttribute(Drawer::Attribute::BOLD, true);
-    m_Drawer->goTo(10, 20);
-    m_Drawer->put(Drawer::SpecialChar::URCORNER);
-    m_Drawer->put('M');
+    m_Drawer->goTo(5, 3);
+    m_Drawer->put('P');
+    m_Drawer->put('l');
     m_Drawer->put('a');
-    m_Drawer->put('S');
+    m_Drawer->put('y');
+    m_Drawer->put('e');
+    m_Drawer->put('r');
+    m_Drawer->put('N');
     m_Drawer->put('i');
-    m_Drawer->put('K');
+    m_Drawer->put('c');
+    m_Drawer->put('k');
+    m_Drawer->put(':');
+    m_Drawer->goTo(12, 24);
+    // 1 mistake
+    for (unsigned int h = 1; h < 6; h++) {
+        if (h % 3 == 0) {
+            m_Drawer->put(Drawer::SpecialChar::BTEE);
+            continue;
+        }
+        m_Drawer->put(Drawer::SpecialChar::HLINE);
+    }
+    // 2 mistakes
+    for (unsigned int v = 0; v < 4; v++) {
+        m_Drawer->goTo(v + 8, 26);
+        m_Drawer->put(Drawer::SpecialChar::VLINE);
+    }
+    // 3 mistakes
+    m_Drawer->goTo(7, 26);
+    m_Drawer->put(Drawer::SpecialChar::ULCORNER);
+    for (unsigned int h = 0; h < 7; h++) {
+        m_Drawer->put(Drawer::SpecialChar::HLINE);
+    }
+    // 4 mistakes
     m_Drawer->put(Drawer::SpecialChar::URCORNER);
-    m_Drawer->setAttribute(Drawer::Attribute::BOLD, false);
+    // 5 mistakes
+    m_Drawer->goTo(8, 34);
+    m_Drawer->put(Drawer::SpecialChar::CKBOARD);
+    // 6 mistakes
+    m_Drawer->goTo(9, 34);
+    m_Drawer->put(Drawer::SpecialChar::PLUS);
+    m_Drawer->goTo(10, 34);
+    m_Drawer->put(Drawer::SpecialChar::BTEE);
+    // 7 mistakes
+    m_Drawer->goTo(9, 33);
+    m_Drawer->put(Drawer::SpecialChar::ULCORNER);
+    // 8 mistakes
+    m_Drawer->goTo(9, 35);
+    m_Drawer->put(Drawer::SpecialChar::URCORNER);
+    // 9 mistakes
+    m_Drawer->goTo(10, 33);
+    m_Drawer->put(Drawer::SpecialChar::ULCORNER);
+    m_Drawer->goTo(11, 33);
+    m_Drawer->put(Drawer::SpecialChar::LRCORNER);
+    // 10 mistakes
+    m_Drawer->goTo(10, 35);
+    m_Drawer->put(Drawer::SpecialChar::URCORNER);
+    m_Drawer->goTo(11, 35);
+    m_Drawer->put(Drawer::SpecialChar::LLCORNER);
 }
 
 bool Display::inbounds(const Coord& coord) const noexcept {
