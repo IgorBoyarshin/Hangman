@@ -506,12 +506,11 @@ Display::~Display() {
 }
 
 void Display::init() noexcept {
-    m_Drawer->_initscr();
-    m_Drawer->_noecho();
-    m_Drawer->_start_color();
+    m_Drawer->init();
+    m_Drawer->enableColors();
+    Keyboard::echo(false);
+    Keyboard::waitCarriageReturn(false);
     Keyboard::enableSpecialKeys();
-    /* m_Drawer->_keypad(); // enable extended keys */
-    // getmaxyx(stdscr, m_Height, m_Width);
 
     setActiveWindow(WindowType::Game);
 }
@@ -537,7 +536,7 @@ void Display::setActiveWindow(WindowType windowType) {
     m_WindowHeads[toInt(m_ActiveWindowType)].setPassive();
     /* setCursor({0, 0}); // default cursor position in new window */
     // setCursor({Window::borderStartY + 1, 1});
-    m_Drawer->_erase();
+    m_Drawer->clear();
 }
 
 Display::Window& Display::populateWindow(WindowType windowType) {

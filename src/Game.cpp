@@ -16,9 +16,6 @@ Game::~Game() {
 
 
 void Game::init() {
-    Keyboard::echo(false);
-    Keyboard::waitCarriageReturn(false);
-
     m_Display.init();
     initDisplay();
 }

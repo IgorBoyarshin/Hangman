@@ -79,70 +79,21 @@ void Renderer::update() {
     refresh();
 }
 
-
-/* void Renderer::_addstr(const std::string& string) { */
-/*     addstr(string.c_str()); */
-/* } */
-/*  */
-/* void Renderer::_flushinp() { */
-/*     flushinp(); */
-/* } */
-/*  */
-/* void Renderer::_addch(int c) { */
-/*     addch(c); */
-/* } */
-/*  */
-/* void Renderer::_attron(int attr) { */
-/*     attron(attr); */
-/* } */
-/*  */
-/* void Renderer::_attroff(int attr) { */
-/*     attroff(attr); */
-/* } */
-
-/* void Renderer::_refresh() { */
-/*     refresh(); */
-/* } */
-
-
-/* void Renderer::_keypad() { */
-/*     keypad(stdscr, TRUE); */
-/* } */
-
-void Renderer::_initscr() {
+void Renderer::init() {
     initscr();
 }
 
-void Renderer::_noecho() {
-    noecho();
-}
-
-void Renderer::_start_color() {
+void Renderer::enableColors() {
     start_color();
 }
 
-void Renderer::_erase() {
+void Renderer::clear() {
     erase();
 }
 
 void Renderer::cleanup() {
     endwin();
 }
-
-
-/* const int Drawer::_ACS_ULCORNER = ACS_ULCORNER; */
-/* const int Drawer::_ACS_URCORNER = ACS_URCORNER; */
-/* const int Drawer::_ACS_LLCORNER = ACS_LLCORNER; */
-/* const int Drawer::_ACS_LRCORNER = ACS_LRCORNER; */
-/* const int Drawer::_ACS_HLINE = ACS_HLINE; */
-/* const int Drawer::_ACS_VLINE = ACS_VLINE; */
-/* const int Drawer::_A_BOLD = A_BOLD; */
-/* const int Drawer::_A_UNDERLINE = A_UNDERLINE; */
-/* const int Drawer::_KEY_DOWN = KEY_DOWN; */
-/* const int Drawer::_KEY_UP = KEY_UP; */
-/* const int Drawer::_KEY_LEFT = KEY_LEFT; */
-/* const int Drawer::_KEY_RIGHT = KEY_RIGHT; */
-/* const int Drawer::_KEY_DC = KEY_DC; */
 
 
 void Renderer::setColor(const Color& color) {

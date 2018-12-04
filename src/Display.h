@@ -9,7 +9,7 @@
 #include <functional>
 #include <unordered_map>
 #include <memory> // shared_ptr
-#include <cassert> // TODO: remove once all calls to assert() and replace with Log.assert()
+#include <cassert> // TODO: remove once all calls to assert() are replaced with Log.assert()
 #include "utils.h"
 #include "Drawer.h"
 #include "Key.h"
