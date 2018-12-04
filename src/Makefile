@@ -20,7 +20,31 @@ all: cleanExe describe $(mainFileName)
 
 
 # Compiler
-%.o: %.cpp $(filesH)
+# %.o: %.cpp $(filesH)
+# 	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+Client.o: Client.cpp Client.h
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+Server.o: Server.cpp Server.h
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+NetworkManager.o: NetworkManager.cpp NetworkManager.h Communicator.h
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+Display.o: Display.cpp Display.h utils.h Drawer.h Key.h Keyboard.h Log.h
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+Drawer.o: Drawer.cpp Drawer.h Log.h utils.h
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+Game.o: Game.cpp Game.h Display.h Renderer.h Communicator.h Keyboard.h Key.h Drawer.h utils.h Log.h
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+Key.o: Key.cpp Key.h Log.h
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+Keyboard.o: Keyboard.cpp Keyboard.h Key.h Log.h
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+Log.o: Log.cpp Log.h
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+utils.o: utils.cpp utils.h
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+Renderer.o: Renderer.cpp Renderer.h Log.h Drawer.h utils.h
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+main.o: main.cpp Game.h NetworkManager.h Log.h
 	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
 
 # Linker

@@ -1,7 +1,7 @@
-#include "Drawer.h"
 #include <unordered_map>
 #include <iostream>
 #include <ncurses.h>
+#include "Drawer.h"
 #include "Log.h"
 
 
