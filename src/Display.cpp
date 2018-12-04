@@ -25,7 +25,7 @@ Display::Label::Label(
 void Display::Label::draw() const noexcept {
     m_Drawer->setColor({Color::WHITE, Color::BLACK});
     m_Drawer->goTo(m_Position.y, m_Position.x);
-    m_Drawer->putstr(m_Value);
+    m_Drawer->put(m_Value);
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::StateColors
@@ -140,43 +140,43 @@ void Display::Button::draw() const noexcept {
     // Draw upper border
     if (m_Dimensions.y >= 2) {
         m_Drawer->goTo(m_Position.y, m_Position.x);
-        m_Drawer->putsch(Drawer::SpecialChar::ULCORNER);
+        m_Drawer->put(Drawer::SpecialChar::ULCORNER);
         for (int x = 1; x < m_Dimensions.x - 1; x++) {
-            m_Drawer->putsch(Drawer::SpecialChar::HLINE);
+            m_Drawer->put(Drawer::SpecialChar::HLINE);
         }
-        m_Drawer->putsch(Drawer::SpecialChar::URCORNER);
+        m_Drawer->put(Drawer::SpecialChar::URCORNER);
     }
     // Draw void between upper border and text
     for (int y = 1; y < textRelativeCoord.y; y++) {
         m_Drawer->goTo(m_Position.y + y, m_Position.x);
-        m_Drawer->putsch(Drawer::SpecialChar::VLINE);
-        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->putch(' ');
-        m_Drawer->putsch(Drawer::SpecialChar::VLINE);
+        m_Drawer->put(Drawer::SpecialChar::VLINE);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->put(' ');
+        m_Drawer->put(Drawer::SpecialChar::VLINE);
     }
     // Draw text
     m_Drawer->setAttribute(Drawer::Attribute::BOLD, true);
     m_Drawer->goTo(m_Position.y + textRelativeCoord.y, m_Position.x);
-    m_Drawer->putsch(Drawer::SpecialChar::VLINE);
+    m_Drawer->put(Drawer::SpecialChar::VLINE);
 
-    for (int x = 1; x < textRelativeCoord.x; x++) m_Drawer->putch(' ');
-    m_Drawer->putstr(m_Value);
+    for (int x = 1; x < textRelativeCoord.x; x++) m_Drawer->put(' ');
+    m_Drawer->put(m_Value);
     for (int x = m_Position.x + textRelativeCoord.x + m_Value.size();
-            x < m_Position.x + m_Dimensions.x - 1; x++) m_Drawer->putch(' ');
-    m_Drawer->putsch(Drawer::SpecialChar::VLINE);
+            x < m_Position.x + m_Dimensions.x - 1; x++) m_Drawer->put(' ');
+    m_Drawer->put(Drawer::SpecialChar::VLINE);
     m_Drawer->setAttribute(Drawer::Attribute::BOLD, false);
     // Draw void between text and bottom border
     for (int y = textRelativeCoord.y + 1; y < m_Dimensions.y - 1; y++) {
         m_Drawer->goTo(m_Position.y + y, m_Position.x);
-        m_Drawer->putsch(Drawer::SpecialChar::VLINE);
-        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->putch(' ');
-        m_Drawer->putsch(Drawer::SpecialChar::VLINE);
+        m_Drawer->put(Drawer::SpecialChar::VLINE);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->put(' ');
+        m_Drawer->put(Drawer::SpecialChar::VLINE);
     }
     // Draw bottom border
     if (m_Dimensions.y >= 3) {
         m_Drawer->goTo(m_Position.y + m_Dimensions.y - 1, m_Position.x);
-        m_Drawer->putsch(Drawer::SpecialChar::LLCORNER);
-        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->putsch(Drawer::SpecialChar::HLINE);
-        m_Drawer->putsch(Drawer::SpecialChar::LRCORNER);
+        m_Drawer->put(Drawer::SpecialChar::LLCORNER);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->put(Drawer::SpecialChar::HLINE);
+        m_Drawer->put(Drawer::SpecialChar::LRCORNER);
     }
 
     m_Drawer->update();
@@ -309,7 +309,7 @@ void Display::Field::draw() const noexcept {
     m_Drawer->setAttribute(Drawer::Attribute::UNDERLINE, true);
     for (unsigned int x = 0; x < m_Width; x++) {
         const char c = (x < m_Value.size()) ? m_Value[x] : ' ';
-        m_Drawer->putch(c);
+        m_Drawer->put(c);
     }
     m_Drawer->setAttribute(Drawer::Attribute::UNDERLINE, false);
 
@@ -417,22 +417,22 @@ void Display::Window::drawSelf() const noexcept {
     // Left
     for (int y = 0; y < m_Dimensions.y; y++) {
         m_Drawer->goTo(m_Position.y + y, 0);
-        m_Drawer->putch(' ');
+        m_Drawer->put(' ');
     }
     // Bottom
     m_Drawer->goTo(m_Position.y + m_Dimensions.y - 1, 0);
     for (int x = 0; x < m_Dimensions.x; x++) {
-        m_Drawer->putch(' ');
+        m_Drawer->put(' ');
     }
     // Right
     for (int y = 0; y < m_Dimensions.y; y++) {
         m_Drawer->goTo(m_Position.y + y, m_Dimensions.x - 1);
-        m_Drawer->putch(' ');
+        m_Drawer->put(' ');
     }
     // Top
     m_Drawer->goTo(m_Position.y, 0);
     for (int x = 0; x < m_Dimensions.x; x++) {
-        m_Drawer->putch(' ');
+        m_Drawer->put(' ');
     }
 }
 
@@ -536,7 +536,7 @@ void Display::setActiveWindow(WindowType windowType) {
     m_WindowHeads[toInt(m_ActiveWindowType)].setPassive();
     /* setCursor({0, 0}); // default cursor position in new window */
     // setCursor({Window::borderStartY + 1, 1});
-    m_Drawer->clear();
+    m_Drawer->clearScreen();
 }
 
 Display::Window& Display::populateWindow(WindowType windowType) {
@@ -586,13 +586,13 @@ void Display::drawGallows() const noexcept {
     m_Drawer->setColor({Color::RED, Color::GREEN});
     m_Drawer->setAttribute(Drawer::Attribute::BOLD, true);
     m_Drawer->goTo(10, 20);
-    m_Drawer->putsch(Drawer::SpecialChar::URCORNER);
-    m_Drawer->putch('M');
-    m_Drawer->putch('a');
-    m_Drawer->putch('S');
-    m_Drawer->putch('i');
-    m_Drawer->putch('K');
-    m_Drawer->putsch(Drawer::SpecialChar::URCORNER);
+    m_Drawer->put(Drawer::SpecialChar::URCORNER);
+    m_Drawer->put('M');
+    m_Drawer->put('a');
+    m_Drawer->put('S');
+    m_Drawer->put('i');
+    m_Drawer->put('K');
+    m_Drawer->put(Drawer::SpecialChar::URCORNER);
     m_Drawer->setAttribute(Drawer::Attribute::BOLD, false);
 }
 

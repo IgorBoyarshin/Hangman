@@ -10,14 +10,14 @@ class Renderer : public Drawer {
         Renderer();
         virtual ~Renderer();
         void goTo(unsigned int y, unsigned int x) override;
-        void putstr(const std::string& string) override;
-        void putch(char c) override;
-        void putsch(SpecialChar specialChar) override;
+        void put(const std::string& string) override;
+        void put(char c) override;
+        void put(SpecialChar specialChar) override;
         void setAttribute(Attribute attribute, bool on) override;
         void update() override;
         void init() override;
         void enableColors() override;
-        void clear() override;
+        void clearScreen() override;
         void setColor(const Color& color) override;
     private:
         unsigned int m_NextAvailableColorIndex = 1;

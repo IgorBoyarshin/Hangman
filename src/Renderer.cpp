@@ -13,15 +13,15 @@ void Renderer::goTo(unsigned int y, unsigned int x) {
     move(y, x);
 }
 
-void Renderer::putstr(const std::string& string) {
+void Renderer::put(const std::string& string) {
     addstr(string.c_str());
 }
 
-void Renderer::putch(char c) {
+void Renderer::put(char c) {
     addch(c);
 }
 
-void Renderer::putsch(SpecialChar specialChar) {
+void Renderer::put(SpecialChar specialChar) {
     switch (specialChar) {
         case SpecialChar::ULCORNER:
             addch(ACS_ULCORNER);
@@ -87,7 +87,7 @@ void Renderer::enableColors() {
     start_color();
 }
 
-void Renderer::clear() {
+void Renderer::clearScreen() {
     erase();
 }
 

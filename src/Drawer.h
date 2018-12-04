@@ -24,14 +24,14 @@ class Drawer {
 
         virtual ~Drawer() {}
         virtual void goTo(unsigned int y, unsigned int x) = 0;
-        virtual void putstr(const std::string& string) = 0;
-        virtual void putch(char c) = 0;
-        virtual void putsch(SpecialChar specialChar) = 0;
+        virtual void put(const std::string& string) = 0;
+        virtual void put(char c) = 0;
+        virtual void put(SpecialChar specialChar) = 0;
         virtual void setAttribute(Attribute attribute, bool on) = 0;
         virtual void update() = 0;
         virtual void init() = 0;
         virtual void enableColors() = 0;
-        virtual void clear() = 0;
+        virtual void clearScreen() = 0;
         virtual void setColor(const Color& color) = 0;
     private:
         virtual void cleanup() = 0;
