@@ -2,28 +2,6 @@
 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Misc
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-bool isStandartChar(int c) {
-    return (c == static_cast<char>(c));
-}
-
-bool isExtendedChar(int c) {
-    return !isStandartChar(c);
-}
-
-bool isMovementChar(int c) {
-    return (c == 'j') || (c == 'k') || (c == 'h') || (c == 'l') ||
-           (c == KEY_DOWN) || (c == KEY_UP) || (c == KEY_LEFT) || (c == KEY_RIGHT);
-}
-
-bool isUpperCase(int c) {
-    if (isStandartChar(c)) {
-        return ('A' <= c) && (c <= 'Z');
-    }
-    return false; // Otherwise extended char => can't determine
-}
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Game
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Game::Game(unsigned int width, unsigned int height,
@@ -38,9 +16,6 @@ Game::~Game() {
 
 
 void Game::init() {
-    noecho();
-    cbreak(); // no buffering (i.e. no waiting for carriage return)
-
     m_Display.init();
     initDisplay();
 }
@@ -51,6 +26,7 @@ void Game::loop() {
         m_Display.draw();
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
+    cleanup();
 }
 
 
@@ -79,24 +55,22 @@ void Game::initDisplay() {
 }
 
 void Game::cleanup() {
-    // endwin();
     // TODO: need to finish Client/Server??
 }
 
 void Game::handleInput() {
-    nodelay(stdscr, TRUE); // don't block on getch()
+    Keyboard::blockOnRead(false);
 
-    int c = getch();
-    while (c != ERR) {
-        processInputSymbol(c);
-        c = getch();
+    auto key = Keyboard::read();
+    while (key) {
+        processInputKey(*key);
+        key = Keyboard::read();
     }
 }
 
-void Game::processInputSymbol(int c) {
-    if (c == 'q') {
+void Game::processInputKey(Key key) {
+    if (key.is('q')) {
         m_Terminated = true;
-        cleanup();
         return;
     }
 
@@ -104,7 +78,7 @@ void Game::processInputSymbol(int c) {
             m_Display.getInteractableUnderCursor();
             interactableUnderCursorOpt) {
         if (const bool inputHandled = interactableUnderCursorOpt->get()
-                    .handleInputSymbol(c, m_Display.getCursor(),
+                    .handleInputKey(key, m_Display.getCursor(),
                         std::bind(&Display::setCursor, &m_Display, std::placeholders::_1));
                 inputHandled) {
             return;
@@ -112,21 +86,16 @@ void Game::processInputSymbol(int c) {
     }
 
     // Input hasn't been handled => needs our attention
-    if (isMovementChar(c)) {
-        const Coord shift = [c]() -> Coord {
-            if (c == 'j' || c == KEY_DOWN) {
-                return {+1, 0};
-            } else if (c == 'k' || c == KEY_UP) {
-                return {-1, 0};
-            } else if (c == 'h' || c == KEY_LEFT) {
-                return {0, -1};
-            } else if (c == 'l' || c == KEY_RIGHT) {
-                return {0, +1};
-            } else {
-                // TODO: assert(false)
-                return {};
+    if (const auto direction = key.asDirection()) {
+        const Coord shift = [](Direction direction) -> Coord {
+            switch (direction) {
+                case Direction::DOWN:  return {+1, 0};
+                case Direction::UP:    return {-1, 0};
+                case Direction::LEFT:  return {0, -1};
+                case Direction::RIGHT: return {0, +1};
+                default: return {0, 0}; // TODO: error
             }
-        }();
+        }(*direction);
 
         auto oldInteractableUnderCursorOpt = m_Display.getInteractableUnderCursor();
         m_Display.shiftCursor(shift);

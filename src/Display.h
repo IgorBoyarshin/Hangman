@@ -9,11 +9,11 @@
 #include <functional>
 #include <unordered_map>
 #include <memory> // shared_ptr
-#include <cassert> // TODO: remove once all calls to assert() and replace with Log.assert()
+#include <cassert> // TODO: remove once all calls to assert() are replaced with Log.assert()
 #include "utils.h"
 #include "Drawer.h"
-#include <ncurses.h>
-#include <bitset>
+#include "Key.h"
+#include "Keyboard.h"
 
 // For sleeping
 #include <chrono>
@@ -85,7 +85,7 @@ class Display {
 
                 // Returns whether the input was handled. If it wasn't => may
                 // need to handle it in the outter layer
-                virtual bool handleInputSymbol(int c, const Coord& coord,
+                virtual bool handleInputKey(const Key& key, const Coord& coord,
                         const std::function<bool(const Coord&)>& setCursor) noexcept = 0;
                 virtual void handleCursorOver() = 0;
                 virtual void handleCursorAway() = 0;
@@ -149,7 +149,7 @@ class Display {
                        const Tag& tag,
                        const std::string& value,
                        const std::function<void()> feedback);
-                bool handleInputSymbol(int c, const Coord& coord,
+                bool handleInputKey(const Key& key, const Coord& coord,
                         const std::function<bool(const Coord&)>& setCursor) noexcept override;
                 void handleCursorOver() override;
                 void handleCursorAway() override;
@@ -172,7 +172,7 @@ class Display {
                       const Tag& tag,
                       unsigned int width,
                       const std::string& initialValue = "") noexcept;
-                bool handleInputSymbol(int c, const Coord& coord,
+                bool handleInputKey(const Key& key, const Coord& coord,
                         const std::function<bool(const Coord&)>& setCursor) noexcept override;
                 void handleCursorOver() override;
                 void handleCursorAway() override;

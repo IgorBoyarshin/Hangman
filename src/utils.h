@@ -4,10 +4,6 @@
 #include <unordered_map>
 
 
-bool isLetter(char c) noexcept;
-bool isNumber(char c) noexcept;
-
-
 struct Coord {
     public:
         // Origin: (0,0) === Upper-left corner
