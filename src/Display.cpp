@@ -93,7 +93,7 @@ bool Display::Button::handleInputKey(const Key& key, const Coord& coord,
             std::this_thread::sleep_for(std::chrono::milliseconds(140));
 
             // Discard any input characters that happened during our sleep
-            m_Drawer->_flushinp();
+            Keyboard::discardCharBuffer();
 
             m_State = State::Highlighted;
             draw();

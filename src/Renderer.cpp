@@ -84,9 +84,9 @@ void Renderer::update() {
 /*     addstr(string.c_str()); */
 /* } */
 /*  */
-void Renderer::_flushinp() {
-    flushinp();
-}
+/* void Renderer::_flushinp() { */
+/*     flushinp(); */
+/* } */
 /*  */
 /* void Renderer::_addch(int c) { */
 /*     addch(c); */

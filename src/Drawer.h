@@ -24,7 +24,7 @@ class Drawer {
         };
 
         virtual ~Drawer() {}
-        virtual void _flushinp() = 0;
+        // virtual void _flushinp() = 0;
         virtual void _keypad() = 0;
         virtual void _initscr() = 0;
         virtual void _noecho() = 0;

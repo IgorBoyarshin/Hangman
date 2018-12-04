@@ -10,7 +10,7 @@ class Renderer : public Drawer {
         Renderer();
         virtual ~Renderer();
 
-        void _flushinp() override;
+        /* void _flushinp() override; */
         void _keypad() override;
         void _initscr() override;
         void _noecho() override;

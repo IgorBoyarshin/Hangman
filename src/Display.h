@@ -15,6 +15,7 @@
 #include "Key.h"
 #include <ncurses.h>
 #include <bitset>
+#include "Keyboard.h"
 
 // For sleeping
 #include <chrono>

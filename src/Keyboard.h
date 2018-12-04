@@ -13,6 +13,8 @@ class Keyboard {
         static void echo(bool doEcho) noexcept;
         static void waitCarriageReturn(bool doWait) noexcept;
         static std::optional<Key> read() noexcept;
+        // Discards any new characters waiting in the buffer (clears the buffer)
+        static void discardCharBuffer() noexcept;
 };
 
 

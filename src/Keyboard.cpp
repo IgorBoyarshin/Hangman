@@ -24,3 +24,7 @@ std::optional<Key> Keyboard::read() noexcept {
         return {Key(c)};
     }
 }
+
+void Keyboard::discardCharBuffer() noexcept {
+    flushinp();
+}
