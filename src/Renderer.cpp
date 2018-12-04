@@ -105,9 +105,9 @@ void Renderer::update() {
 /* } */
 
 
-void Renderer::_keypad() {
-    keypad(stdscr, TRUE);
-}
+/* void Renderer::_keypad() { */
+/*     keypad(stdscr, TRUE); */
+/* } */
 
 void Renderer::_initscr() {
     initscr();

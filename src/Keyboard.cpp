@@ -28,3 +28,7 @@ std::optional<Key> Keyboard::read() noexcept {
 void Keyboard::discardCharBuffer() noexcept {
     flushinp();
 }
+
+void Keyboard::enableSpecialKeys() noexcept {
+    keypad(stdscr, TRUE);
+}

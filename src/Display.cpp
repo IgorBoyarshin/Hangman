@@ -509,8 +509,8 @@ void Display::init() noexcept {
     m_Drawer->_initscr();
     m_Drawer->_noecho();
     m_Drawer->_start_color();
-    m_Drawer->_keypad(); // enable extended keys
-    /* m_Drawer->_keypad(stdscr, TRUE); // enable extended keys */
+    Keyboard::enableSpecialKeys();
+    /* m_Drawer->_keypad(); // enable extended keys */
     // getmaxyx(stdscr, m_Height, m_Width);
 
     setActiveWindow(WindowType::Game);

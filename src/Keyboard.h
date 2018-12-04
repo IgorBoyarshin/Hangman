@@ -15,6 +15,7 @@ class Keyboard {
         static std::optional<Key> read() noexcept;
         // Discards any new characters waiting in the buffer (clears the buffer)
         static void discardCharBuffer() noexcept;
+        static void enableSpecialKeys() noexcept;
 };
 
 
