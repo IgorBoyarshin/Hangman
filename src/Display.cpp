@@ -1,4 +1,5 @@
 #include "Display.h"
+#include <bitset>
 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -142,7 +143,19 @@ void Display::Button::draw() const noexcept {
     if (m_Dimensions.y >= 2) {
         m_Drawer->_move(m_Position.y, m_Position.x);
         m_Drawer->_addch(ACS_ULCORNER);
-        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->_addch(ACS_HLINE);
+        /* Log::info() << "Before loop < " << (m_Dimensions.x - 1) << std::endl; */
+        /* for (int x = 1; x < m_Dimensions.x - 1; x++) { */
+        /*     Log::info() << "Iteration " << x << " < " << (m_Dimensions.x - 1) << std::endl; */
+        /*     m_Drawer->_move(m_Position.y, m_Position.x + x + 2); */
+        /*     m_Drawer->_addch('F'); */
+        /* } */
+        const int fi = (m_Dimensions.x>>4) + 5;
+        Log::info() << "" << std::bitset<32>(m_Dimensions.x) << std::endl;
+        for (int x = 0; x < fi; x++) {
+            m_Drawer->_addch(ACS_HLINE);
+        }
+        /* Log::info() << "After loop < " << (m_Dimensions.x - 1) << std::endl;        */
+        /* for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->_addch(ACS_HLINE); */
         m_Drawer->_addch(ACS_URCORNER);
     }
     // Draw void between upper border and text
@@ -586,14 +599,56 @@ void Display::drawCursor() const noexcept {
 void Display::drawGallows() const noexcept {
     m_Drawer->setColor({Color::RED, Color::GREEN});
     m_Drawer->_attron(A_BOLD);
-    m_Drawer->_move(10, 20);
-    m_Drawer->_addch(ACS_URCORNER);
-    m_Drawer->_addch('M');
+    m_Drawer->_move(5, 3);
+    m_Drawer->_addch('P');
+    m_Drawer->_addch('l');
     m_Drawer->_addch('a');
-    m_Drawer->_addch('S');
+    m_Drawer->_addch('y');
+    m_Drawer->_addch('e');
+    m_Drawer->_addch('r');
+    m_Drawer->_addch('N');
     m_Drawer->_addch('i');
-    m_Drawer->_addch('K');
-    m_Drawer->_addch(ACS_URCORNER);
+    m_Drawer->_addch('c');
+    m_Drawer->_addch('k');
+    m_Drawer->_addch(':');
+    m_Drawer->_move(12, 24);
+    m_Drawer->_addch(ACS_HLINE);
+    m_Drawer->_addch(ACS_HLINE);
+    m_Drawer->_addch(ACS_HLINE);
+    m_Drawer->_addch(ACS_HLINE);
+    m_Drawer->_addch(ACS_HLINE);
+    m_Drawer->_move(7, 26);
+    m_Drawer->_addch(ACS_VLINE);
+    m_Drawer->_move(8, 26);
+    m_Drawer->_addch(ACS_VLINE);
+    m_Drawer->_move(9, 26);
+    m_Drawer->_addch(ACS_VLINE);
+    m_Drawer->_move(10, 26);
+    m_Drawer->_addch(ACS_VLINE);
+    m_Drawer->_move(11, 26);
+    m_Drawer->_addch(ACS_VLINE);
+    m_Drawer->_move(12, 26);
+    m_Drawer->_addch(ACS_VLINE);
+    m_Drawer->_move(7, 26);
+    m_Drawer->_addch(ACS_HLINE);
+    m_Drawer->_addch(ACS_HLINE);
+    m_Drawer->_addch(ACS_HLINE);
+    m_Drawer->_addch(ACS_HLINE);
+    m_Drawer->_addch(ACS_HLINE);
+    m_Drawer->_addch(ACS_HLINE);
+    m_Drawer->_addch(ACS_HLINE);
+    m_Drawer->_addch(ACS_HLINE);
+    m_Drawer->_move(8, 33);
+    m_Drawer->_addch(ACS_VLINE);
+    
+    // m_Drawer->_move(10, 20);
+    // m_Drawer->_addch(ACS_URCORNER);
+    // m_Drawer->_addch('M');
+    // m_Drawer->_addch('a');
+    // m_Drawer->_addch('S');
+    // m_Drawer->_addch('i');
+    // m_Drawer->_addch('K');
+    // m_Drawer->_addch(ACS_URCORNER);
 }
 
 bool Display::inbounds(const Coord& coord) const noexcept {
