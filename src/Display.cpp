@@ -24,8 +24,8 @@ Display::Label::Label(
 
 void Display::Label::draw() const noexcept {
     m_Drawer->setColor({Color::WHITE, Color::BLACK});
-    m_Drawer->_move(m_Position.y, m_Position.x);
-    m_Drawer->_addstr(m_Value);
+    m_Drawer->goTo(m_Position.y, m_Position.x);
+    m_Drawer->putstr(m_Value);
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::StateColors
@@ -81,13 +81,12 @@ void Display::Button::setColorByState() const noexcept {
     }
 }
 
-bool Display::Button::handleInputSymbol(int c, const Coord& coord,
+bool Display::Button::handleInputKey(const Key& key, const Coord& coord,
         const std::function<bool(const Coord&)>& setCursor) noexcept {
     if (!active()) return false;
     // TODO: assert: isUnder(coord)
     if (m_State == State::Highlighted) {
-        static const unsigned int ENTER = 10;
-        if (c == ENTER) {
+        if (key.is(Key::SpecialKey::ENTER)) {
             // TODO: Fix cursor movement while changing state
             m_State = State::Focused;
             draw();
@@ -140,46 +139,47 @@ void Display::Button::draw() const noexcept {
 
     // Draw upper border
     if (m_Dimensions.y >= 2) {
-        m_Drawer->_move(m_Position.y, m_Position.x);
-        m_Drawer->_addch(ACS_ULCORNER);
-        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->_addch(ACS_HLINE);
-        m_Drawer->_addch(ACS_URCORNER);
+        m_Drawer->goTo(m_Position.y, m_Position.x);
+        m_Drawer->putsch(Drawer::SpecialChar::ULCORNER);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) {
+            m_Drawer->putsch(Drawer::SpecialChar::HLINE);
+        }
+        m_Drawer->putsch(Drawer::SpecialChar::URCORNER);
     }
     // Draw void between upper border and text
     for (int y = 1; y < textRelativeCoord.y; y++) {
-        m_Drawer->_move(m_Position.y + y, m_Position.x);
-        m_Drawer->_addch(ACS_VLINE);
-        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->_addch(' ');
-        m_Drawer->_addch(ACS_VLINE);
+        m_Drawer->goTo(m_Position.y + y, m_Position.x);
+        m_Drawer->putsch(Drawer::SpecialChar::VLINE);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->putch(' ');
+        m_Drawer->putsch(Drawer::SpecialChar::VLINE);
     }
     // Draw text
-    m_Drawer->_attron(A_BOLD);
-    m_Drawer->_move(m_Position.y + textRelativeCoord.y, m_Position.x);
-    m_Drawer->_addch(ACS_VLINE);
+    m_Drawer->setAttribute(Drawer::Attribute::BOLD, true);
+    m_Drawer->goTo(m_Position.y + textRelativeCoord.y, m_Position.x);
+    m_Drawer->putsch(Drawer::SpecialChar::VLINE);
 
-    // m_Drawer->_addch(vv);
-    for (int x = 1; x < textRelativeCoord.x; x++) m_Drawer->_addch(' ');
-    m_Drawer->_addstr(m_Value);
+    for (int x = 1; x < textRelativeCoord.x; x++) m_Drawer->putch(' ');
+    m_Drawer->putstr(m_Value);
     for (int x = m_Position.x + textRelativeCoord.x + m_Value.size();
-            x < m_Position.x + m_Dimensions.x - 1; x++) m_Drawer->_addch(' ');
-    m_Drawer->_addch(ACS_VLINE);
-    m_Drawer->_attroff(A_BOLD);
+            x < m_Position.x + m_Dimensions.x - 1; x++) m_Drawer->putch(' ');
+    m_Drawer->putsch(Drawer::SpecialChar::VLINE);
+    m_Drawer->setAttribute(Drawer::Attribute::BOLD, false);
     // Draw void between text and bottom border
     for (int y = textRelativeCoord.y + 1; y < m_Dimensions.y - 1; y++) {
-        m_Drawer->_move(m_Position.y + y, m_Position.x);
-        m_Drawer->_addch(ACS_VLINE);
-        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->_addch(' ');
-        m_Drawer->_addch(ACS_VLINE);
+        m_Drawer->goTo(m_Position.y + y, m_Position.x);
+        m_Drawer->putsch(Drawer::SpecialChar::VLINE);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->putch(' ');
+        m_Drawer->putsch(Drawer::SpecialChar::VLINE);
     }
     // Draw bottom border
     if (m_Dimensions.y >= 3) {
-        m_Drawer->_move(m_Position.y + m_Dimensions.y - 1, m_Position.x);
-        m_Drawer->_addch(ACS_LLCORNER);
-        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->_addch(ACS_HLINE);
-        m_Drawer->_addch(ACS_LRCORNER);
+        m_Drawer->goTo(m_Position.y + m_Dimensions.y - 1, m_Position.x);
+        m_Drawer->putsch(Drawer::SpecialChar::LLCORNER);
+        for (int x = 1; x < m_Dimensions.x - 1; x++) m_Drawer->putsch(Drawer::SpecialChar::HLINE);
+        m_Drawer->putsch(Drawer::SpecialChar::LRCORNER);
     }
 
-    m_Drawer->_refresh();
+    m_Drawer->update();
 }
 
 bool Display::Button::isUnder(const Coord& coord) const noexcept {
@@ -221,15 +221,14 @@ void Display::Field::setColorByState() const noexcept {
     }
 }
 
-bool Display::Field::handleInputSymbol(int c, const Coord& coord,
+bool Display::Field::handleInputKey(const Key& key, const Coord& coord,
         const std::function<bool(const Coord&)>& setCursor) noexcept {
     // TODO: assert: isUnder(coord)
     const unsigned int dx = coord.x - m_Position.x;
     const bool cursorInsideValue = dx < m_Value.size();
-    static const unsigned int ENTER = 10;
 
     if (m_State == State::Highlighted) {
-        if (c == ENTER) {
+        if (key.is(Key::SpecialKey::ENTER)) {
             // will change current Display's Cursor, exactly what we want
             setCursor(m_Position + Coord{0,
                     static_cast<int>(cursorInsideValue ? dx : m_Value.size())});
@@ -241,21 +240,22 @@ bool Display::Field::handleInputSymbol(int c, const Coord& coord,
 
     if (m_State == State::Focused) {
         // Discard propagation
-        if (c == KEY_DOWN || c == KEY_UP) return true;
-        if (c == KEY_LEFT && dx == 0) return true;
-        if (c == KEY_RIGHT && dx >= m_Value.size()) return true;
+        if (key.is(Key::SpecialKey::DOWN) || key.is(Key::SpecialKey::UP)) return true;
+        if (key.is(Key::SpecialKey::LEFT) && dx == 0) return true;
+        if (key.is(Key::SpecialKey::RIGHT) && dx >= m_Value.size()) return true;
 
-        if (c == ENTER) {
+        if (key.is(Key::SpecialKey::ENTER)) {
             m_State = State::Highlighted;
             return true;
         }
-        if (c == KEY_DC) {
+        if (key.is(Key::SpecialKey::DELETE)) {
             if (cursorInsideValue) {
                 m_Value.erase(m_Value.begin() + dx);
             }
             return true;
         }
-        if (isLetter(c) || isNumber(c)) {
+        if (key.isLetter() || key.isNumber()) {
+            const char c = *key.getRegular();
             if (m_Value.size() < m_Width - 1) {
                 m_Value.insert(m_Value.begin() + dx, c);
                 setCursor(m_Position + Coord{0, static_cast<int>(dx + 1)});
@@ -305,15 +305,15 @@ void Display::Field::unfocus() noexcept {
 void Display::Field::draw() const noexcept {
     setColorByState();
 
-    m_Drawer->_move(m_Position.y, m_Position.x);
-    m_Drawer->_attron(A_UNDERLINE);
+    m_Drawer->goTo(m_Position.y, m_Position.x);
+    m_Drawer->setAttribute(Drawer::Attribute::UNDERLINE, true);
     for (unsigned int x = 0; x < m_Width; x++) {
         const char c = (x < m_Value.size()) ? m_Value[x] : ' ';
-        m_Drawer->_addch(c);
+        m_Drawer->putch(c);
     }
-    m_Drawer->_attroff(A_UNDERLINE);
+    m_Drawer->setAttribute(Drawer::Attribute::UNDERLINE, false);
 
-    m_Drawer->_refresh();
+    m_Drawer->update();
 }
 
 bool Display::Field::isUnder(const Coord& coord) const noexcept {
@@ -416,23 +416,23 @@ void Display::Window::drawSelf() const noexcept {
 
     // Left
     for (int y = 0; y < m_Dimensions.y; y++) {
-        m_Drawer->_move(m_Position.y + y, 0);
-        m_Drawer->_addch(' ');
+        m_Drawer->goTo(m_Position.y + y, 0);
+        m_Drawer->putch(' ');
     }
     // Bottom
-    m_Drawer->_move(m_Position.y + m_Dimensions.y - 1, 0);
+    m_Drawer->goTo(m_Position.y + m_Dimensions.y - 1, 0);
     for (int x = 0; x < m_Dimensions.x; x++) {
-        m_Drawer->_addch(' ');
+        m_Drawer->putch(' ');
     }
     // Right
     for (int y = 0; y < m_Dimensions.y; y++) {
-        m_Drawer->_move(m_Position.y + y, m_Dimensions.x - 1);
-        m_Drawer->_addch(' ');
+        m_Drawer->goTo(m_Position.y + y, m_Dimensions.x - 1);
+        m_Drawer->putch(' ');
     }
     // Top
-    m_Drawer->_move(m_Position.y, 0);
+    m_Drawer->goTo(m_Position.y, 0);
     for (int x = 0; x < m_Dimensions.x; x++) {
-        m_Drawer->_addch(' ');
+        m_Drawer->putch(' ');
     }
 }
 
@@ -551,8 +551,8 @@ bool Display::shiftCursor(Coord shift) noexcept {
 bool Display::setCursor(const Coord& coord) noexcept {
     if (inbounds(coord)) {
         m_Cursor = coord;
-        m_Drawer->_move(m_Cursor.y, m_Cursor.x);
-        m_Drawer->_refresh();
+        m_Drawer->goTo(m_Cursor.y, m_Cursor.x);
+        m_Drawer->update();
         return true;
     }
     return false;
@@ -564,7 +564,7 @@ void Display::draw() const noexcept {
 
     // Must come last
     drawCursor();
-    m_Drawer->_refresh();
+    m_Drawer->update();
 }
 
 void Display::drawWindows() const noexcept {
@@ -575,25 +575,26 @@ void Display::drawWindows() const noexcept {
 
     drawGallows();
 
-    m_Drawer->_refresh();
+    m_Drawer->update();
 }
 
 void Display::drawCursor() const noexcept {
-    m_Drawer->_move(m_Cursor.y, m_Cursor.x);
-    m_Drawer->_refresh();
+    m_Drawer->goTo(m_Cursor.y, m_Cursor.x);
+    m_Drawer->update();
 }
 
 void Display::drawGallows() const noexcept {
     m_Drawer->setColor({Color::RED, Color::GREEN});
-    m_Drawer->_attron(A_BOLD);
-    m_Drawer->_move(10, 20);
-    m_Drawer->_addch(ACS_URCORNER);
-    m_Drawer->_addch('M');
-    m_Drawer->_addch('a');
-    m_Drawer->_addch('S');
-    m_Drawer->_addch('i');
-    m_Drawer->_addch('K');
-    m_Drawer->_addch(ACS_URCORNER);
+    m_Drawer->setAttribute(Drawer::Attribute::BOLD, true);
+    m_Drawer->goTo(10, 20);
+    m_Drawer->putsch(Drawer::SpecialChar::URCORNER);
+    m_Drawer->putch('M');
+    m_Drawer->putch('a');
+    m_Drawer->putch('S');
+    m_Drawer->putch('i');
+    m_Drawer->putch('K');
+    m_Drawer->putsch(Drawer::SpecialChar::URCORNER);
+    m_Drawer->setAttribute(Drawer::Attribute::BOLD, false);
 }
 
 bool Display::inbounds(const Coord& coord) const noexcept {

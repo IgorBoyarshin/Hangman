@@ -1,20 +1,16 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <ncurses.h>
+/* #include <ncurses.h> */
 #include "Display.h"
 #include "Renderer.h"
 #include "Communicator.h"
+#include "Keyboard.h"
+#include "Key.h"
 
 // For sleeping
 #include <chrono>
 #include <thread>
-
-
-bool isStandartChar(int c);
-bool isExtendedChar(int c);
-bool isMovementChar(int c);
-bool isUpperCase(int c);
 
 
 class Game {
@@ -33,7 +29,7 @@ class Game {
         void initDisplay();
         void cleanup();
         void handleInput();
-        void processInputSymbol(int c);
+        void processInputKey(Key key);
 };
 
 

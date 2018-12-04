@@ -1,7 +1,7 @@
 # The name of the main file and executable
 mainFileName = main
 # Files that have .h and .cpp versions
-classFiles = Client Server Display Game Log Renderer utils NetworkManager
+classFiles = Client Server Display Game Log Renderer utils NetworkManager Key Keyboard
 # Files that only have the .h version
 justHeaderFiles = Drawer Communicator
 # Compilation flags
