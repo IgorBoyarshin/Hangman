@@ -10,7 +10,7 @@
 int main() {
     std::cout << "---------- Start ----------" << std::endl;
 
-    Log::inst().setDestination(Log::Destination::File);
+    Log::setDestination(Log::Destination::File);
     Log::info() << "Project Version = " << GLOBAL_VERSION << std::endl;
     {
         const unsigned int WIDTH = 20;

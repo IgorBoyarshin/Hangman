@@ -7,7 +7,7 @@ Log Log::m_LogInstance{};
 Log::Log() : Log(OutputLevel::None) {}
 
 
-Log::Log(OutputLevel outputLevel) : 
+Log::Log(OutputLevel outputLevel) :
     m_ClassName(""), m_FuncName(""), m_LogLevel(LogLevel::Info),
     m_Destination(Destination::Console) {
         m_OutputLevel = outputLevel;
@@ -41,10 +41,8 @@ Log& Log::setLevel(LogLevel level) {
 }
 
 
-Log& Log::setDestination(Destination destination) {
-    m_Destination = destination;
-
-    return *this;
+void Log::setDestination(Destination destination) {
+    m_LogInstance.m_Destination = destination;
 }
 
 
