@@ -5,10 +5,10 @@
 
 #include "../src/utils.h"
 #include "../src/Drawer.h"
-#include "../src/Igorek.h"
 #include "../src/Game.h"
 #include "../src/Display.h"
 #include "../src/Communicator.h"
+#include "../src/Key.h"
 
 
 using ::testing::Return;
@@ -26,72 +26,64 @@ class MockCommunicator : public Communicator {
 
 class MockDrawer : public Drawer {
     public:
-        MOCK_METHOD2(_move, void(unsigned int, unsigned int));
-        MOCK_METHOD1(_addstr, void(const std::string&));
-        MOCK_METHOD0(_flushinp, void());
-        MOCK_METHOD1(_addch, void(int));
-        MOCK_METHOD1(_attron, void(int));
-        MOCK_METHOD1(_attroff, void(int));
-        MOCK_METHOD0(_refresh, void());
-        MOCK_METHOD0(_endwin, void());
-        MOCK_METHOD0(_keypad, void());
-        MOCK_METHOD0(_initscr, void());
-        MOCK_METHOD0(_noecho, void());
-        MOCK_METHOD0(_start_color, void());
-        MOCK_METHOD0(_erase, void());
-
+        MOCK_METHOD2(goTo, void(unsigned int, unsigned int));
+        MOCK_METHOD1(put, void(const std::string&));
+        MOCK_METHOD1(put, void(char));
+        MOCK_METHOD1(put, void(SpecialChar));
+        MOCK_METHOD2(setAttribute, void(Attribute, bool));
+        /* MOCK_METHOD1(_attron, void(int)); */
+        /* MOCK_METHOD1(_attroff, void(int)); */
+        MOCK_METHOD0(update, void());
+        MOCK_METHOD0(init, void());
+        MOCK_METHOD0(enableColors, void());
+        MOCK_METHOD0(clearScreen, void());
         MOCK_METHOD1(setColor, void(const Color&));
         MOCK_METHOD0(cleanup, void());
 };
 // ----------------------------------------------------------------------------
 // ---------------- Mock Tests
 // ----------------------------------------------------------------------------
-TEST(MockTest2, CommunicatorFunctions) {
-    // MockDrawer mockDrawer;
-    Renderer renderer(10,20);
-    MockCommunicator mockCommunicator;
-
-    EXPECT_CALL(mockCommunicator, connectionEstablished())
-        .Times(AtLeast(4))
-        .WillOnce(Return(false))
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(mockCommunicator, establishConnection(_, _))
-        .WillOnce(Return(true))
-        .WillOnce(Return(false));
-    EXPECT_CALL(mockCommunicator, receiveMessage())
-        .Times(AtLeast(1))
-        .WillOnce(Return(std::optional<std::string>{std::string{"report"}}));
-    EXPECT_CALL(mockCommunicator, sendMessage(_))
-        .WillOnce(Return(true))
-        .WillRepeatedly(Return(false)); // Emulate internet connection loss
-
-    Game game(&renderer, &mockCommunicator);
-
-    EXPECT_FALSE(game.send("message without established connection"));
-    EXPECT_TRUE(game.connect("192.162.0.1", "1234"));
-    EXPECT_TRUE(game.send("message with connection established"));
-    EXPECT_FALSE(game.send("won't transmit"));
-    EXPECT_TRUE(game.receive());
-    EXPECT_FALSE(game.connect("0.162.0.1", "1234"));
-}
+// TEST(MockTest2, CommunicatorFunctions) {
+//     Renderer renderer;
+//     MockCommunicator mockCommunicator;
+//
+//     EXPECT_CALL(mockCommunicator, connectionEstablished())
+//         .Times(AtLeast(4))
+//         .WillOnce(Return(false))
+//         .WillRepeatedly(Return(true));
+//     EXPECT_CALL(mockCommunicator, establishConnection(_, _))
+//         .WillOnce(Return(true))
+//         .WillOnce(Return(false));
+//     EXPECT_CALL(mockCommunicator, receiveMessage())
+//         .Times(AtLeast(1))
+//         .WillOnce(Return(std::optional<std::string>{std::string{"report"}}));
+//     EXPECT_CALL(mockCommunicator, sendMessage(_))
+//         .WillOnce(Return(true))
+//         .WillRepeatedly(Return(false)); // Emulate internet connection loss
+//
+//     Game game(&renderer, &mockCommunicator);
+//
+//     EXPECT_FALSE(game.send("message without established connection"));
+//     EXPECT_TRUE(game.connect("192.162.0.1", "1234"));
+//     EXPECT_TRUE(game.send("message with connection established"));
+//     EXPECT_FALSE(game.send("won't transmit"));
+//     EXPECT_TRUE(game.receive());
+//     EXPECT_FALSE(game.connect("0.162.0.1", "1234"));
+// }
 
 
 TEST(MockTests, DrawerTest) {
     MockDrawer mockDrawer;
     MockCommunicator mockCommunicator;
 
-    EXPECT_CALL(mockDrawer, _initscr())
+    EXPECT_CALL(mockDrawer, init())
         .Times(1);
-    EXPECT_CALL(mockDrawer, _noecho())
+    EXPECT_CALL(mockDrawer, enableColors())
         .Times(1);
-    EXPECT_CALL(mockDrawer, _keypad())
-        .Times(1);
-    EXPECT_CALL(mockDrawer, _start_color())
-        .Times(1);
-    EXPECT_CALL(mockDrawer, _erase())
+    EXPECT_CALL(mockDrawer, clearScreen())
         .Times(AtLeast(1));
 
-    Game game(&mockDrawer, &mockCommunicator);
+    Game game(60, 20, &mockDrawer, &mockCommunicator);
     game.init();
 }
 // ----------------------------------------------------------------------------
@@ -105,7 +97,7 @@ TEST (ButtonTest, IsUnderTest) {
 
 
 TEST (CursorTest, InBoundsTest) {
-    Display display{60, 100, new Renderer(10,10)};
+    Display display{60, 100, new Renderer()};
 
     ASSERT_TRUE(display.setCursor({30, 30}));
     ASSERT_TRUE(display.setCursor({60, 99}));
@@ -126,16 +118,16 @@ TEST (WindowTest, IsInteructableTest) {
 
 
 TEST (CharDisplayTest, CheckIsLetter) {
-    ASSERT_TRUE(isLetter('m'));
-    ASSERT_FALSE(isLetter('&'));
-    ASSERT_TRUE(isLetter('R'));
+    ASSERT_TRUE(Key('m').isLetter());
+    ASSERT_FALSE(Key('&').isLetter());
+    ASSERT_TRUE(Key('R').isLetter());
 }
 
 
 TEST (CharDisplayTest, CheckIsNumber) {
-    ASSERT_FALSE(isNumber(0));
-    ASSERT_FALSE(isNumber('n'));
-    ASSERT_TRUE(isNumber('5'));
+    ASSERT_FALSE(Key(0).isNumber());
+    ASSERT_FALSE(Key('n').isNumber());
+    ASSERT_TRUE(Key('5').isNumber());
 }
 
 
@@ -156,31 +148,32 @@ TEST (TagTest, TwoTagsTest) {
 }
 
 
-TEST (CharGameTest, CheckIsStandartChar) {
-    ASSERT_TRUE(isStandartChar('q'));
-    ASSERT_FALSE(isStandartChar(KEY_RIGHT));
-    ASSERT_TRUE(isStandartChar('H'));
+TEST (KeyTest, CheckIsRegular) {
+    ASSERT_TRUE(Key('q').isRegular());
+    ASSERT_FALSE(Key(KEY_RIGHT).isRegular());
+    ASSERT_TRUE(Key(123).isRegular());
 }
 
 
-TEST (CharGameTest, CheckIsExtendedChar) {
-    ASSERT_TRUE(isExtendedChar(KEY_DOWN));
-    ASSERT_TRUE(isExtendedChar(KEY_RIGHT));
-    ASSERT_FALSE(isExtendedChar('K'));
+TEST (KeyTest, CheckIsSpecial) {
+    ASSERT_TRUE(Key(KEY_DOWN).isSpecial());
+    ASSERT_TRUE(Key(KEY_RIGHT).isSpecial());
+    ASSERT_FALSE(Key('K').isSpecial());
 }
 
 
-TEST (CharGameTest, CheckIsMovementChar) {
-    ASSERT_TRUE(isMovementChar('k'));
-    ASSERT_TRUE(isMovementChar(KEY_RIGHT));
-    ASSERT_FALSE(isMovementChar('K'));
+TEST (KeyTest, CheckKeyIs) {
+    ASSERT_TRUE(Key('a').is('a'));
+    ASSERT_TRUE(Key(KEY_DOWN).is(Key::SpecialKey::DOWN));
+    ASSERT_FALSE(Key('b').is(Key::SpecialKey::DOWN));
 }
 
 
-TEST (CharGameTest, CheckIsUpperCase) {
-    ASSERT_FALSE(isUpperCase('k'));
-    ASSERT_FALSE(isUpperCase(KEY_UP));
-    ASSERT_TRUE(isUpperCase('K'));
+TEST (KeyTest, CheckDirection) {
+    ASSERT_TRUE(Key('j').asDirection());
+    ASSERT_EQ(*Key('j').asDirection(), Direction::DOWN);
+    ASSERT_EQ(*Key(KEY_DOWN).asDirection(), Direction::DOWN);
+    ASSERT_FALSE(Key('u').asDirection());
 }
 
 
