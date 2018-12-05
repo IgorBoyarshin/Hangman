@@ -122,9 +122,6 @@ utils.o : $(SOURCE_DIR)/utils.cpp $(SOURCE_DIR)/utils.h
 Display.o : $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Display.cpp
 
-Igorek.o : $(SOURCE_DIR)/Igorek.cpp $(SOURCE_DIR)/Igorek.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Igorek.cpp
-
 $(TEST_NAME).o : $(SOURCE_DIR)/Drawer.h $(SOURCE_DIR)/Communicator.h $(TEST_DIR)/$(TEST_NAME).cpp $(SOURCE_DIR)/Igorek.cpp $(SOURCE_DIR)/Igorek.h $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) -I$(SOURCE_DIR) $(CXXFLAGS) -c $(TEST_DIR)/$(TEST_NAME).cpp
 

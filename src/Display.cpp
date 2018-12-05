@@ -583,17 +583,6 @@ void Display::drawCursor() const noexcept {
 }
 
 void Display::drawGallows() const noexcept {
-    m_Drawer->setColor({Color::RED, Color::GREEN});
-    m_Drawer->setAttribute(Drawer::Attribute::BOLD, true);
-    m_Drawer->goTo(10, 20);
-    m_Drawer->put(Drawer::SpecialChar::URCORNER);
-    m_Drawer->put('M');
-    m_Drawer->put('a');
-    m_Drawer->put('S');
-    m_Drawer->put('i');
-    m_Drawer->put('K');
-    m_Drawer->put(Drawer::SpecialChar::URCORNER);
-    m_Drawer->setAttribute(Drawer::Attribute::BOLD, false);
 }
 
 bool Display::inbounds(const Coord& coord) const noexcept {
