@@ -1,0 +1,15 @@
+Dockerfile
+ncurses_colors.png
+src/*.out
+src/*.o
+src/*.gch
+src/.*.gch
+src/version.h
+src/*.log
+src/main
+test/main_test
+test/*.a
+test/*.out
+test/*.o
+test/*.gch
+test/.*.gch
