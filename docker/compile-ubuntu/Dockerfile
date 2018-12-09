@@ -11,4 +11,4 @@ RUN mkdir /app && mkdir /app/hangman
 RUN mkdir /mnt/host
 COPY src /app/hangman/src
 COPY .git /app/hangman/.git
-CMD cd /app/hangman/src && make && cp -a Hangman /mnt/host/Hangman
+CMD cd /app/hangman/src && make && cp -a Hangman /mnt/host/Hangman-ubuntu

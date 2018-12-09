@@ -1,4 +1,3 @@
-Dockerfile
 ncurses_colors.png
 src/*.out
 src/*.o
