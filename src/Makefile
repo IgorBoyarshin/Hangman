@@ -1,5 +1,7 @@
-# The name of the main file and executable
+# The name of the main file
 mainFileName = main
+# The name of the executable
+executableName = Hangman
 # Files that have .h and .cpp versions
 classFiles = Client Server Display Game Log Renderer utils NetworkManager Key Keyboard
 # Files that only have the .h version
@@ -49,7 +51,7 @@ main.o: main.cpp Game.h NetworkManager.h Log.h
 
 # Linker
 $(mainFileName): $(filesObj)
-	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) $^ -o $@ $(LINKER_FLAGS)
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) $^ -o $(executableName) $(LINKER_FLAGS)
 
 
 # Generate a piece of code that has accessible constant that holds

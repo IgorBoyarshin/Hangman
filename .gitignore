@@ -4,6 +4,7 @@ a.out
 .*.gch
 version.h
 main
+Hangman
 *.png
 test/main_test
 *.a
