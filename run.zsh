@@ -9,4 +9,4 @@ make
 # rm -f *.o
 rm -f *.gch
 rm -f .*.gch
-rm -f Hangman
+# rm -f Hangman

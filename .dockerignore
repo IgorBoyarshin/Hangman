@@ -7,9 +7,12 @@ src/.*.gch
 src/version.h
 src/*.log
 src/main
+src/Hangman
 test/main_test
 test/*.a
 test/*.out
 test/*.o
 test/*.gch
 test/.*.gch
+docker
+.dockerignore

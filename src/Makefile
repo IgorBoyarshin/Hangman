@@ -18,7 +18,7 @@ filesObj = $(addsuffix .o, $(mainFileName) $(classFiles))
 filesH = $(addsuffix .h, $(classFiles) $(justHeaderFiles))
 
 
-all: cleanExe describe $(mainFileName)
+all: cleanExe describe $(executableName)
 
 
 # Compiler
@@ -50,7 +50,7 @@ main.o: main.cpp Game.h NetworkManager.h Log.h
 	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
 
 # Linker
-$(mainFileName): $(filesObj)
+$(executableName): $(filesObj)
 	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) $^ -o $(executableName) $(LINKER_FLAGS)
 
 
@@ -67,7 +67,7 @@ describe:
 
 # Utils
 clean:
-	rm -f *.o *.gch .*.gch $(mainFileName) version.h
+	rm -f *.o *.gch .*.gch $(executableName) version.h
 
 cleanExe:
-	rm -f $(mainFileName)
+	rm -f $(executableName)
