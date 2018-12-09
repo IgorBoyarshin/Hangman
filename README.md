@@ -53,42 +53,42 @@ You could also run the compiled executable using `Docker` (for whatever reason).
     * **g++** >= 7:
         * Ubuntu:
             ```sh
-            sudo apt-get update && sudo apt-get install g++-7
+            $ sudo apt-get update && sudo apt-get install g++-7
             ```
         * Arch:
             ```sh
-            sudo pacman -S gcc
+            $ sudo pacman -S gcc
             ```
     * **make**:
         * Ubuntu:
             ```sh
-            sudo apt-get update && sudo apt-get install build-essential
+            $ sudo apt-get update && sudo apt-get install build-essential
             ```
         * Arch:
             ```sh
-            sudo pacman -S make
+            $ sudo pacman -S make
             ```
     * **ncurses** library:
         * Ubuntu:
             ```sh
-            sudo apt-get update && sudo apt-get install libncurses5-dev libncursesw5-dev
+            $ sudo apt-get update && sudo apt-get install libncurses5-dev libncursesw5-dev
             ```
         * Arch:
             ```sh
-            sudo pacman -S ncurses
+            $ sudo pacman -S ncurses
             ```
     * **git**:
         * Ubuntu:
             ```sh
-            sudo apt-get update && sudo apt-get install git
+            $ sudo apt-get update && sudo apt-get install git
             ```
         * Arch:
             ```sh
-            sudo pacman -S git
+            $ sudo pacman -S git
             ```
 * Make sure the correct versions of the language will be used:
     ```sh
-    export CC=gcc-7 && export CXX=g++-7
+    $ export CC=gcc-7 && export CXX=g++-7
     ```
 * Download the project source code (will create a new folder **Hangman**):
     ```sh
@@ -106,7 +106,7 @@ In order to run a pre-compiled executable (with `Ubuntu`, `Arch linux` or `Docke
 * If you are using `Ubuntu`:
     * Install the necessary dependencies:
         ```sh
-        sudo apt-get update && sudo apt-get install libncurses5-dev libncursesw5-dev
+        $ sudo apt-get update && sudo apt-get install libncurses5-dev libncursesw5-dev
         ```
     * Download the executable `Hangman-ubuntu` for the desired release from the releases page.
     * Natigate to your **Downloads** folder and make sure that `Hangman-ubuntu` is executable. Finally, run it:
@@ -118,7 +118,7 @@ In order to run a pre-compiled executable (with `Ubuntu`, `Arch linux` or `Docke
 * If you are using `Arch linux`:
     * Install the necessary dependencies:
         ```sh
-        sudo pacman -S ncurses
+        $ sudo pacman -S ncurses
         ```
     * Download the executable `Hangman-archlinux` for the desired release from the releases page.
     * Natigate to your **Downloads** folder and make sure that `Hangman-archlinux` is executable. Finally, run it:
