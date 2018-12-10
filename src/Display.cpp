@@ -601,7 +601,7 @@ void Display::drawGallows() const noexcept {
     m_Drawer->put('c');
     m_Drawer->put('k');
     m_Drawer->put(':');
-    m_Drawer->goTo(12 + X_SHIFT, 24 + Y_SHIFT);
+    m_Drawer->goTo(12 + Y_SHIFT, 24 + X_SHIFT);
     // 1 mistake
     for (unsigned int h = 1; h < 6; h++) {
         if (h % 3 == 0) {
@@ -612,11 +612,11 @@ void Display::drawGallows() const noexcept {
     }
     // 2 mistakes
     for (unsigned int v = 0; v < 4; v++) {
-        m_Drawer->goTo(v + 8 + X_SHIFT, 26 + Y_SHIFT);
+        m_Drawer->goTo(v + 8 + Y_SHIFT, 26 + X_SHIFT);
         m_Drawer->put(Drawer::SpecialChar::VLINE);
     }
     // 3 mistakes
-    m_Drawer->goTo(7 + X_SHIFT, 26 + Y_SHIFT);
+    m_Drawer->goTo(7 + Y_SHIFT, 26 + X_SHIFT);
     m_Drawer->put(Drawer::SpecialChar::ULCORNER);
     for (unsigned int h = 0; h < 7; h++) {
         m_Drawer->put(Drawer::SpecialChar::HLINE);
@@ -624,28 +624,28 @@ void Display::drawGallows() const noexcept {
     // 4 mistakes
     m_Drawer->put(Drawer::SpecialChar::URCORNER);
     // 5 mistakes
-    m_Drawer->goTo(8 + X_SHIFT, 34 + Y_SHIFT);
+    m_Drawer->goTo(8 + Y_SHIFT, 34 + X_SHIFT);
     m_Drawer->put(Drawer::SpecialChar::CKBOARD);
     // 6 mistakes
-    m_Drawer->goTo(9 + X_SHIFT, 34 + Y_SHIFT);
+    m_Drawer->goTo(9 + Y_SHIFT, 34 + X_SHIFT);
     m_Drawer->put(Drawer::SpecialChar::PLUS);
-    m_Drawer->goTo(10 + X_SHIFT, 34 + Y_SHIFT);
+    m_Drawer->goTo(10 + Y_SHIFT, 34 + X_SHIFT);
     m_Drawer->put(Drawer::SpecialChar::BTEE);
     // 7 mistakes
-    m_Drawer->goTo(9 + X_SHIFT, 33 + Y_SHIFT);
+    m_Drawer->goTo(9 + Y_SHIFT, 33 + X_SHIFT);
     m_Drawer->put(Drawer::SpecialChar::ULCORNER);
     // 8 mistakes
-    m_Drawer->goTo(9 + X_SHIFT, 35 + Y_SHIFT);
+    m_Drawer->goTo(9 + Y_SHIFT, 35 + X_SHIFT);
     m_Drawer->put(Drawer::SpecialChar::URCORNER);
     // 9 mistakes
-    m_Drawer->goTo(10 + X_SHIFT, 33 + Y_SHIFT);
+    m_Drawer->goTo(10 + Y_SHIFT, 33 + X_SHIFT);
     m_Drawer->put(Drawer::SpecialChar::ULCORNER);
-    m_Drawer->goTo(11 + X_SHIFT, 33 + Y_SHIFT);
+    m_Drawer->goTo(11 + Y_SHIFT, 33 + X_SHIFT);
     m_Drawer->put(Drawer::SpecialChar::LRCORNER);
     // 10 mistakes
-    m_Drawer->goTo(10 + X_SHIFT, 35 + Y_SHIFT);
+    m_Drawer->goTo(10 + Y_SHIFT, 35 + X_SHIFT);
     m_Drawer->put(Drawer::SpecialChar::URCORNER);
-    m_Drawer->goTo(11 + X_SHIFT, 35 + Y_SHIFT);
+    m_Drawer->goTo(11 + Y_SHIFT, 35 + X_SHIFT);
     m_Drawer->put(Drawer::SpecialChar::LLCORNER);
 }
 
