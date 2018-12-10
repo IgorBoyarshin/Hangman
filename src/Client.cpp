@@ -5,17 +5,15 @@ const std::string Client::m_DefaultName = "DefaultClient";
 
 
 Client::Client(std::string name, std::string serverAddress, unsigned int serverPort)
-        : m_Name(name), m_ServerAddress(serverAddress), m_ServerPort(serverPort) {
-}
+        : m_Name(name), m_ServerAddress(serverAddress), m_ServerPort(serverPort) {}
 
 
 Client::Client(std::string serverAddress, unsigned int serverPort)
-        : Client(m_DefaultName, serverAddress, serverPort) {
-
-}
+        : Client(m_DefaultName, serverAddress, serverPort) {}
 
 
 Client::~Client() {
+    std::cout << "[LOG:INFO:~Client()]: " << m_Name << " destructing." << std::endl;
 }
 
 

@@ -8,10 +8,12 @@ src/*.log
 src/main
 src/Hangman
 test/main_test
+test/mockplayer
 test/*.a
 test/*.out
 test/*.o
 test/*.gch
 test/.*.gch
+test/docker
 docker
 .dockerignore

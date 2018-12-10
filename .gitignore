@@ -10,3 +10,4 @@ test/main_test
 *.a
 *.log
 out
+mockplayer

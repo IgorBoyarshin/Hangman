@@ -8,6 +8,7 @@
 #include "../src/Game.h"
 #include "../src/Display.h"
 #include "../src/Communicator.h"
+#include "../src/NetworkManager.h"
 #include "../src/Key.h"
 
 
@@ -18,8 +19,9 @@ using ::testing::AtLeast;
 
 class MockCommunicator : public Communicator {
     public:
-        MOCK_METHOD0(receiveMessage, std::optional<std::string>());
-        MOCK_METHOD1(sendMessage, bool(const std::string&));
+        MOCK_METHOD0(receive, std::optional<std::string>());
+        MOCK_METHOD0(blockReceive, std::string());
+        MOCK_METHOD3(send, bool(const std::string&, unsigned int, const std::string&));
         MOCK_METHOD2(establishConnection, bool(const std::string&, const std::string&));
         MOCK_METHOD0(connectionEstablished, bool());
 };
@@ -43,6 +45,29 @@ class MockDrawer : public Drawer {
 // ----------------------------------------------------------------------------
 // ---------------- Mock Tests
 // ----------------------------------------------------------------------------
+TEST(IntegrationTest, NetworkConnectionTest) {
+    // Expects a server with addr=127.0.0.1 and port=8080 to be running.
+    // (It is launched with Docker)
+    const std::string serverAddr = "172.17.0.2";
+    /* const std::string serverAddr = "127.0.0.1"; */
+    const unsigned int serverPort = 8080;
+
+    const std::string name = "ConnectingPlayer";
+    const std::string addr = "172.17.0.3";
+    const unsigned int port = 1234;
+    Communicator* communicator = new NetworkManager(name, addr, port);
+
+    const std::string message = "hello from " + addr + " " + std::to_string(port);
+    const bool sendSuccessful = communicator->send(serverAddr, serverPort, message);
+    EXPECT_TRUE(sendSuccessful);
+    if (sendSuccessful) {
+        const std::string reply = communicator->blockReceive();
+        EXPECT_EQ(reply, "hello to you too, good sir!!");
+    }
+
+    delete communicator;
+}
+
 // TEST(MockTest2, CommunicatorFunctions) {
 //     Renderer renderer;
 //     MockCommunicator mockCommunicator;

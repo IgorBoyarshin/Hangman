@@ -17,6 +17,7 @@ Server::Server(std::string address, unsigned int port, bool startImmediately/* =
 
 
 Server::~Server() {
+    std::cout << "[LOG:INFO:~Server()]: " << m_Name << " destructing." << std::endl;
     cleanup();
 }
 
