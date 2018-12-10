@@ -9,13 +9,15 @@ compiler:
 before_install:
     - echo ":> Running before_install..."
     - docker build -t hangman-test-run -f test/docker/run-test/Dockerfile .
-    # - docker build -t hangman-test-run-mock-player -f test/docker/run-mock-player/Dockerfile .
+    - docker build -t hangman-test-run-mock-player -f test/docker/run-mock-player/Dockerfile .
     # - if [ 5 -ge 2 ]; then  echo "5 > 2"; fi
 install:
     - echo ":> Running install..."
 script:
     - echo ":> Running tests..."
+    - docker run --name mock-player -d -p 8080 -p 1234 -it hangman-test-run-mock-player
     - docker run -p 8080 -p 1234 -it hangman-test-run
+    - docker stop mock-player
     # - export CC=gcc-7
     # - export CXX=g++-7
     # - chmod +x runTests.zsh
