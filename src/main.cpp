@@ -16,7 +16,7 @@ int main() {
         const unsigned int WIDTH = 20;
         const unsigned int HEIGHT = 60;
         Drawer* drawer = new Renderer;
-        Communicator* communicator = new NetworkManager;
+        Communicator* communicator = new NetworkManager("MainNM", "127.0.0.1", 8080);
         Game game{WIDTH, HEIGHT, drawer, communicator};
         game.init();
         game.loop();
