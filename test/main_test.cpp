@@ -46,8 +46,7 @@ class MockDrawer : public Drawer {
 // ---------------- Mock Tests
 // ----------------------------------------------------------------------------
 TEST(IntegrationTest, NetworkConnectionTest) {
-    // Expects a server with addr=127.0.0.1 and port=8080 to be running.
-    // (It is launched with Docker)
+    // Expects a server to be running (It is launched with Docker)
     const std::string serverAddr = "172.17.0.2";
     /* const std::string serverAddr = "127.0.0.1"; */
     const unsigned int serverPort = 8080;
@@ -57,12 +56,21 @@ TEST(IntegrationTest, NetworkConnectionTest) {
     const unsigned int port = 1234;
     Communicator* communicator = new NetworkManager(name, addr, port);
 
-    const std::string message = "hello from " + addr + " " + std::to_string(port);
-    const bool sendSuccessful = communicator->send(serverAddr, serverPort, message);
-    EXPECT_TRUE(sendSuccessful);
-    if (sendSuccessful) {
+    const std::string message1 = "hello from " + addr + " " + std::to_string(port);
+    const bool sendSuccessful1 = communicator->send(serverAddr, serverPort, message1);
+    EXPECT_TRUE(sendSuccessful1);
+    if (sendSuccessful1) {
         const std::string reply = communicator->blockReceive();
         EXPECT_EQ(reply, "hello to you too, good sir!!");
+    }
+
+    const std::string message2 = "who are you " + addr + " " + std::to_string(port);
+    const bool sendSuccessful2 = communicator->send(serverAddr, serverPort, message2);
+    EXPECT_TRUE(sendSuccessful2);
+    if (sendSuccessful2) {
+        const std::string reply = communicator->blockReceive();
+        const std::string beg = reply.substr(0, 4);
+        EXPECT_TRUE(beg == "I am");
     }
 
     delete communicator;

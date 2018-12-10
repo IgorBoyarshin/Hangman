@@ -52,6 +52,22 @@ int main(int argc, char* argv[]) {
 
                 // Send reply
                 communicator->send(opponentAddr, opponentPort, "hello to you too, good sir!!");
+            } else if (std::regex_match(message, std::regex("(who are you )(.*)"))) {
+                std::cout << "Recognized as \"who are you?\"" << std::endl;
+
+                static const auto addrStart = 12;
+                const auto addrEnd = message.find(' ', addrStart);
+                const std::string opponentAddr = message.substr(addrStart, addrEnd - addrStart);
+                const auto portStart = addrEnd + 1;
+                const auto portEnd = (message.find(' ', portStart) == std::string::npos) ?
+                    message.size() :
+                    message.find(' ', portStart);
+                const unsigned int opponentPort = static_cast<unsigned int>
+                    (std::stoi(message.substr(portStart, portEnd - portStart)));
+                std::cout << "Opponent info:" << opponentAddr << ":" << opponentPort << "." << std::endl;
+
+                // Send reply
+                communicator->send(opponentAddr, opponentPort, "I am " + addr + ":" + std::to_string(port));
             } else {
                 std::cout << "Not recognized" << std::endl;
             }
