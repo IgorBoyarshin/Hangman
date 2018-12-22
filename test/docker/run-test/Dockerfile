@@ -14,4 +14,4 @@ RUN mkdir /app && mkdir /app/hangman
 COPY src /app/hangman/src
 COPY test /app/hangman/test
 COPY lib /app/hangman/lib
-CMD ifconfig && cd /app/hangman/test && make && ./main_test
+CMD ifconfig && cd /app/hangman/test && make run_tests_docker

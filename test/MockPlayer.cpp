@@ -12,20 +12,23 @@
 
 int main(int argc, char* argv[]) {
     const std::string name = "MockPlayer";
-    const std::string addr = "172.17.0.2";
-    const unsigned int port = [](int argc, char* argv[]){
+    /* const std::string addr = "172.17.0.2"; */
+    const auto [addr, port] = [](int argc, char* argv[]){
+        static const std::string DEFAULT_ADDR = "127.0.0.1";
         static const unsigned int DEFAULT_PORT = 8080;
-        if (argc == 2) {
+        if (argc == 3) {
+            std::string parsed_addr = DEFAULT_ADDR;
             unsigned int parsed_port = DEFAULT_PORT;
             try {
-                parsed_port = static_cast<unsigned int>(std::stoi(std::string(argv[1])));
+                parsed_addr = std::string(argv[1]);
+                parsed_port = static_cast<unsigned int>(std::stoi(std::string(argv[2])));
             } catch (std::exception& e) {
                 std::cout << "Invalid argument supplied. Assuming default port" << std::endl;
             }
-            return parsed_port;
+            return std::pair<std::string, unsigned int>{parsed_addr, parsed_port};
         } else {
-            std::cout << "No proper arguments specified. Assuming default port" << std::endl;
-            return DEFAULT_PORT;
+            std::cout << "No or invalid arguments specified. Assuming default address and port" << std::endl;
+            return std::pair<std::string, unsigned int>{DEFAULT_ADDR, DEFAULT_PORT};
         }
     }(argc, argv);
 

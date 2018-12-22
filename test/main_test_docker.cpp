@@ -47,13 +47,13 @@ class MockDrawer : public Drawer {
 // ----------------------------------------------------------------------------
 TEST(IntegrationTest, NetworkConnectionTest) {
     // Expects a server to be running (It is launched with Docker)
-    /* const std::string serverAddr = "172.17.0.2"; */
-    const std::string serverAddr = "127.0.0.1";
+    const std::string serverAddr = "172.17.0.2";
+    /* const std::string serverAddr = "127.0.0.1"; */
     const unsigned int serverPort = 8080;
 
     const std::string name = "ConnectingPlayer";
-    /* const std::string addr = "172.17.0.3"; */
-    const std::string addr = "127.0.0.1";
+    const std::string addr = "172.17.0.3";
+    /* const std::string addr = "127.0.0.1"; */
     const unsigned int port = 1234;
     Communicator* communicator = new NetworkManager(name, addr, port);
 

@@ -14,4 +14,4 @@ RUN mkdir /app && mkdir /app/hangman
 COPY src /app/hangman/src
 COPY test /app/hangman/test
 COPY lib /app/hangman/lib
-CMD ifconfig && cd /app/hangman/test && make mockplayer && ./mockplayer 8080
+CMD ifconfig && cd /app/hangman/test && make run_mockplayer_docker

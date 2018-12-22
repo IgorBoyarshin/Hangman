@@ -1,36 +1,63 @@
+# Paths
 GTEST_DIR = ../lib/googletest/googletest
 GMOCK_DIR = ../lib/googletest/googlemock
-
-CPPFLAGS += -isystem $(GTEST_DIR)/include -isystem $(GMOCK_DIR)/include
-CXXFLAGS += -g -std=gnu++17 -Wall -Wextra -pthread
-
-TEST_NAME = main_test
-SOURCE_DIR = ../src
-LIB_DIR = ../lib
-TEST_DIR = .
 
 GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
                 $(GTEST_DIR)/include/gtest/internal/*.h
 GMOCK_HEADERS = $(GMOCK_DIR)/include/gmock/*.h \
                 $(GMOCK_DIR)/include/gmock/internal/*.h
 
-all : $(TEST_NAME)
-	@echo "Running all"
+GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h
+GMOCK_SRCS_ = $(GMOCK_DIR)/src/*.cc
 
+TEST_NAME = main_test
+TEST_NAME_DOCKER = main_test_docker
+SOURCE_DIR = ../src
+LIB_DIR = ../lib
+TEST_DIR = .
+
+# Flags
+CPPFLAGS += -isystem $(GTEST_DIR)/include -isystem $(GMOCK_DIR)/include
+CXXFLAGS += -g -std=gnu++17 -Wall -Wextra -pthread
+
+# Jobs
+run_tests : $(TEST_NAME)
+	@echo "Running all tests..."
+	./$(TEST_NAME)
+	rm -f $(TEST_NAME)
+
+run_tests_docker : $(TEST_NAME_DOCKER)
+	@echo "Running all tests..."
+	./$(TEST_NAME_DOCKER)
+	rm -f $(TEST_NAME_DOCKER)
+
+run_mockplayer : mockplayer
+	@echo "Starting MockPlayer..."
+	./mockplayer 127.0.0.1 8080
+	rm -f mockplayer
+
+run_mockplayer_docker : mockplayer
+	@echo "Starting MockPlayer..."
+	./mockplayer 172.17.0.2 8080
+	rm -f mockplayer
+
+# all : $(mockplayer) $(TEST_NAME)
+# 	./mockplayer
+# 	./$(TEST_NAME)
+
+clean :
+	rm -rf $(TEST_NAME) $(TEST_NAME_DOCKER) gtest.a gtest_main.a *.o gmock.a *.gch .*.gch
+
+
+# Stuff
+# MockPlayer that has to be running in background in order to execute other tests
 MockPlayer.o : $(SOURCE_DIR)/Communicator.h $(SOURCE_DIR)/NetworkManager.h $(SOURCE_DIR)/NetworkManager.cpp MockPlayer.cpp
 	$(CXX) $(CXXFLAGS) -c MockPlayer.cpp
 
 mockplayer : MockPlayer.o NetworkManager.o Server.o Client.o
 	$(CXX) $(CXXFLAGS) $^ -o mockplayer
 
-
-clean :
-	rm -rf $(TEST_NAME) gtest.a gtest_main.a *.o gmock.a *.gch .*.gch
-
-
-GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h
-GMOCK_SRCS_ = $(GMOCK_DIR)/src/*.cc
-
+# Other components
 gtest-all.o : $(GTEST_SRCS_) $(GTEST_HEADERS)
 	@echo "Running oo 1"
 	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -c $(GTEST_DIR)/src/gtest-all.cc
@@ -79,4 +106,10 @@ $(TEST_NAME).o : $(SOURCE_DIR)/Drawer.h $(SOURCE_DIR)/Communicator.h $(TEST_DIR)
 	$(CXX) $(CPPFLAGS) -I$(SOURCE_DIR) $(CXXFLAGS) -c $(TEST_DIR)/$(TEST_NAME).cpp
 
 $(TEST_NAME) : Server.o Client.o Renderer.o Display.o Game.o Key.o Keyboard.o NetworkManager.o utils.o $(TEST_NAME).o gtest.a gmock.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@ -L. -lncurses
+
+$(TEST_NAME_DOCKER).o : $(SOURCE_DIR)/Drawer.h $(SOURCE_DIR)/Communicator.h $(TEST_DIR)/$(TEST_NAME_DOCKER).cpp $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(SOURCE_DIR)/Key.cpp $(SOURCE_DIR)/Key.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) -I$(SOURCE_DIR) $(CXXFLAGS) -c $(TEST_DIR)/$(TEST_NAME_DOCKER).cpp
+
+$(TEST_NAME_DOCKER) : Server.o Client.o Renderer.o Display.o Game.o Key.o Keyboard.o NetworkManager.o utils.o $(TEST_NAME_DOCKER).o gtest.a gmock.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@ -L. -lncurses

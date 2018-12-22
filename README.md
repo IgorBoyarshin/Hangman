@@ -109,7 +109,7 @@ In order to run a pre-compiled executable (with `Ubuntu`, `Arch linux` or `Docke
         $ sudo apt-get update && sudo apt-get install libncurses5-dev libncursesw5-dev
         ```
     * Download the executable `Hangman-ubuntu` for the desired release from the releases page.
-    * Natigate to your **Downloads** folder and make sure that `Hangman-ubuntu` is executable. Finally, run it:
+    * Navigate to your **Downloads** folder and make sure that `Hangman-ubuntu` is executable. Finally, run it:
         ```sh
         $ cd ~/Downloads
         $ chmod +x Hangman-ubuntu
@@ -121,7 +121,7 @@ In order to run a pre-compiled executable (with `Ubuntu`, `Arch linux` or `Docke
         $ sudo pacman -S ncurses
         ```
     * Download the executable `Hangman-archlinux` for the desired release from the releases page.
-    * Natigate to your **Downloads** folder and make sure that `Hangman-archlinux` is executable. Finally, run it:
+    * Navigate to your **Downloads** folder and make sure that `Hangman-archlinux` is executable. Finally, run it:
         ```sh
         $ cd ~/Downloads
         $ chmod +x Hangman-archlinux
@@ -149,9 +149,46 @@ In order to run a pre-compiled executable (with `Ubuntu`, `Arch linux` or `Docke
               |-- out
                    |-- Hangman-ubuntu
         ```
-    * Natigate to your app folder (e.g. **~/Hangman**). Build docker image from inside this folder and then run the image:
+    * Navigate to your app folder (e.g. **~/Hangman**). Build docker image from inside this folder and then run the image:
         ```sh
         $ cd ~/Hangman
         $ docker build -t hangman-run-ubuntu . # note: may need root to run docker
         $ docker run -it hangman-run-ubuntu    # note: may need root to run docker
+        ```
+
+## Running tests
+You can run tests either natively or using `Docker`.
+* Using `Docker`:
+
+    Head to the root of the project.
+
+    In order to see the output of the *MockPlayer* you need to run this container in a separate console **not** in a detached state. Otherwise (to just run the tests), do the following:
+    ```sh
+    $ docker build -t hangman-test-run-mock-player -f test/docker/run-mock-player/Dockerfile . # note: may need root to run docker
+    $ docker build -t hangman-test-run -f test/docker/run-test/Dockerfile . # note: may need root to run docker
+    $ docker run --name mock-player -d -p 8080 -p 1234 -it hangman-test-run-mock-player # note: may need root to run docker
+    $ docker run -p 8080 -p 1234 -it hangman-test-run # note: may need root to run docker
+    # --- Tests running ---
+    $ docker stop mock-player # stop the detached earlier contained
+    ```
+* Natively:
+
+    Head to the **test** project folder.
+
+    You will need 2 separate console instances. The reason for that is that some test cases required a mock player to be running in the background.
+
+    Do things in the following order:
+    * In the 1st console instance:
+        ```sh
+        $ make run_mockplayer
+        ```
+    * In the 2st console instance:
+        ```sh
+        $ make run_tests
+        # --- Tests running ---
+        ```
+    * In the 1st console instance:
+        ```sh
+        # Having executed the tests in 2nd console:
+        $ ^C # stop the execution with e.g. Ctrl+C
         ```
