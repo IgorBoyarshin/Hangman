@@ -169,7 +169,7 @@ You can run tests either natively or using `Docker`.
     $ docker run --name mock-player -d -p 8080 -p 1234 -it hangman-test-run-mock-player # note: may need root to run docker
     $ docker run -p 8080 -p 1234 -it hangman-test-run # note: may need root to run docker
     # --- Tests running ---
-    $ docker stop mock-player # stop the detached earlier contained
+    $ docker stop mock-player # stop the detached earlier container
     ```
 * Natively:
 
