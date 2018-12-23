@@ -14,6 +14,9 @@ class Communicator {
         virtual std::optional<std::string> receive() = 0;
         virtual std::string blockReceive() = 0;
         virtual bool send(const std::string& addr, unsigned int port, const std::string& message) = 0;
+
+        virtual std::string getAddress() const noexcept = 0;
+        virtual unsigned int getPort() const noexcept = 0;
 };
 
 

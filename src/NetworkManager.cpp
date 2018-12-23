@@ -5,7 +5,8 @@ NetworkManager::NetworkManager(
         const std::string& name,
         const std::string& address,
         const unsigned int port)
-    : m_Server(new Server(name, address, port)) {
+    : m_Server(new Server(name, address, port)),
+      m_ServerAddress(address), m_ServerPort(port) {
     Log::info().setClass("NetworkManager").setFunc("NetworkManager")
         << "NetworkManager " << name << " has started on address "
         << address << ":" << port << std::endl;
@@ -40,4 +41,12 @@ bool NetworkManager::establishConnection(const std::string& ip, const std::strin
 // TODO
 bool NetworkManager::connectionEstablished() {
     return false;
+}
+
+std::string NetworkManager::getAddress() const noexcept {
+    return m_ServerAddress;
+}
+
+unsigned int NetworkManager::getPort() const noexcept {
+    return m_ServerPort;
 }

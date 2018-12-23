@@ -247,28 +247,28 @@ class Display {
                 static WindowColors getColorsForWindow(const WindowType& windowtype) noexcept;
                 Window& addField(
                         const Coord& position,
-                        const Tag& tag,
+                        const Tag tag,
                         unsigned int width,
                         const std::string& initialValue = "") noexcept;
                 Window& addLabel(
-                        const Coord& position, const Tag& tag,
+                        const Coord& position, const Tag tag,
                         const std::string& value = "", bool hidden = false) noexcept;
                 Window& addButton(
                         const Coord& position,
                         const Coord& dimensions,
-                        const Tag& tag,
+                        const Tag tag,
                         const std::string& value,
                         const std::function<void()> feedback, bool hidden = false) noexcept;
                 Window& addVLine(
                         const Coord& position,
                         unsigned int length,
                         const Color& color,
-                        const Tag& tag) noexcept;
+                        const Tag tag) noexcept;
                 Window& addHLine(
                         const Coord& position,
                         unsigned int length,
                         const Color& color,
-                        const Tag& tag) noexcept;
+                        const Tag tag) noexcept;
                 std::optional<std::reference_wrapper<Interactable>>
                         getInteractableUnder(const Coord& coord) noexcept;
                 std::optional<std::reference_wrapper<Button>>

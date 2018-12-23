@@ -251,6 +251,7 @@ void Display::Button::draw() const noexcept {
 }
 
 bool Display::Button::isUnder(const Coord& coord) const noexcept {
+    if (m_Hidden) return false;
     return (m_Position.x <= coord.x && coord.x < m_Position.x + m_Dimensions.x) &&
             (m_Position.y <= coord.y && coord.y < m_Position.y + m_Dimensions.y);
 }
@@ -390,6 +391,7 @@ void Display::Field::draw() const noexcept {
 }
 
 bool Display::Field::isUnder(const Coord& coord) const noexcept {
+    if (m_Hidden) return false;
     if (coord.y == m_Position.y) {
         return (m_Position.x <= coord.x &&
                 coord.x < m_Position.x + static_cast<int>(m_Width));
@@ -464,7 +466,7 @@ Display::WindowColors Display::Window::getColorsForWindow(const WindowType& wind
 
 Display::Window& Display::Window::addField(
         const Coord& position,
-        const Tag& tag,
+        const Tag tag,
         unsigned int width,
         const std::string& initialValue/* = ""*/) noexcept {
     const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
@@ -472,7 +474,7 @@ Display::Window& Display::Window::addField(
     return *this;
 }
 Display::Window& Display::Window::addLabel(
-        const Coord& position, const Tag& tag,
+        const Coord& position, const Tag tag,
         const std::string& value/* = ""*/,
         bool hidden/* = false*/) noexcept {
     const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
@@ -482,7 +484,7 @@ Display::Window& Display::Window::addLabel(
 Display::Window& Display::Window::addButton(
         const Coord& position,
         const Coord& dimensions,
-        const Tag& tag,
+        const Tag tag,
         const std::string& value,
         const std::function<void()> feedback,
         bool hidden/* = false*/) noexcept {
@@ -494,7 +496,7 @@ Display::Window& Display::Window::addVLine(
         const Coord& position,
         unsigned int length,
         const Color& color,
-        const Tag& tag) noexcept {
+        const Tag tag) noexcept {
     const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
     m_VLines.push_back({newPosition, length, color, tag});
     return *this;
@@ -503,7 +505,7 @@ Display::Window& Display::Window::addHLine(
         const Coord& position,
         unsigned int length,
         const Color& color,
-        const Tag& tag) noexcept {
+        const Tag tag) noexcept {
     const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
     m_HLines.push_back({newPosition, length, color, tag});
     return *this;
@@ -587,6 +589,7 @@ Display::Display(unsigned int height, unsigned int width, Drawer* drawer) noexce
           m_Cursor({m_HeadHeight + 1, 1}),
           m_Drawer(drawer) {
     UiElement::setDrawer(drawer);
+    Log::info() << "Got " << m_Height << std::endl;
 
     const auto getWindowHeadRange = [width = m_Width](unsigned int order) noexcept {
         const unsigned int windowsAmount = toInt(WindowType::Count);

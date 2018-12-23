@@ -6,7 +6,7 @@
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Game::Game(unsigned int width, unsigned int height,
         Drawer* drawer, Communicator* communicator)
-    : m_Display({width, height, drawer}),
+    : m_Display({height, width, drawer}),
       m_Communicator(communicator),
       m_Terminated(false) {}
 
@@ -34,8 +34,8 @@ void Game::initDisplay() {
     const unsigned int WIDTH = m_Display.getUiWidth();
     const unsigned int HEIGHT = m_Display.getUiHeight();
 
-    const Tag selfAddrTag = Tag::createNew();
-    const Tag selfPortTag = Tag::createNew();
+    /* const Tag selfAddrTag = Tag::createNew(); */
+    /* const Tag selfPortTag = Tag::createNew(); */
     const Tag selfNickTag = Tag::createNew();
     const Tag oppoAddrTag = Tag::createNew();
     const Tag oppoPortTag = Tag::createNew();
@@ -46,12 +46,14 @@ void Game::initDisplay() {
     const Tag exitButtonTag = Tag::createNew();
     const Tag disconnectButtonTag = Tag::createNew();
     const Tag connectionStatusTag = Tag::createNew();
+    const Tag oppoWantsTag = Tag::createNew();
+
 
     m_Display.populateWindow(WindowType::Settings)
         .addLabel({1,1}, Tag::createEmpty(), "YourAddr:")
-        .addField({1,1+9}, selfAddrTag, 15, "127.0.0.1")
+        .addLabel({1,1+9}, Tag::createEmpty(), m_Communicator->getAddress())
         .addLabel({2,1}, Tag::createEmpty(), "YourPort:")
-        .addField({2,1+9}, selfPortTag, 4, "3141")
+        .addLabel({2,1+9}, Tag::createEmpty(), std::to_string(m_Communicator->getPort()))
         .addLabel({3,1}, Tag::createEmpty(), "YourNick:")
         .addField({3,1+9}, selfNickTag, 15, "Igorek")
 
@@ -67,6 +69,16 @@ void Game::initDisplay() {
         .addLabel({4+1,29+10+2}, connectionStatusTag)
 
         .addHLine({7, 0}, WIDTH, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
+
+        .addLabel({8,1}, oppoWantsTag, "Opponent Masik wants to play!")
+        .addButton({9, 1}, {3, 10}, acceptButtonTag, "Accept", [](){})
+        .addButton({9, 1 + 10 + 1}, {3, 10}, rejectButtonTag, "Reject", [](){})
+
+        .addHLine({12, 0}, WIDTH, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
+
+        .addButton({13, 1}, {3, 6}, acceptButtonTag, "Exit", [](){})
+        .addVLine({13, 27}, 3, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
+        .addButton({13, 27 + 2}, {3, 12}, acceptButtonTag, "Disconnect", [](){})
         ;
 
 
