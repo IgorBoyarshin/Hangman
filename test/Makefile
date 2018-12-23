@@ -54,7 +54,7 @@ clean :
 MockPlayer.o : $(SOURCE_DIR)/Communicator.h $(SOURCE_DIR)/NetworkManager.h $(SOURCE_DIR)/NetworkManager.cpp MockPlayer.cpp
 	$(CXX) $(CXXFLAGS) -c MockPlayer.cpp
 
-mockplayer : MockPlayer.o NetworkManager.o Server.o Client.o
+mockplayer : MockPlayer.o NetworkManager.o Server.o Client.o Log.o
 	$(CXX) $(CXXFLAGS) $^ -o mockplayer
 
 # Other components
@@ -81,6 +81,9 @@ Game.o : $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $
 Renderer.o : $(SOURCE_DIR)/Renderer.cpp $(SOURCE_DIR)/Renderer.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Renderer.cpp
 
+Log.o : $(SOURCE_DIR)/Log.cpp $(SOURCE_DIR)/Log.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Log.cpp
+
 Keyboard.o : $(SOURCE_DIR)/Keyboard.cpp $(SOURCE_DIR)/Keyboard.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Keyboard.cpp
 
@@ -102,14 +105,14 @@ utils.o : $(SOURCE_DIR)/utils.cpp $(SOURCE_DIR)/utils.h
 Display.o : $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(SOURCE_DIR)/Keyboard.cpp $(SOURCE_DIR)/Keyboard.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SOURCE_DIR)/Display.cpp
 
-$(TEST_NAME).o : $(SOURCE_DIR)/Drawer.h $(SOURCE_DIR)/Communicator.h $(TEST_DIR)/$(TEST_NAME).cpp $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(SOURCE_DIR)/Key.cpp $(SOURCE_DIR)/Key.h $(GTEST_HEADERS)
+$(TEST_NAME).o : $(SOURCE_DIR)/Log.cpp $(SOURCE_DIR)/Log.h $(SOURCE_DIR)/Drawer.h $(SOURCE_DIR)/Communicator.h $(TEST_DIR)/$(TEST_NAME).cpp $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(SOURCE_DIR)/Key.cpp $(SOURCE_DIR)/Key.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) -I$(SOURCE_DIR) $(CXXFLAGS) -c $(TEST_DIR)/$(TEST_NAME).cpp
 
-$(TEST_NAME) : Server.o Client.o Renderer.o Display.o Game.o Key.o Keyboard.o NetworkManager.o utils.o $(TEST_NAME).o gtest.a gmock.a
+$(TEST_NAME) : Log.o Server.o Client.o Renderer.o Display.o Game.o Key.o Keyboard.o NetworkManager.o utils.o $(TEST_NAME).o gtest.a gmock.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@ -L. -lncurses
 
-$(TEST_NAME_DOCKER).o : $(SOURCE_DIR)/Drawer.h $(SOURCE_DIR)/Communicator.h $(TEST_DIR)/$(TEST_NAME_DOCKER).cpp $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(SOURCE_DIR)/Key.cpp $(SOURCE_DIR)/Key.h $(GTEST_HEADERS)
+$(TEST_NAME_DOCKER).o : $(SOURCE_DIR)/Log.h $(SOURCE_DIR)/Drawer.h $(SOURCE_DIR)/Communicator.h $(TEST_DIR)/$(TEST_NAME_DOCKER).cpp $(SOURCE_DIR)/Game.cpp $(SOURCE_DIR)/Game.h $(SOURCE_DIR)/Display.cpp $(SOURCE_DIR)/Display.h $(SOURCE_DIR)/Key.cpp $(SOURCE_DIR)/Key.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) -I$(SOURCE_DIR) $(CXXFLAGS) -c $(TEST_DIR)/$(TEST_NAME_DOCKER).cpp
 
-$(TEST_NAME_DOCKER) : Server.o Client.o Renderer.o Display.o Game.o Key.o Keyboard.o NetworkManager.o utils.o $(TEST_NAME_DOCKER).o gtest.a gmock.a
+$(TEST_NAME_DOCKER) : Log.o Server.o Client.o Renderer.o Display.o Game.o Key.o Keyboard.o NetworkManager.o utils.o $(TEST_NAME_DOCKER).o gtest.a gmock.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@ -L. -lncurses

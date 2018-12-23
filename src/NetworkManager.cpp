@@ -43,10 +43,10 @@ bool NetworkManager::connectionEstablished() {
     return false;
 }
 
-std::string NetworkManager::getAddress() const noexcept {
+std::string NetworkManager::getAddress() const {
     return m_ServerAddress;
 }
 
-unsigned int NetworkManager::getPort() const noexcept {
+unsigned int NetworkManager::getPort() const {
     return m_ServerPort;
 }

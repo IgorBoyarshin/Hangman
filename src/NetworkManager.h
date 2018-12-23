@@ -28,8 +28,8 @@ class NetworkManager : public Communicator {
         bool establishConnection(const std::string& ip, const std::string& port) override;
         bool connectionEstablished() override;
 
-        std::string getAddress() const noexcept override;
-        unsigned int getPort() const noexcept override;
+        std::string getAddress() const override;
+        unsigned int getPort() const override;
 };
 
 
