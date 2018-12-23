@@ -34,6 +34,7 @@ class Log {
         static Log& info();
         static Log& error();
         static Log& inst();
+        static Log& resetContext();
 
         friend std::ostream& operator<<(Log& log, const std::string& str);
         friend std::ostream& operator<<(std::ostream& stream, const Log& log);

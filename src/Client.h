@@ -13,6 +13,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <errno.h>
+#include "Log.h"
 
 
 // A client for Client-Server commutication.

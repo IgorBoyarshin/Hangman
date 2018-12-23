@@ -60,6 +60,12 @@ Log& Log::inst() {
     return m_LogInstance;
 }
 
+Log& Log::resetContext() {
+    m_LogInstance.m_ClassName = "";
+    m_LogInstance.m_FuncName = "";
+    return m_LogInstance;
+}
+
 
 std::ostream& operator<<(Log& log, const std::string& str) {
     switch (log.m_Destination) {
@@ -80,7 +86,7 @@ std::ostream& operator<<(Log& log, const std::string& str) {
 std::ostream& operator<<(std::ostream& stream, const Log& log) {
     stream << "[LOG:" << log.m_LogLevel;
     if (!(log.m_ClassName == "")) stream << ":" << log.m_ClassName;
-    if (!(log.m_FuncName == "")) stream << ":" << log.m_FuncName;
+    if (!(log.m_FuncName == "")) stream << "::" << log.m_FuncName << "()";
     stream << "] ";
 
     return stream;

@@ -19,6 +19,8 @@
 #include <signal.h>
 #include <sys/wait.h>
 
+#include "Log.h"
+
 
 class Server {
     private:

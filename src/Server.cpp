@@ -4,9 +4,10 @@
 const std::string Server::m_DefaultName = "DefaultServer";
 
 
-Server::Server(std::string name, std::string address, unsigned int port, bool startImmediately/* = true*/)
-        : m_Name(name), m_Address(address), m_Port(port), m_SocketHandle(0),
-        m_InitSuccessful(false), m_HasStarted(false) {
+Server::Server(std::string name, std::string address,
+        unsigned int port, bool startImmediately/* = true*/)
+    : m_Name(name), m_Address(address), m_Port(port), m_SocketHandle(0),
+      m_InitSuccessful(false), m_HasStarted(false) {
     if (!(m_InitSuccessful = init())) return; // TODO: throw
     if (startImmediately) start();
 }
@@ -17,8 +18,9 @@ Server::Server(std::string address, unsigned int port, bool startImmediately/* =
 
 
 Server::~Server() {
-    std::cout << "[LOG:INFO:~Server()]: " << m_Name << " destructing." << std::endl;
     cleanup();
+    Log::info().setClass("Server").setFunc("~Server")
+        << "Server " << m_Name << " is destructed" << std::endl;
 }
 
 
@@ -29,7 +31,8 @@ void Server::cleanup() {
 
 void Server::start() noexcept {
     if (m_HasStarted) {
-        std::cout << "[LOG:ERR:Server:start]" << m_Name << " has already been started. Ignoring." << std::endl;
+        Log::error().setClass("Server").setFunc("start")
+            << "Server " << m_Name << " has already been started. Ignoring." << std::endl;
         return;
     }
     // TODO: assert m_SocketHandle is valid
@@ -38,7 +41,8 @@ void Server::start() noexcept {
     // to keep MAX_BUFF_SIZE relatively big
     const unsigned int MAX_IN_QUEUE = 16;
     listen(m_SocketHandle, MAX_IN_QUEUE);
-    std::cout << "[LOG:INFO:Server:start()]" << m_Name << " now listening for connections." << std::endl;
+    Log::info().setClass("Server").setFunc("start")
+        << "Server " << m_Name << " now listening for connections." << std::endl;
     m_HasStarted = true;
 }
 
@@ -49,14 +53,16 @@ bool Server::init() {
     };
     signal(SIGCHLD, handleSignal); // TODO: check if needed
 
-    std::cout << "[LOG:INFO]" << "init() in server " << m_Name << std::endl;
+    Log::info().setClass("Server").setFunc("init")
+        << "Server " << m_Name << ": initializing." << std::endl;
 
     // AF_INET === IPV4, AF_INET6 === IPV6
     // SOCK_STREAM === TCP, SOCK_DGRAM === UDP
     // IPPROTO_TCP === IP (Internet Protocol)
     m_SocketHandle = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (m_SocketHandle < 0) {
-        std::cout << "[LOG:ERR:Server]" << "Could not create socket." << std::endl;
+        Log::error().setClass("Server").setFunc("init")
+            << "Server " << m_Name << ": Could not create socket." << std::endl;
         m_SocketHandle = 0;
         return false;
     }
@@ -76,8 +82,10 @@ bool Server::init() {
     selfSocketInfo.sin_port = htons(m_Port);
     inet_aton(m_Address.c_str(), &selfSocketInfo.sin_addr);
 
-    if (bind(m_SocketHandle, reinterpret_cast<sockaddr*>(&selfSocketInfo), sizeof(selfSocketInfo)) < 0) {
-        std::cout << "[LOG:ERR:Server]" << "Unable to bind: " << strerror(errno) << std::endl;
+    if (bind(m_SocketHandle, reinterpret_cast<sockaddr*>(&selfSocketInfo),
+            sizeof(selfSocketInfo)) < 0) {
+        Log::error().setClass("Server").setFunc("init")
+            << "Server " << m_Name << ": Unable to bind: " << strerror(errno) << std::endl;
         close(m_SocketHandle);
         m_SocketHandle = 0;
         return false;
@@ -90,7 +98,8 @@ bool Server::init() {
 // TODO: make it throw on error
 std::string Server::receive(int socketHandle) const {
     if (!m_HasStarted) { // TODO: check m_InitSuccessful too??
-        std::cout << "[LOG:ERR:Server:receive]" << m_Name << " hasn't been started. Ignoring." << std::endl;
+        Log::error().setClass("Server").setFunc("receive")
+            << "Server " << m_Name << " hasn't been started. Ignoring." << std::endl;
         return "";
     }
 
@@ -102,18 +111,21 @@ std::string Server::receive(int socketHandle) const {
             reinterpret_cast<sockaddr*>(&incomingSocketInfo),
             &incomingSocketSize);
     if (socketConnection < 0) {
-        std::cout << "[LOG:ERR:Server]" << "receive() unable to accept connection" << std::endl;
+        Log::error().setClass("Server").setFunc("receive")
+            << "Server " << m_Name << ": unable to accept connections" << std::endl;
         close(socketHandle);
         return "";
     }
 
-    /* std::cout << "[LOG:INFO:Server]" << "Reveiced packet from: " */
-    /*     << inet_ntoa(incomingSocketInfo.sin_addr) << std::endl; */
+    Log::info().setClass("Server").setFunc("receive")
+        << "Server " << m_Name << ": Received packet from: "
+        << inet_ntoa(incomingSocketInfo.sin_addr) << std::endl;
 
     static const unsigned int MAX_BUFF_SIZE = 1024;
     char buff[MAX_BUFF_SIZE];
     int receivedBytesCount = recv(socketConnection, buff, MAX_BUFF_SIZE, 0);
-    memset(buff + receivedBytesCount, 0, (MAX_BUFF_SIZE - receivedBytesCount) * sizeof(char)); // zero the remaining chunk
+    memset(buff + receivedBytesCount, 0,
+        (MAX_BUFF_SIZE - receivedBytesCount) * sizeof(char)); // zero the remaining chunk
 
     close(socketConnection);
 
@@ -123,7 +135,8 @@ std::string Server::receive(int socketHandle) const {
 
 bool Server::hasData(int socketHandle) const noexcept {
     if (!m_HasStarted) { // TODO: check m_InitSuccessful too??
-        std::cout << "[LOG:ERR:Server:hasData]" << m_Name << " hasn't been started. Ignoring." << std::endl;
+        Log::error().setClass("Server").setFunc("hasData")
+            << "Server " << m_Name << " hasn't been started. Ignoring." << std::endl;
         return false;
     }
 
@@ -139,7 +152,8 @@ bool Server::hasData(int socketHandle) const noexcept {
         return FD_ISSET(socketHandle, &checkReadSet);
     } else {
         if (readyDescriptorsAmount == -1) { // error
-            std::cout << ":> isReadyToRead::select() returned -1:" << strerror(errno) << std::endl;
+            Log::error().setClass("Server").setFunc("hasData")
+                << "Server " << m_Name << ": select() returned -1:" << strerror(errno) << std::endl;
             close(socketHandle); // do this??
         } // otherwise == 0 => no fitting descriptors found => no data ready
         return false;

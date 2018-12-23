@@ -15,7 +15,6 @@
 // TODO
 class NetworkManager : public Communicator {
     private:
-        // Client* m_Client;
         Server* m_Server;
 
     public:

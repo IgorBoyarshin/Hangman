@@ -13,7 +13,8 @@ Client::Client(std::string serverAddress, unsigned int serverPort)
 
 
 Client::~Client() {
-    std::cout << "[LOG:INFO:~Client()]: " << m_Name << " destructing." << std::endl;
+    Log::info().setClass("Client").setFunc("~Client()")
+        << "Client " << m_Name << " destructing" << std::endl;
 }
 
 
@@ -23,28 +24,32 @@ bool Client::connect(int socketHandle, sockaddr_in& serverSocketInfo) noexcept {
         if (::connect(socketHandle,
                     reinterpret_cast<sockaddr*>(&serverSocketInfo),
                     sizeof(serverSocketInfo)) < 0) {
-            std::cout << "[LOG:ERR:Client:connect]" << "Could not establish connection. Retrying..." << std::endl;
+            Log::error().setClass("Client").setFunc("connect()")
+                << "Client " << m_Name << ": Could not establish connection. Retrying..." << std::endl;
             const unsigned int SECONDS = 1;
             sleep(SECONDS);
         } else {
             return true;
         }
     }
-    std::cout << "[LOG:ERR:Client:connect]" << "Could not establish connection. Retries count exhausted." << std::endl;
+    Log::error().setClass("Client").setFunc("connect()")
+        << "Client " << m_Name << ": Could not establish connection. Retries count exhausted." << std::endl;
 
     return false;
 }
 
 
 bool Client::send(std::string message) {
-    std::cout << "[LOG:INFO]" << "send() in client " << m_Name << std::endl;
+    Log::info().setClass("Client").setFunc("send()")
+        << "Client " << m_Name << " tries to send:" << message << std::endl;
 
     // AF_INET === IPV4, AF_INET6 === IPV6
     // SOCK_STREAM === TCP, SOCK_DGRAM === UDP
     // IPPROTO_TCP === IP (Internet Protocol)
     int socketHandle = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (socketHandle < 0) {
-        std::cout << "[LOG:ERR:Client]" << "Could not create socket." << std::endl;
+        Log::error().setClass("Client").setFunc("send()")
+            << "Client " << m_Name << ": Could not create socket." << std::endl;
         return false;
     }
 
@@ -57,11 +62,13 @@ bool Client::send(std::string message) {
 
     // Try to connect
     if (!connect(socketHandle, serverSocketInfo)) return false;
-    std::cout << "[LOG:INFO]" << "Connection to server established" << std::endl;
+    Log::info().setClass("Client").setFunc("send()")
+        << "Client " << m_Name << ": Connection to server established" << std::endl;
 
     // TODO: Handle send error
     ::send(socketHandle, message.c_str(), message.size(), 0);
-    std::cout << "[LOG:INFO:Client:send]" << "sent: " << message << std::endl;
+    Log::info().setClass("Client").setFunc("send()")
+        << "Client " << m_Name << " has sent:" << message << std::endl;
 
     close(socketHandle);
 
