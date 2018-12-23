@@ -89,6 +89,9 @@ std::ostream& operator<<(std::ostream& stream, const Log& log) {
     if (!(log.m_FuncName == "")) stream << "::" << log.m_FuncName << "()";
     stream << "] ";
 
+    // Reset for future logging
+    log.resetContext();
+
     return stream;
 }
 

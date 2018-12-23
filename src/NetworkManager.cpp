@@ -5,7 +5,7 @@ NetworkManager::NetworkManager(
         const std::string& name,
         const std::string& address,
         const unsigned int port)
-    : m_Server(new Server(name, address, port)),
+    : m_Server(new Server(name, address, port, true)),
       m_ServerAddress(address), m_ServerPort(port) {
     Log::info().setClass("NetworkManager").setFunc("NetworkManager")
         << "NetworkManager " << name << " has started on address "

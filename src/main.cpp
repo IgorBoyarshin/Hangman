@@ -24,10 +24,12 @@ int main(int argc, char* argv[]) {
             address = "127.0.0.1";
             port = 3141;
         }
+
         const unsigned int WIDTH = 60;
         const unsigned int HEIGHT = 21;
         Drawer* drawer = new Renderer;
-        Communicator* communicator = new NetworkManager("MainNM", address, port);
+        const std::string name = "NM[" + address + std::to_string(port) + "]";
+        Communicator* communicator = new NetworkManager(name, address, port);
         Game game{WIDTH, HEIGHT, drawer, communicator};
         game.init();
         game.loop();

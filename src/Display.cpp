@@ -589,7 +589,6 @@ Display::Display(unsigned int height, unsigned int width, Drawer* drawer) noexce
           m_Cursor({m_HeadHeight + 1, 1}),
           m_Drawer(drawer) {
     UiElement::setDrawer(drawer);
-    Log::info() << "Got " << m_Height << std::endl;
 
     const auto getWindowHeadRange = [width = m_Width](unsigned int order) noexcept {
         const unsigned int windowsAmount = toInt(WindowType::Count);
