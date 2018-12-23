@@ -51,16 +51,20 @@ class Display {
             protected:
                 Coord m_Position;
                 const Tag m_Tag;
+                bool m_Hidden;
 
                 static Drawer* m_Drawer;
 
             protected:
-                UiElement(const Coord& position, const Tag& tag) noexcept;
+                UiElement(const Coord& position, const Tag& tag, bool hidden = false) noexcept;
 
             public:
                 virtual void draw() const noexcept = 0;
                 inline Tag getTag() const noexcept { return m_Tag; }
                 inline static void setDrawer(Drawer* drawer) { m_Drawer = drawer; }
+                inline void hide() noexcept { m_Hidden = true; }
+                inline void reveal() noexcept { m_Hidden = false; }
+                inline bool hidden() const noexcept { return m_Hidden; }
         };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Interactable
@@ -143,7 +147,7 @@ class Display {
             public:
                 void draw() const noexcept override;
                 Label(const Coord& position, const Tag& tag,
-                        const std::string& value = "") noexcept;
+                        const std::string& value = "", bool hidden = false) noexcept;
                 void changeTo(const std::string& newValue) noexcept;
         };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -187,7 +191,8 @@ class Display {
                        const Coord& dimensions,
                        const Tag& tag,
                        const std::string& value,
-                       const std::function<void()> feedback);
+                       const std::function<void()> feedback,
+                       bool hidden = false);
                 bool handleInputKey(const Key& key, const Coord& coord,
                         const std::function<bool(const Coord&)>& setCursor) noexcept override;
                 void handleCursorOver() override;
@@ -247,13 +252,13 @@ class Display {
                         const std::string& initialValue = "") noexcept;
                 Window& addLabel(
                         const Coord& position, const Tag& tag,
-                        const std::string& value = "") noexcept;
+                        const std::string& value = "", bool hidden = false) noexcept;
                 Window& addButton(
                         const Coord& position,
                         const Coord& dimensions,
                         const Tag& tag,
                         const std::string& value,
-                        const std::function<void()> feedback) noexcept;
+                        const std::function<void()> feedback, bool hidden = false) noexcept;
                 Window& addVLine(
                         const Coord& position,
                         unsigned int length,
@@ -314,6 +319,7 @@ class Display {
         void drawGallows() const noexcept;
         unsigned int getUiWidth() const noexcept;
         unsigned int getUiHeight() const noexcept;
+        void clearScreen() const noexcept;
     private:
         bool inbounds(const Coord& coord) const noexcept;
         void cleanup() const noexcept;

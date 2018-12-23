@@ -6,8 +6,8 @@
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Drawer* Display::UiElement::m_Drawer = nullptr;
 
-Display::UiElement::UiElement(const Coord& position, const Tag& tag) noexcept
-    : m_Position(position), m_Tag(tag) {}
+Display::UiElement::UiElement(const Coord& position, const Tag& tag, bool hidden/* = false*/) noexcept
+    : m_Position(position), m_Tag(tag), m_Hidden(hidden) {}
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::Interactable
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -40,6 +40,7 @@ Display::VLine::VLine(
     : UiElement(position, tag), m_Length(length), m_Color(color) {}
 
 void Display::VLine::draw() const noexcept {
+    if (m_Hidden) return;
     m_Drawer->setColor(m_Color);
     for (unsigned int y = 0; y < m_Length; y++) {
         m_Drawer->goTo(m_Position.y + y, m_Position.x);
@@ -57,6 +58,7 @@ Display::HLine::HLine(
     : UiElement(position, tag), m_Length(length), m_Color(color) {}
 
 void Display::HLine::draw() const noexcept {
+    if (m_Hidden) return;
     m_Drawer->setColor(m_Color);
     m_Drawer->goTo(m_Position.y, m_Position.x);
     for (unsigned int x = 0; x < m_Length; x++) {
@@ -69,10 +71,12 @@ void Display::HLine::draw() const noexcept {
 Display::Label::Label(
         const Coord& position,
         const Tag& tag,
-        const std::string& initialValue/* = ""*/) noexcept
-    : UiElement(position, tag), m_Value(initialValue) {}
+        const std::string& initialValue/* = ""*/,
+        bool hidden/* = false*/) noexcept
+    : UiElement(position, tag, hidden), m_Value(initialValue) {}
 
 void Display::Label::draw() const noexcept {
+    if (m_Hidden) return;
     m_Drawer->setColor({Color::WHITE, Color::BLACK});
     m_Drawer->goTo(m_Position.y, m_Position.x);
     m_Drawer->put(m_Value);
@@ -102,8 +106,9 @@ Display::Button::Button(
         const Coord& dimensions,
         const Tag& tag,
         const std::string& value,
-        const std::function<void()> feedback)
-    : UiElement(position, tag),
+        const std::function<void()> feedback,
+        bool hidden/* = false*/)
+    : UiElement(position, tag, hidden),
       Interactable(State::Idle),
       m_Dimensions(dimensions),
       m_Value(value),
@@ -137,6 +142,7 @@ void Display::Button::setColorByState() const noexcept {
 
 bool Display::Button::handleInputKey(const Key& key, const Coord& coord,
         const std::function<bool(const Coord&)>& setCursor) noexcept {
+    if (m_Hidden) return false;
     if (!active()) return false;
     // TODO: assert: isUnder(coord)
     if (m_State == State::Highlighted) {
@@ -145,17 +151,20 @@ bool Display::Button::handleInputKey(const Key& key, const Coord& coord,
             m_State = State::Focused;
             draw();
             m_Drawer->update();
+
             std::this_thread::sleep_for(std::chrono::milliseconds(140));
 
             // Discard any input characters that happened during our sleep
             Keyboard::discardCharBuffer();
 
-            m_State = State::Highlighted;
-            draw();
-            m_Drawer->update();
-
             // Execute provided beedback function
             m_Feedback();
+
+            m_State = State::Highlighted;
+            if (!m_Hidden) {
+                draw();
+                m_Drawer->update();
+            }
 
             return true;
         }
@@ -165,6 +174,7 @@ bool Display::Button::handleInputKey(const Key& key, const Coord& coord,
 }
 
 void Display::Button::handleCursorOver() {
+    if (m_Hidden) return;
     if (!active()) return;
     if (m_State == State::Idle) {
         m_State = State::Highlighted;
@@ -173,6 +183,7 @@ void Display::Button::handleCursorOver() {
 }
 
 void Display::Button::handleCursorAway() {
+    if (m_Hidden) return;
     if (m_State == State::Highlighted) {
         m_State = State::Idle;
         draw();
@@ -186,6 +197,7 @@ void Display::Button::unfocus() noexcept {
 }
 
 void Display::Button::draw() const noexcept {
+    if (m_Hidden) return;
     setColorByState();
 
     const Coord textRelativeCoord{
@@ -279,6 +291,8 @@ void Display::Field::setColorByState() const noexcept {
 
 bool Display::Field::handleInputKey(const Key& key, const Coord& coord,
         const std::function<bool(const Coord&)>& setCursor) noexcept {
+    if (m_Hidden) return false;
+    if (!active()) return false;
     // TODO: assert: isUnder(coord)
     const unsigned int dx = coord.x - m_Position.x;
     const bool cursorInsideValue = dx < m_Value.size();
@@ -340,6 +354,7 @@ bool Display::Field::handleInputKey(const Key& key, const Coord& coord,
 }
 
 void Display::Field::handleCursorOver() {
+    if (m_Hidden) return;
     if (m_State == State::Idle) {
         m_State = State::Highlighted;
         draw();
@@ -347,6 +362,7 @@ void Display::Field::handleCursorOver() {
 }
 
 void Display::Field::handleCursorAway() {
+    if (m_Hidden) return;
     if (m_State == State::Highlighted) {
         m_State = State::Idle;
         draw();
@@ -359,6 +375,7 @@ void Display::Field::unfocus() noexcept {
 }
 
 void Display::Field::draw() const noexcept {
+    if (m_Hidden) return;
     setColorByState();
 
     m_Drawer->goTo(m_Position.y, m_Position.x);
@@ -456,9 +473,10 @@ Display::Window& Display::Window::addField(
 }
 Display::Window& Display::Window::addLabel(
         const Coord& position, const Tag& tag,
-        const std::string& value/* = ""*/) noexcept {
+        const std::string& value/* = ""*/,
+        bool hidden/* = false*/) noexcept {
     const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
-    m_Labels.push_back({newPosition, tag, value});
+    m_Labels.push_back({newPosition, tag, value, hidden});
     return *this;
 }
 Display::Window& Display::Window::addButton(
@@ -466,7 +484,8 @@ Display::Window& Display::Window::addButton(
         const Coord& dimensions,
         const Tag& tag,
         const std::string& value,
-        const std::function<void()> feedback) noexcept {
+        const std::function<void()> feedback,
+        bool hidden/* = false*/) noexcept {
     const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
     m_Buttons.push_back({newPosition, dimensions, tag, value, feedback});
     return *this;
@@ -691,7 +710,7 @@ void Display::draw() const noexcept {
     // Must come last
     drawCursor();
 
-    // Show the changes on screen
+    // Update the changes on screen
     m_Drawer->update();
 }
 
@@ -703,7 +722,6 @@ void Display::drawWindows() const noexcept {
 
     drawGallows();
 
-    // m_Drawer->update();
 }
 
 void Display::drawCursor() const noexcept {
@@ -720,6 +738,10 @@ unsigned int Display::getUiWidth() const noexcept {
 
 unsigned int Display::getUiHeight() const noexcept {
     return m_Height - m_HeadHeight - 2;
+}
+
+void Display::clearScreen() const noexcept {
+    m_Drawer->clearScreen();
 }
 
 bool Display::inbounds(const Coord& coord) const noexcept {

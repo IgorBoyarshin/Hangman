@@ -34,7 +34,7 @@ Color::Color(unsigned int fg, unsigned int bg) noexcept
 // Tag
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 const unsigned int Tag::m_EmptyTag = 0;
-unsigned int Tag::m_NextAvailableIndex = Tag::m_EmptyTag + 1;
+unsigned int Tag::m_NextAvailableIndex = 1;
 
 Tag::Tag(unsigned int value) noexcept : value(value) {}
 

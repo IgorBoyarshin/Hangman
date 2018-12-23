@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <unordered_map>
+#include "Log.h"
 
 
 struct Coord {

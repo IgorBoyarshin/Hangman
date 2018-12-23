@@ -34,18 +34,18 @@ void Game::initDisplay() {
     const unsigned int WIDTH = m_Display.getUiWidth();
     const unsigned int HEIGHT = m_Display.getUiHeight();
 
-    Tag selfAddrTag = Tag::createNew();
-    Tag selfPortTag = Tag::createNew();
-    Tag selfNickTag = Tag::createNew();
-    Tag oppoAddrTag = Tag::createNew();
-    Tag oppoPortTag = Tag::createNew();
-    Tag oppoWord    = Tag::createNew();
-    Tag connectButtonTag = Tag::createNew();
-    Tag acceptButtonTag = Tag::createNew();
-    Tag rejectButtonTag = Tag::createNew();
-    Tag exitButtonTag = Tag::createNew();
-    Tag disconnectButtonTag = Tag::createNew();
-    Tag connectionStatusTag = Tag::createNew();
+    const Tag selfAddrTag = Tag::createNew();
+    const Tag selfPortTag = Tag::createNew();
+    const Tag selfNickTag = Tag::createNew();
+    const Tag oppoAddrTag = Tag::createNew();
+    const Tag oppoPortTag = Tag::createNew();
+    const Tag oppoWord    = Tag::createNew();
+    const Tag connectButtonTag = Tag::createNew();
+    const Tag acceptButtonTag = Tag::createNew();
+    const Tag rejectButtonTag = Tag::createNew();
+    const Tag exitButtonTag = Tag::createNew();
+    const Tag disconnectButtonTag = Tag::createNew();
+    const Tag connectionStatusTag = Tag::createNew();
 
     m_Display.populateWindow(WindowType::Settings)
         .addLabel({1,1}, Tag::createEmpty(), "YourAddr:")
@@ -64,11 +64,10 @@ void Game::initDisplay() {
         .addLabel({3,29}, Tag::createEmpty(), "WordForOppo:")
         .addField({3,29+12}, oppoWord, 15, "unpredictable")
         .addButton({4,29}, {3,11}, connectButtonTag, "Connect", [](){})
-        .addLabel({4+1,29+10+2}, connectionStatusTag, "..rm me...")
+        .addLabel({4+1,29+10+2}, connectionStatusTag)
 
         .addHLine({7, 0}, WIDTH, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
         ;
-        /* .addHLine({0,0}, 10, {Color::GREEN, Color::RED}, Tag::createEmpty()); */
 
 
     // m_Display.populateWindow(WindowType::Game)
