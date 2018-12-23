@@ -31,27 +31,33 @@ void Game::loop() {
 
 
 void Game::initDisplay() {
-    m_Display.populateWindow(WindowType::Game)
-        .addLabel({{5,2}, Tag::createNew(), "Inside Game"})
-        .addButton({{6,1}, {5, 12}, Tag::createNew(), "Press Me", [this](){
-                static int row = 10;
-                if (row >= 13) return; else row++;
-                m_Display.populateWindow(WindowType::Game)
-                    .addLabel({{row,3}, Tag::createNew(), "New text " + std::to_string(row - 10)});
-                }});
-        // .addField({{9,3}, Display::Tag::createNew(), 8, "abc"});
-
     m_Display.populateWindow(WindowType::Settings)
-        .addLabel({{5,6}, Tag::createNew(), "Inside Settings"})
-        .addButton({{6,5}, {3, 10}, Tag::createNew(), "Press Me", [this](){
-                static int row = 10;
-                if (row >= 13) return; else row++;
-                m_Display.populateWindow(WindowType::Settings)
-                    .addLabel({{row,7}, Tag::createNew(), "New text " + std::to_string(row - 10)});
-                }})
-        .addField({{9,7}, Tag::createNew(), 8, "abc"});
+        .addHLine({0,0}, 10, {Color::GREEN, Color::RED}, Tag::createEmpty());
 
-    m_Display.setActiveWindow(WindowType::Game);
+
+
+
+    // m_Display.populateWindow(WindowType::Game)
+    //     .addLabel({{5,2}, Tag::createNew(), "Inside Game"})
+    //     .addButton({{6,1}, {5, 12}, Tag::createNew(), "Press Me", [this](){
+    //             static int row = 10;
+    //             if (row >= 13) return; else row++;
+    //             m_Display.populateWindow(WindowType::Game)
+    //                 .addLabel({{row,3}, Tag::createNew(), "New text " + std::to_string(row - 10)});
+    //             }});
+    //     // .addField({{9,3}, Display::Tag::createNew(), 8, "abc"});
+    //
+    // m_Display.populateWindow(WindowType::Settings)
+    //     .addLabel({{5,6}, Tag::createNew(), "Inside Settings"})
+    //     .addButton({{6,5}, {3, 10}, Tag::createNew(), "Press Me", [this](){
+    //             static int row = 10;
+    //             if (row >= 13) return; else row++;
+    //             m_Display.populateWindow(WindowType::Settings)
+    //                 .addLabel({{row,7}, Tag::createNew(), "New text " + std::to_string(row - 10)});
+    //             }})
+    //     .addField({{9,7}, Tag::createNew(), 8, "abc"});
+
+    m_Display.setActiveWindow(WindowType::Settings);
 }
 
 void Game::cleanup() {

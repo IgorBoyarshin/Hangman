@@ -96,6 +96,19 @@ class Display {
                 virtual bool isUnder(const Coord& coord) const noexcept = 0;
         };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// HLine
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        class HLine : public UiElement {
+            private:
+                const unsigned int m_Length;
+                const Color m_Color;
+
+            public:
+                void draw() const noexcept override;
+                HLine(const Coord& position, unsigned int length,
+                        const Color& color, const Tag& tag) noexcept;
+        };
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Label
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         class Label : public UiElement {
@@ -188,6 +201,7 @@ class Display {
                 std::vector<Label> m_Labels;
                 std::vector<Button> m_Buttons;
                 std::vector<Field> m_Fields;
+                std::vector<HLine> m_HLines;
                 const Coord m_Dimensions;
                 const std::pair<unsigned int, unsigned int> m_HeadRange;
                 const Color m_BorderColor;
@@ -198,9 +212,25 @@ class Display {
                         const Color& borderColor) noexcept;
                 void unfocus();
                 static WindowColors getColorsForWindow(const WindowType& windowtype) noexcept;
-                Window& addField(const Field& field) noexcept;
-                Window& addLabel(const Label& label) noexcept;
-                Window& addButton(const Button& button) noexcept;
+                Window& addField(
+                        const Coord& position,
+                        const Tag& tag,
+                        unsigned int width,
+                        const std::string& initialValue = "") noexcept;
+                Window& addLabel(
+                        const Coord& position, const Tag& tag,
+                        const std::string& value = "") noexcept;
+                Window& addButton(
+                        const Coord& position,
+                        const Coord& dimensions,
+                        const Tag& tag,
+                        const std::string& value,
+                        const std::function<void()> feedback) noexcept;
+                Window& addHLine(
+                        const Coord& position,
+                        unsigned int length,
+                        const Color& color,
+                        const Tag& tag) noexcept;
                 std::optional<std::reference_wrapper<Interactable>>
                         getInteractableUnder(const Coord& coord) noexcept;
                 void draw() const noexcept override;
@@ -214,7 +244,6 @@ class Display {
     private:
         unsigned int m_Height; // amount of rows
         unsigned int m_Width;  // amount of columns
-        static const unsigned int m_HeadHeight;
         // TODO: come up with a way to make it an std::array
         std::vector<Window> m_Windows;
         WindowType m_ActiveWindowType;
@@ -222,6 +251,8 @@ class Display {
         Drawer* m_Drawer;
         std::vector<Button> m_WindowHeads;
     public:
+        static const unsigned int m_HeadHeight;
+
         Display(unsigned int height, unsigned int width, Drawer* drawer) noexcept;
         virtual ~Display();
         void init() noexcept;

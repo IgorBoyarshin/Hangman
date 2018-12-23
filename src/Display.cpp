@@ -14,13 +14,30 @@ Display::UiElement::UiElement(const Coord& position, const Tag& tag) noexcept
 Display::Interactable::Interactable(const State& state) noexcept
     : m_State(state), m_Active(true) {}
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Display::HLine
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Display::HLine::HLine(
+        const Coord& position,
+        unsigned int length,
+        const Color& color,
+        const Tag& tag) noexcept
+    : UiElement(position, tag), m_Length(length), m_Color(color) {}
+
+void Display::HLine::draw() const noexcept {
+    m_Drawer->setColor(m_Color);
+    m_Drawer->goTo(m_Position.y, m_Position.x);
+    for (unsigned int x = 0; x < m_Length; x++) {
+        m_Drawer->put(' ');
+    }
+}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::Label
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Display::Label::Label(
         const Coord& position,
         const Tag& tag,
         const std::string& initialValue/* = ""*/) noexcept
-        : UiElement(position, tag), m_Value(initialValue) {}
+    : UiElement(position, tag), m_Value(initialValue) {}
 
 void Display::Label::draw() const noexcept {
     m_Drawer->setColor({Color::WHITE, Color::BLACK});
@@ -385,16 +402,39 @@ Display::WindowColors Display::Window::getColorsForWindow(const WindowType& wind
     }
 }
 
-Display::Window& Display::Window::addField(const Field& field) noexcept {
-    m_Fields.push_back(field);
+Display::Window& Display::Window::addField(
+        const Coord& position,
+        const Tag& tag,
+        unsigned int width,
+        const std::string& initialValue/* = ""*/) noexcept {
+    const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
+    m_Fields.push_back({newPosition, tag, width, initialValue});
     return *this;
 }
-Display::Window& Display::Window::addLabel(const Label& label) noexcept {
-    m_Labels.push_back(label);
+Display::Window& Display::Window::addLabel(
+        const Coord& position, const Tag& tag,
+        const std::string& value/* = ""*/) noexcept {
+    const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
+    m_Labels.push_back({newPosition, tag, value});
     return *this;
 }
-Display::Window& Display::Window::addButton(const Button& button) noexcept {
-    m_Buttons.push_back(button);
+Display::Window& Display::Window::addButton(
+        const Coord& position,
+        const Coord& dimensions,
+        const Tag& tag,
+        const std::string& value,
+        const std::function<void()> feedback) noexcept {
+    const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
+    m_Buttons.push_back({newPosition, dimensions, tag, value, feedback});
+    return *this;
+}
+Display::Window& Display::Window::addHLine(
+        const Coord& position,
+        unsigned int length,
+        const Color& color,
+        const Tag& tag) noexcept {
+    const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
+    m_HLines.push_back({newPosition, length, color, tag});
     return *this;
 }
 
@@ -440,6 +480,7 @@ void Display::Window::drawUi() const noexcept {
     for (const Field& field : m_Fields) field.draw();
     for (const Label& label : m_Labels) label.draw();
     for (const Button& button : m_Buttons) button.draw();
+    for (const HLine& hline : m_HLines) hline.draw();
 }
 
 void Display::Window::draw() const noexcept {
