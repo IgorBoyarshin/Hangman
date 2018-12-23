@@ -14,6 +14,39 @@ Display::UiElement::UiElement(const Coord& position, const Tag& tag) noexcept
 Display::Interactable::Interactable(const State& state) noexcept
     : m_State(state), m_Active(true) {}
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Display::Spinner
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/* Display::Spinner::Spinner( */
+/*         const Coord& position, */
+/*         const Tag& tag) noexcept */
+/*     : UiElement(position, tag) {} */
+/*  */
+/* void Display::Spinner::draw() const noexcept { */
+/*     m_Drawer->setColor({Color::BLUE, Color::BLACK}); */
+/*     static const unsigned int SYMBOLS_LENGTH = 4; */
+/*     static char symbols[SYMBOLS_LENGTH] = {'|', '/', '-', '|'}; */
+/*     m_Drawer->goTo(m_Position.y, m_Position.x); */
+/*     m_Drawer->put(symbols[m_State]); */
+/*     if (++m_State > SYMBOLS_LENGTH) m_State = 0; */
+/* } */
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Display::VLine
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Display::VLine::VLine(
+        const Coord& position,
+        unsigned int length,
+        const Color& color,
+        const Tag& tag) noexcept
+    : UiElement(position, tag), m_Length(length), m_Color(color) {}
+
+void Display::VLine::draw() const noexcept {
+    m_Drawer->setColor(m_Color);
+    for (unsigned int y = 0; y < m_Length; y++) {
+        m_Drawer->goTo(m_Position.y + y, m_Position.x);
+        m_Drawer->put(' ');
+    }
+}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::HLine
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Display::HLine::HLine(
@@ -43,6 +76,10 @@ void Display::Label::draw() const noexcept {
     m_Drawer->setColor({Color::WHITE, Color::BLACK});
     m_Drawer->goTo(m_Position.y, m_Position.x);
     m_Drawer->put(m_Value);
+}
+
+void Display::Label::changeTo(const std::string& newValue) noexcept {
+    m_Value = newValue;
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::StateColors
@@ -107,6 +144,7 @@ bool Display::Button::handleInputKey(const Key& key, const Coord& coord,
             // TODO: Fix cursor movement while changing state
             m_State = State::Focused;
             draw();
+            m_Drawer->update();
             std::this_thread::sleep_for(std::chrono::milliseconds(140));
 
             // Discard any input characters that happened during our sleep
@@ -114,6 +152,7 @@ bool Display::Button::handleInputKey(const Key& key, const Coord& coord,
 
             m_State = State::Highlighted;
             draw();
+            m_Drawer->update();
 
             // Execute provided beedback function
             m_Feedback();
@@ -196,7 +235,7 @@ void Display::Button::draw() const noexcept {
         m_Drawer->put(Drawer::SpecialChar::LRCORNER);
     }
 
-    m_Drawer->update();
+    // m_Drawer->update();
 }
 
 bool Display::Button::isUnder(const Coord& coord) const noexcept {
@@ -330,7 +369,7 @@ void Display::Field::draw() const noexcept {
     }
     m_Drawer->setAttribute(Drawer::Attribute::UNDERLINE, false);
 
-    m_Drawer->update();
+    // m_Drawer->update();
 }
 
 bool Display::Field::isUnder(const Coord& coord) const noexcept {
@@ -340,6 +379,10 @@ bool Display::Field::isUnder(const Coord& coord) const noexcept {
     }
 
     return false;
+}
+
+const std::string& Display::Field::value() const noexcept {
+    return m_Value;
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::Window
@@ -428,6 +471,15 @@ Display::Window& Display::Window::addButton(
     m_Buttons.push_back({newPosition, dimensions, tag, value, feedback});
     return *this;
 }
+Display::Window& Display::Window::addVLine(
+        const Coord& position,
+        unsigned int length,
+        const Color& color,
+        const Tag& tag) noexcept {
+    const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
+    m_VLines.push_back({newPosition, length, color, tag});
+    return *this;
+}
 Display::Window& Display::Window::addHLine(
         const Coord& position,
         unsigned int length,
@@ -448,6 +500,22 @@ std::optional<std::reference_wrapper<Display::Interactable>>
         if (interactable.isUnder(coord)) return {{interactable}};
     }
 
+    return std::nullopt;
+}
+
+std::optional<std::reference_wrapper<Display::Button>>
+        Display::Window::getButtonByTag(const Tag& tag) noexcept {
+    for (Button& button : m_Buttons) {
+        if (button.getTag().is(tag)) return {{button}};
+    }
+    return std::nullopt;
+}
+
+std::optional<std::reference_wrapper<Display::Field>>
+        Display::Window::getFieldByTag(const Tag& tag) noexcept {
+    for (Field& field : m_Fields) {
+        if (field.getTag().is(tag)) return {{field}};
+    }
     return std::nullopt;
 }
 
@@ -480,6 +548,7 @@ void Display::Window::drawUi() const noexcept {
     for (const Field& field : m_Fields) field.draw();
     for (const Label& label : m_Labels) label.draw();
     for (const Button& button : m_Buttons) button.draw();
+    for (const VLine& hline : m_VLines) hline.draw();
     for (const HLine& hline : m_HLines) hline.draw();
 }
 
@@ -568,6 +637,23 @@ std::optional<std::reference_wrapper<Display::Interactable>>
     return m_Windows[toInt(m_ActiveWindowType)].getInteractableUnder(m_Cursor);
 }
 
+std::optional<std::reference_wrapper<Display::Button>>
+        Display::getButtonByTag(const Tag& tag) noexcept {
+    for (Window& window : m_Windows) {
+        if (auto resultOpt = window.getButtonByTag(tag)) return resultOpt;
+    }
+    return std::nullopt;
+}
+
+std::optional<std::reference_wrapper<Display::Field>>
+        Display::getFieldByTag(const Tag& tag) noexcept {
+    for (Window& window : m_Windows) {
+        if (auto resultOpt = window.getFieldByTag(tag)) return resultOpt;
+    }
+    return std::nullopt;
+}
+
+
 void Display::setActiveWindow(WindowType windowType) {
     m_Windows[toInt(m_ActiveWindowType)].unfocus();
     m_WindowHeads[toInt(windowType)].unfocus();
@@ -592,7 +678,7 @@ bool Display::setCursor(const Coord& coord) noexcept {
     if (inbounds(coord)) {
         m_Cursor = coord;
         m_Drawer->goTo(m_Cursor.y, m_Cursor.x);
-        m_Drawer->update();
+        // m_Drawer->update();
         return true;
     }
     return false;
@@ -604,6 +690,8 @@ void Display::draw() const noexcept {
 
     // Must come last
     drawCursor();
+
+    // Show the changes on screen
     m_Drawer->update();
 }
 
@@ -615,15 +703,23 @@ void Display::drawWindows() const noexcept {
 
     drawGallows();
 
-    m_Drawer->update();
+    // m_Drawer->update();
 }
 
 void Display::drawCursor() const noexcept {
     m_Drawer->goTo(m_Cursor.y, m_Cursor.x);
-    m_Drawer->update();
+    // m_Drawer->update();
 }
 
 void Display::drawGallows() const noexcept {
+}
+
+unsigned int Display::getUiWidth() const noexcept {
+    return m_Width - 2;
+}
+
+unsigned int Display::getUiHeight() const noexcept {
+    return m_Height - m_HeadHeight - 2;
 }
 
 bool Display::inbounds(const Coord& coord) const noexcept {

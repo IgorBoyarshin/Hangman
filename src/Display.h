@@ -51,6 +51,7 @@ class Display {
             protected:
                 Coord m_Position;
                 const Tag m_Tag;
+
                 static Drawer* m_Drawer;
 
             protected:
@@ -96,6 +97,30 @@ class Display {
                 virtual bool isUnder(const Coord& coord) const noexcept = 0;
         };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Spinner
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // class Spinner : public UiElement {
+        //     private:
+        //         unsigned int m_State;
+        //
+        //     public:
+        //         void draw() const noexcept override;
+        //         Spinner(const Coord& position, const Tag& tag) noexcept;
+        // };
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// VLine
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        class VLine : public UiElement {
+            private:
+                const unsigned int m_Length;
+                const Color m_Color;
+
+            public:
+                void draw() const noexcept override;
+                VLine(const Coord& position, unsigned int length,
+                        const Color& color, const Tag& tag) noexcept;
+        };
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // HLine
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         class HLine : public UiElement {
@@ -119,6 +144,7 @@ class Display {
                 void draw() const noexcept override;
                 Label(const Coord& position, const Tag& tag,
                         const std::string& value = "") noexcept;
+                void changeTo(const std::string& newValue) noexcept;
         };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // StateColors
@@ -192,6 +218,7 @@ class Display {
                 void unfocus() noexcept override;
                 void draw() const noexcept override;
                 bool isUnder(const Coord& coord) const noexcept override;
+                const std::string& value() const noexcept;
         };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Window
@@ -201,6 +228,7 @@ class Display {
                 std::vector<Label> m_Labels;
                 std::vector<Button> m_Buttons;
                 std::vector<Field> m_Fields;
+                std::vector<VLine> m_VLines;
                 std::vector<HLine> m_HLines;
                 const Coord m_Dimensions;
                 const std::pair<unsigned int, unsigned int> m_HeadRange;
@@ -226,6 +254,11 @@ class Display {
                         const Tag& tag,
                         const std::string& value,
                         const std::function<void()> feedback) noexcept;
+                Window& addVLine(
+                        const Coord& position,
+                        unsigned int length,
+                        const Color& color,
+                        const Tag& tag) noexcept;
                 Window& addHLine(
                         const Coord& position,
                         unsigned int length,
@@ -233,6 +266,10 @@ class Display {
                         const Tag& tag) noexcept;
                 std::optional<std::reference_wrapper<Interactable>>
                         getInteractableUnder(const Coord& coord) noexcept;
+                std::optional<std::reference_wrapper<Button>>
+                        getButtonByTag(const Tag& tag) noexcept;
+                std::optional<std::reference_wrapper<Field>>
+                        getFieldByTag(const Tag& tag) noexcept;
                 void draw() const noexcept override;
             private:
                 void drawSelf() const noexcept;
@@ -259,6 +296,10 @@ class Display {
         Coord getCursor() const noexcept;
         std::optional<std::reference_wrapper<Interactable>>
                 getInteractableUnderCursor() noexcept;
+        std::optional<std::reference_wrapper<Button>>
+                getButtonByTag(const Tag& tag) noexcept;
+        std::optional<std::reference_wrapper<Field>>
+                getFieldByTag(const Tag& tag) noexcept;
         void setActiveWindow(WindowType windowType);
         // Returns the specified window, initializing one if it is the first access
         Window& populateWindow(WindowType windowType);
@@ -271,6 +312,8 @@ class Display {
         void drawWindows() const noexcept;
         void drawCursor() const noexcept;
         void drawGallows() const noexcept;
+        unsigned int getUiWidth() const noexcept;
+        unsigned int getUiHeight() const noexcept;
     private:
         bool inbounds(const Coord& coord) const noexcept;
         void cleanup() const noexcept;

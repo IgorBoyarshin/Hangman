@@ -49,6 +49,8 @@ struct Tag {
         Tag(unsigned int value) noexcept;
     public:
         unsigned int operator()() const noexcept;
+        bool operator==(const Tag& other) const noexcept;
+        bool is(const Tag& other) const noexcept;
         bool isEmpty() const noexcept;
         static Tag createEmpty() noexcept;
         static Tag createNew() noexcept;

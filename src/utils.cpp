@@ -39,7 +39,15 @@ unsigned int Tag::m_NextAvailableIndex = Tag::m_EmptyTag + 1;
 Tag::Tag(unsigned int value) noexcept : value(value) {}
 
 unsigned int Tag::operator()() const noexcept {
-    return value;
+return value;
+}
+
+bool Tag::operator==(const Tag& other) const noexcept {
+    return this->is(other);
+}
+
+bool Tag::is(const Tag& other) const noexcept {
+    return other.value == this->value;
 }
 
 bool Tag::isEmpty() const noexcept {

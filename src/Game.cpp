@@ -31,10 +31,44 @@ void Game::loop() {
 
 
 void Game::initDisplay() {
+    const unsigned int WIDTH = m_Display.getUiWidth();
+    const unsigned int HEIGHT = m_Display.getUiHeight();
+
+    Tag selfAddrTag = Tag::createNew();
+    Tag selfPortTag = Tag::createNew();
+    Tag selfNickTag = Tag::createNew();
+    Tag oppoAddrTag = Tag::createNew();
+    Tag oppoPortTag = Tag::createNew();
+    Tag oppoWord    = Tag::createNew();
+    Tag connectButtonTag = Tag::createNew();
+    Tag acceptButtonTag = Tag::createNew();
+    Tag rejectButtonTag = Tag::createNew();
+    Tag exitButtonTag = Tag::createNew();
+    Tag disconnectButtonTag = Tag::createNew();
+    Tag connectionStatusTag = Tag::createNew();
+
     m_Display.populateWindow(WindowType::Settings)
-        .addHLine({0,0}, 10, {Color::GREEN, Color::RED}, Tag::createEmpty());
+        .addLabel({1,1}, Tag::createEmpty(), "YourAddr:")
+        .addField({1,1+9}, selfAddrTag, 15, "127.0.0.1")
+        .addLabel({2,1}, Tag::createEmpty(), "YourPort:")
+        .addField({2,1+9}, selfPortTag, 4, "3141")
+        .addLabel({3,1}, Tag::createEmpty(), "YourNick:")
+        .addField({3,1+9}, selfNickTag, 15, "Igorek")
 
+        .addVLine({0, 27}, 7, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
 
+        .addLabel({1,29}, Tag::createEmpty(), "OppoAddr:")
+        .addField({1,29+9}, oppoAddrTag, 15, "127.0.0.1")
+        .addLabel({2,29}, Tag::createEmpty(), "OppoPort:")
+        .addField({2,29+9}, oppoPortTag, 4, "3141")
+        .addLabel({3,29}, Tag::createEmpty(), "WordForOppo:")
+        .addField({3,29+12}, oppoWord, 15, "unpredictable")
+        .addButton({4,29}, {3,11}, connectButtonTag, "Connect", [](){})
+        .addLabel({4+1,29+10+2}, connectionStatusTag, "..rm me...")
+
+        .addHLine({7, 0}, WIDTH, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
+        ;
+        /* .addHLine({0,0}, 10, {Color::GREEN, Color::RED}, Tag::createEmpty()); */
 
 
     // m_Display.populateWindow(WindowType::Game)
@@ -79,6 +113,15 @@ void Game::processInputKey(Key key) {
         m_Terminated = true;
         return;
     }
+
+    /* if (key.is('t')) { */
+    /*     auto fieldOpt = m_Display.getFieldByTag(selfAddrTag); */
+    /*     if (!fieldOpt) { */
+    /*         std::cout << "No such tag" << std::endl; */
+    /*     } else { */
+    /*         std::cout << "Field:: " << fieldOpt->get().value() << std::endl; */
+    /*     } */
+    /* } */
 
     if (auto interactableUnderCursorOpt =
             m_Display.getInteractableUnderCursor();
