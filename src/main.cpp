@@ -10,7 +10,11 @@
 int main(int argc, char* argv[]) {
     std::cout << "---------- Start ----------" << std::endl;
 
-    Log::setDestination(Log::Destination::File);
+    if (argc == 3 && static_cast<unsigned int>(std::stoi(std::string(argv[2]))) == 3142) {
+        Log::setDestination(Log::Destination::File, "default2.log");
+    } else {
+        Log::setDestination(Log::Destination::File, "default1.log");
+    }
     Log::info() << "Project Version = " << GLOBAL_VERSION << std::endl;
     {
         std::string address;
@@ -28,7 +32,7 @@ int main(int argc, char* argv[]) {
         const unsigned int WIDTH = 60;
         const unsigned int HEIGHT = 21;
         Drawer* drawer = new Renderer;
-        const std::string name = "NM[" + address + std::to_string(port) + "]";
+        const std::string name = "NM[" + address + ":" + std::to_string(port) + "]";
         Communicator* communicator = new NetworkManager(name, address, port);
         Game game{WIDTH, HEIGHT, drawer, communicator};
         game.init();

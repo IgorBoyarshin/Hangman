@@ -30,7 +30,7 @@ class Log {
         Log& setClass(std::string className);
         Log& setFunc(std::string funcName);
         Log& setLevel(LogLevel level);
-        static void setDestination(Destination destination);
+        static void setDestination(Destination destination, const std::string& fileName = "");
         static Log& info();
         static Log& error();
         static Log& inst();

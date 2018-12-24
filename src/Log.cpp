@@ -7,16 +7,17 @@ Log Log::m_LogInstance{};
 Log::Log() : Log(OutputLevel::None) {}
 
 
-Log::Log(OutputLevel outputLevel) :
-    m_ClassName(""), m_FuncName(""), m_LogLevel(LogLevel::Info),
-    m_Destination(Destination::Console) {
-        m_OutputLevel = outputLevel;
-        m_File.open("default.log", std::ios::trunc);
-}
+Log::Log(OutputLevel outputLevel)
+    : m_OutputLevel(outputLevel),
+      m_ClassName(""), m_FuncName(""),
+      m_LogLevel(LogLevel::Info),
+      m_Destination(Destination::Console) {}
 
 
 Log::~Log() {
-    m_File.close();
+    if (m_Destination == Destination::File) {
+        m_File.close();
+    }
 }
 
 
@@ -41,8 +42,12 @@ Log& Log::setLevel(LogLevel level) {
 }
 
 
-void Log::setDestination(Destination destination) {
+void Log::setDestination(Destination destination, const std::string& fileName/* = ""*/) {
     m_LogInstance.m_Destination = destination;
+    if (destination == Destination::File) {
+        if (m_LogInstance.m_File.is_open()) m_LogInstance.m_File.close(); // done with previous file (if any)
+        m_LogInstance.m_File.open(fileName, std::ios::trunc);
+    }
 }
 
 
