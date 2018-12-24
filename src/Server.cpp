@@ -117,19 +117,23 @@ std::string Server::receive(int socketHandle) const {
         return "";
     }
 
-    Log::info().setClass("Server").setFunc("receive")
-        << "Server " << m_Name << ": Received packet from: "
-        << inet_ntoa(incomingSocketInfo.sin_addr) << std::endl;
-
     static const unsigned int MAX_BUFF_SIZE = 1024;
     char buff[MAX_BUFF_SIZE];
     int receivedBytesCount = recv(socketConnection, buff, MAX_BUFF_SIZE, 0);
     memset(buff + receivedBytesCount, 0,
         (MAX_BUFF_SIZE - receivedBytesCount) * sizeof(char)); // zero the remaining chunk
 
+    const std::string received = std::string(buff, receivedBytesCount);
+
+    Log::info().setClass("Server").setFunc("receive")
+        << "Server " << m_Name << ": Received packet from "
+        << inet_ntoa(incomingSocketInfo.sin_addr) << ":"
+        << received
+        << std::endl;
+
     close(socketConnection);
 
-    return std::string(buff, receivedBytesCount);
+    return received;
 }
 
 

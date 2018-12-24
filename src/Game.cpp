@@ -25,6 +25,11 @@ void Game::loop() {
         handleInput();
         m_Display.draw();
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
+
+        /* // Receive */
+        /* if (auto receiveOpt = m_Communicator->receive()) { */
+        /*     Log::info() << "Received:" << *receiveOpt << std::endl; */
+        /* } */
     }
     cleanup();
 }
@@ -65,7 +70,15 @@ void Game::initDisplay() {
         .addField({2,29+9}, oppoPortTag, 4, "3141")
         .addLabel({3,29}, Tag::createEmpty(), "WordForOppo:")
         .addField({3,29+12}, oppoWord, 15, "unpredictable")
-        .addButton({4,29}, {3,11}, connectButtonTag, "Connect", [](){})
+        .addButton({4,29}, {3,11}, connectButtonTag, "Connect",
+                [this, oppoAddrTag, oppoPortTag, selfNickTag]() {
+            const std::string name = m_Display.getFieldByTag(selfNickTag)->get().value();
+            const std::string address = m_Display.getFieldByTag(oppoAddrTag)->get().value();
+            const unsigned int port = static_cast<unsigned int>(std::stoi(
+                m_Display.getFieldByTag(oppoPortTag)->get().value()
+            ));
+            m_Communicator->send(address, port, "Hello from " + name);
+        })
         .addLabel({4+1,29+10+2}, connectionStatusTag)
 
         .addHLine({7, 0}, WIDTH, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
@@ -76,10 +89,19 @@ void Game::initDisplay() {
 
         .addHLine({12, 0}, WIDTH, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
 
-        .addButton({13, 1}, {3, 6}, acceptButtonTag, "Exit", [](){})
+        .addButton({13, 1}, {3, 6}, exitButtonTag, "Exit", [](){})
         .addVLine({13, 27}, 3, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
-        .addButton({13, 27 + 2}, {3, 12}, acceptButtonTag, "Disconnect", [](){})
+        .addButton({13, 27 + 2}, {3, 12}, disconnectButtonTag, "Disconnect", [](){})
         ;
+
+
+            //     [this, oppoAddrTag, oppoPortTag, selfNickTag]() {
+            // const std::string name = m_Display.getFieldByTag(selfNickTag)->get().value();
+            // const std::string address = m_Display.getFieldByTag(oppoAddrTag)->get().value();
+            // const unsigned int port = static_cast<unsigned int>(std::stoi(
+            //     m_Display.getFieldByTag(oppoPortTag)->get().value()
+            // ));
+            // m_Communicator->send(address, port, "Hello from " + name);
 
 
     // m_Display.populateWindow(WindowType::Game)

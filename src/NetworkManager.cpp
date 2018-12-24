@@ -33,6 +33,14 @@ bool NetworkManager::send(const std::string& addr, unsigned int port, const std:
     return client.send(message);
 }
 
+std::string NetworkManager::getAddress() const {
+    return m_ServerAddress;
+}
+
+unsigned int NetworkManager::getPort() const {
+    return m_ServerPort;
+}
+
 // TODO
 bool NetworkManager::establishConnection(const std::string& ip, const std::string& port) {
     return false;
@@ -41,12 +49,4 @@ bool NetworkManager::establishConnection(const std::string& ip, const std::strin
 // TODO
 bool NetworkManager::connectionEstablished() {
     return false;
-}
-
-std::string NetworkManager::getAddress() const {
-    return m_ServerAddress;
-}
-
-unsigned int NetworkManager::getPort() const {
-    return m_ServerPort;
 }

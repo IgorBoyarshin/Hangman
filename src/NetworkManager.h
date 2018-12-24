@@ -25,11 +25,12 @@ class NetworkManager : public Communicator {
         std::optional<std::string> receive() override;
         std::string blockReceive() override;
         bool send(const std::string& addr, unsigned int port, const std::string& message) override;
-        bool establishConnection(const std::string& ip, const std::string& port) override;
-        bool connectionEstablished() override;
-
         std::string getAddress() const override;
         unsigned int getPort() const override;
+
+        // TODO
+        bool establishConnection(const std::string& ip, const std::string& port) override;
+        bool connectionEstablished() override;
 };
 
 
