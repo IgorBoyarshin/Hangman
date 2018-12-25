@@ -704,6 +704,14 @@ void Display::setActiveWindow(WindowType windowType) {
     m_Drawer->clearScreen();
 }
 
+void Display::disableWindow(WindowType windowType) noexcept {
+    m_WindowHeads[toInt(windowType)].hide();
+}
+
+void Display::enableWindow(WindowType windowType) noexcept {
+    m_WindowHeads[toInt(windowType)].reveal();
+}
+
 Display::Window& Display::populateWindow(WindowType windowType) {
     return m_Windows[toInt(windowType)];
 }

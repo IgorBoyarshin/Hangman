@@ -78,7 +78,20 @@ void Game::handleWannaPlay(const MessageWannaPlay& message) noexcept {
 }
 
 void Game::handleAcceptedPlay(const MessageAcceptedPlay& message) noexcept {
-    // TODO: start new game
+    // Hide
+    m_Display.getButtonByTag(m_Tags.acceptButton)->get().hide();
+    m_Display.getButtonByTag(m_Tags.rejectButton)->get().hide();
+    m_Display.getLabelByTag(m_Tags.oppoWants)->get().hide();
+    m_Display.getLabelByTag(m_Tags.oppoWants)->get().changeTo("");
+    m_Display.getLabelByTag(m_Tags.connectionStatus)->get().changeTo("");
+    // Just in case
+    m_Display.clearScreen();
+
+
+    // Start new game
+    m_Display.enableWindow(WindowType::Game);
+    m_Display.setActiveWindow(WindowType::Game);
+    // TODO: init the board
 }
 
 void Game::handleRejectedPlay(const MessageRejectedPlay& message) noexcept {
@@ -130,23 +143,51 @@ void Game::processConnectPress() noexcept {
 }
 
 void Game::processAcceptPress() noexcept {
-    /* TODO: start new game */
-}
+    const std::string selfNick = m_Display.getFieldByTag(m_Tags.selfNick)->get().value();
+    if (selfNick.empty()) {
+        m_Display.getLabelByTag(m_Tags.connectionStatus)->get().changeTo("Need your nick!");
+        return;
+    }
 
-void Game::processRejectPress() noexcept {
     // Hide
     m_Display.getButtonByTag(m_Tags.acceptButton)->get().hide();
     m_Display.getButtonByTag(m_Tags.rejectButton)->get().hide();
     m_Display.getLabelByTag(m_Tags.oppoWants)->get().hide();
     m_Display.getLabelByTag(m_Tags.oppoWants)->get().changeTo("");
-
+    m_Display.getLabelByTag(m_Tags.connectionStatus)->get().changeTo("");
     // Just in case
     m_Display.clearScreen();
 
-    // Notify opponent that we rejected
+    // Notify opponent that we've accepted
+    const std::string message = MessageAcceptedPlay(selfNick).asPacket();
+    // There is sure to be valid data in m_InquiringOpponent because Reject button
+    // wouldn't've been pressable at all otherwise
+    // (m_InquiringOpponent is filled upon WannaPlay request)
+    m_Communicator->sendAsync(m_InquiringOpponent.address, m_InquiringOpponent.port, message);
+
+    // Start new game
+    m_Display.enableWindow(WindowType::Game);
+    m_Display.setActiveWindow(WindowType::Game);
+    // TODO: init the board
+}
+
+void Game::processRejectPress() noexcept {
     const std::string selfNick = m_Display.getFieldByTag(m_Tags.selfNick)->get().value();
-    const std::string message =
-        MessageRejectedPlay(selfNick).asPacket();
+    if (selfNick.empty()) {
+        m_Display.getLabelByTag(m_Tags.connectionStatus)->get().changeTo("Need your nick!");
+        return;
+    }
+
+    // Hide
+    m_Display.getButtonByTag(m_Tags.acceptButton)->get().hide();
+    m_Display.getButtonByTag(m_Tags.rejectButton)->get().hide();
+    m_Display.getLabelByTag(m_Tags.oppoWants)->get().hide();
+    m_Display.getLabelByTag(m_Tags.oppoWants)->get().changeTo("");
+    // Just in case
+    m_Display.clearScreen();
+
+    // Notify opponent that we've rejected
+    const std::string message = MessageRejectedPlay(selfNick).asPacket();
     // There is sure to be valid data in m_InquiringOpponent because Reject button
     // wouldn't've been pressable at all otherwise
     // (m_InquiringOpponent is filled upon WannaPlay request)
@@ -159,7 +200,6 @@ void Game::processDisconnectPress() noexcept {
     // Just in case
     m_Display.clearScreen();
 
-
     // Notify and reset the opponent if such exists
     if (m_DesiredOpponent) {
         const std::string message = MessagePlayNoMore().asPacket();
@@ -168,6 +208,7 @@ void Game::processDisconnectPress() noexcept {
     }
 
     // TODO: end current game
+    m_Display.disableWindow(WindowType::Game);
 }
 
 void Game::processExitPress() noexcept {
@@ -229,6 +270,8 @@ void Game::initDisplay() {
             std::bind(&Game::processDisconnectPress, this)
         )
         ;
+
+    m_Display.disableWindow(WindowType::Game);
 
     m_Display.setActiveWindow(WindowType::Settings);
 }
