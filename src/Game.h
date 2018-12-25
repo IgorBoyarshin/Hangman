@@ -97,6 +97,7 @@ class Game {
         void processAcceptPress() noexcept;
         void processRejectPress() noexcept;
         void processDisconnectPress() noexcept;
+        void processExitPress() noexcept;
 };
 
 

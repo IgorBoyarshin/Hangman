@@ -18,6 +18,7 @@ Game::~Game() {
 void Game::init() {
     m_Display.init();
     initDisplay();
+    Keyboard::blockOnRead(false);
 }
 
 void Game::loop() {
@@ -27,7 +28,6 @@ void Game::loop() {
         m_Display.draw();
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
-    cleanup();
 }
 
 
@@ -170,6 +170,18 @@ void Game::processDisconnectPress() noexcept {
     // TODO: end current game
 }
 
+void Game::processExitPress() noexcept {
+    // Notify and reset the opponent if such exists
+    if (m_DesiredOpponent) {
+        const std::string message = MessagePlayNoMore().asPacket();
+        m_Communicator->sendAsync(m_DesiredOpponent->address, m_DesiredOpponent->port, message);
+        m_DesiredOpponent.reset();
+    }
+
+    // Terminate the program
+    m_Terminated = true;
+}
+
 
 void Game::initDisplay() {
     const unsigned int WIDTH = m_Display.getUiWidth();
@@ -209,7 +221,9 @@ void Game::initDisplay() {
 
         .addHLine({12, 0}, WIDTH, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
 
-        .addButton({13, 1}, {3, 6}, m_Tags.exitButton, "Exit", [](){})
+        .addButton({13, 1}, {3, 6}, m_Tags.exitButton, "Exit",
+            std::bind(&Game::processExitPress, this)
+        )
         .addVLine({13, 27}, 3, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
         .addButton({13, 27 + 2}, {3, 12}, m_Tags.disconnectButton, "Disconnect",
             std::bind(&Game::processDisconnectPress, this)
@@ -224,7 +238,6 @@ void Game::cleanup() {
 }
 
 void Game::handleInput() {
-    Keyboard::blockOnRead(false);
 
     auto key = Keyboard::read();
     while (key) {
