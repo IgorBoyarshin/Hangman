@@ -110,7 +110,7 @@ void Game::processConnectPress() noexcept {
     // All data is ready, send the connect request
     const std::string message =
         MessageWannaPlay(selfNick, selfAddr, selfPort, word).asPacket();
-    m_Communicator->send(oppoAddr, oppoPort, message);
+    m_Communicator->sendAsync(oppoAddr, oppoPort, message);
 
     // Tell the user that we're waiting
     m_Display.clearScreen();
@@ -134,7 +134,7 @@ void Game::processRejectPress() noexcept {
     const std::string selfNick = m_Display.getFieldByTag(m_Tags.selfNick)->get().value();
     const std::string message =
         MessageRejectedPlay(selfNick).asPacket();
-    m_Communicator->send(m_PotentialOpponent.address, m_PotentialOpponent.port, message);
+    m_Communicator->sendAsync(m_PotentialOpponent.address, m_PotentialOpponent.port, message);
 }
 
 void Game::processDisconnectPress() noexcept {

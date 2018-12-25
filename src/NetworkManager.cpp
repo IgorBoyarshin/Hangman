@@ -33,6 +33,11 @@ bool NetworkManager::send(const std::string& addr, unsigned int port, const std:
     return client.send(message);
 }
 
+void NetworkManager::sendAsync(const std::string& addr, unsigned int port, const std::string& message) {
+    std::thread t(&NetworkManager::send, this, addr, port, message);
+    t.detach();
+}
+
 std::string NetworkManager::getAddress() const {
     return m_ServerAddress;
 }

@@ -26,7 +26,7 @@ bool Client::connect(int socketHandle, sockaddr_in& serverSocketInfo) noexcept {
                     sizeof(serverSocketInfo)) < 0) {
             Log::error().setClass("Client").setFunc("connect()")
                 << "Client " << m_Name << ": Could not establish connection. Retrying..." << std::endl;
-            const unsigned int SECONDS = 1;
+            static const unsigned int SECONDS = 1;
             sleep(SECONDS);
         } else {
             return true;

@@ -6,6 +6,7 @@
 #include <thread>
 
 #include <string>
+#include <thread>
 
 #include "Communicator.h"
 #include "Client.h"
@@ -25,6 +26,7 @@ class NetworkManager : public Communicator {
         std::optional<std::string> receive() override;
         std::string blockReceive() override;
         bool send(const std::string& addr, unsigned int port, const std::string& message) override;
+        void sendAsync(const std::string& addr, unsigned int port, const std::string& message) override;
         std::string getAddress() const override;
         unsigned int getPort() const override;
 

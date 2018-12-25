@@ -10,7 +10,7 @@ justHeaderFiles = Drawer Communicator
 OPTIMIZATION_FLAG = -O0
 LANGUAGE_LEVEL = -std=c++17
 COMPILER_FLAGS = -Wall -Wextra -Wno-unused-parameter
-LINKER_FLAGS = -lncurses
+LINKER_FLAGS = -lncurses -pthread
 
 
 # Auxiliary
