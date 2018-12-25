@@ -41,14 +41,26 @@ struct GameTags {
 };
 
 
-struct PotentialOpponent {
-    inline PotentialOpponent() {}
-    inline PotentialOpponent(
+struct InquiringOpponent {
+    inline InquiringOpponent() {}
+    inline InquiringOpponent(
             const std::string& nick, const std::string& address,
             unsigned int port, const std::string& word)
         : nick(nick), address(address), port(port), word(word) {}
 
     std::string nick;
+    std::string address;
+    unsigned int port;
+    std::string word;
+};
+
+struct DesiredOpponent {
+    inline DesiredOpponent() {}
+    inline DesiredOpponent(
+            const std::string& address,
+            unsigned int port, const std::string& word)
+        : address(address), port(port), word(word) {}
+
     std::string address;
     unsigned int port;
     std::string word;
@@ -61,7 +73,8 @@ class Game {
         Communicator* m_Communicator;
         bool m_Terminated;
         const GameTags m_Tags;
-        PotentialOpponent m_PotentialOpponent;
+        InquiringOpponent m_InquiringOpponent;
+        std::optional<DesiredOpponent> m_DesiredOpponent;
 
     public:
         Game(unsigned int width, unsigned int height,

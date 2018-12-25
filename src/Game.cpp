@@ -70,7 +70,7 @@ void Game::handleWannaPlay(const MessageWannaPlay& message) noexcept {
     m_Display.getLabelByTag(m_Tags.oppoWants)->get().changeTo(
             "Oppotent " + message.initiatorNick() + " wants to play!");
 
-    m_PotentialOpponent = PotentialOpponent(
+    m_InquiringOpponent = InquiringOpponent(
             message.initiatorNick(),
             message.initiatorAddress(),
             message.initiatorPort(),
@@ -78,7 +78,7 @@ void Game::handleWannaPlay(const MessageWannaPlay& message) noexcept {
 }
 
 void Game::handleAcceptedPlay(const MessageAcceptedPlay& message) noexcept {
-
+    // TODO: start new game
 }
 
 void Game::handleRejectedPlay(const MessageRejectedPlay& message) noexcept {
@@ -88,7 +88,16 @@ void Game::handleRejectedPlay(const MessageRejectedPlay& message) noexcept {
 }
 
 void Game::handlePlayNoMore(const MessagePlayNoMore& message) noexcept {
+    // Reset current query for reply
+    m_Display.getButtonByTag(m_Tags.acceptButton)->get().hide();
+    m_Display.getButtonByTag(m_Tags.rejectButton)->get().hide();
+    m_Display.getLabelByTag(m_Tags.oppoWants)->get().hide();
+    m_Display.getLabelByTag(m_Tags.oppoWants)->get().changeTo("");
 
+    // Just in case
+    m_Display.clearScreen();
+
+    // TODO: end current game
 }
 
 
@@ -107,6 +116,9 @@ void Game::processConnectPress() noexcept {
     }
     const unsigned int oppoPort = static_cast<unsigned int>(std::stoi(oppoPortStr));
 
+    // Store the DesiredOpponent
+    m_DesiredOpponent = {DesiredOpponent{oppoAddr, oppoPort, word}};
+
     // All data is ready, send the connect request
     const std::string message =
         MessageWannaPlay(selfNick, selfAddr, selfPort, word).asPacket();
@@ -118,6 +130,7 @@ void Game::processConnectPress() noexcept {
 }
 
 void Game::processAcceptPress() noexcept {
+    /* TODO: start new game */
 }
 
 void Game::processRejectPress() noexcept {
@@ -134,17 +147,33 @@ void Game::processRejectPress() noexcept {
     const std::string selfNick = m_Display.getFieldByTag(m_Tags.selfNick)->get().value();
     const std::string message =
         MessageRejectedPlay(selfNick).asPacket();
-    m_Communicator->sendAsync(m_PotentialOpponent.address, m_PotentialOpponent.port, message);
+    // There is sure to be valid data in m_InquiringOpponent because Reject button
+    // wouldn't've been pressable at all otherwise
+    // (m_InquiringOpponent is filled upon WannaPlay request)
+    m_Communicator->sendAsync(m_InquiringOpponent.address, m_InquiringOpponent.port, message);
 }
 
 void Game::processDisconnectPress() noexcept {
+    // Clear the status bar
+    m_Display.getLabelByTag(m_Tags.connectionStatus)->get().changeTo("");
+    // Just in case
+    m_Display.clearScreen();
+
+
+    // Notify and reset the opponent if such exists
+    if (m_DesiredOpponent) {
+        const std::string message = MessagePlayNoMore().asPacket();
+        m_Communicator->sendAsync(m_DesiredOpponent->address, m_DesiredOpponent->port, message);
+        m_DesiredOpponent.reset();
+    }
+
+    // TODO: end current game
 }
 
 
 void Game::initDisplay() {
     const unsigned int WIDTH = m_Display.getUiWidth();
     /* const unsigned int HEIGHT = m_Display.getUiHeight(); */
-
 
     const bool HIDDEN = true;
     m_Display.populateWindow(WindowType::Settings)
@@ -153,14 +182,16 @@ void Game::initDisplay() {
         .addLabel({2,1}, Tag::createEmpty(), "YourPort:")
         .addLabel({2,1+9}, Tag::createEmpty(), std::to_string(m_Communicator->getPort()))
         .addLabel({3,1}, Tag::createEmpty(), "YourNick:")
-        .addField({3,1+9}, m_Tags.selfNick, 15, "Igorek")
+        // TODO: remove ternary
+        .addField({3,1+9}, m_Tags.selfNick, 15, m_Communicator->getPort() == 3141 ? "Igorek" : "Masik")
 
         .addVLine({0, 27}, 7, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
 
         .addLabel({1,29}, Tag::createEmpty(), "OppoAddr:")
         .addField({1,29+9}, m_Tags.oppoAddr, 15, "127.0.0.1")
         .addLabel({2,29}, Tag::createEmpty(), "OppoPort:")
-        .addField({2,29+9}, m_Tags.oppoPort, 4, "3141")
+        // TODO: remove ternary
+        .addField({2,29+9}, m_Tags.oppoPort, 4, m_Communicator->getPort() == 3141 ? "3142" : "3141")
         .addLabel({3,29}, Tag::createEmpty(), "WordForOppo:")
         .addField({3,29+12}, m_Tags.oppoWord, 15, "unpredictable")
         .addButton({4,29}, {3,11}, m_Tags.connectButton, "Connect",
@@ -180,7 +211,9 @@ void Game::initDisplay() {
 
         .addButton({13, 1}, {3, 6}, m_Tags.exitButton, "Exit", [](){})
         .addVLine({13, 27}, 3, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
-        .addButton({13, 27 + 2}, {3, 12}, m_Tags.disconnectButton, "Disconnect", [](){})
+        .addButton({13, 27 + 2}, {3, 12}, m_Tags.disconnectButton, "Disconnect",
+            std::bind(&Game::processDisconnectPress, this)
+        )
         ;
 
     m_Display.setActiveWindow(WindowType::Settings);
