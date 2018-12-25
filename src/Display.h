@@ -297,6 +297,8 @@ class Display {
         std::vector<Button> m_WindowHeads;
     public:
         static const unsigned int m_HeadHeight;
+        static const Coord topShift;
+        static const unsigned int gallowsSteps;
 
         Display(unsigned int height, unsigned int width, Drawer* drawer) noexcept;
         virtual ~Display();
@@ -323,7 +325,9 @@ class Display {
         /* void drawBorder() const noexcept; */
         void drawWindows() const noexcept;
         void drawCursor() const noexcept;
-        void drawGallows() const noexcept;
+        void drawGallows(Coord coord, unsigned int mistakes) const noexcept;
+        void drawWord(unsigned int yLevel, const std::string& word,
+                const std::vector<bool> revealed) const noexcept;
         unsigned int getUiWidth() const noexcept;
         unsigned int getUiHeight() const noexcept;
         void clearScreen() const noexcept;

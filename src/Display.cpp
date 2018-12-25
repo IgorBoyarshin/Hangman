@@ -471,7 +471,7 @@ Display::Window& Display::Window::addField(
         const Tag tag,
         unsigned int width,
         const std::string& initialValue/* = ""*/) noexcept {
-    const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
+    const Coord newPosition = topShift + position;
     m_Fields.push_back({newPosition, tag, width, initialValue});
     return *this;
 }
@@ -479,7 +479,7 @@ Display::Window& Display::Window::addLabel(
         const Coord& position, const Tag tag,
         const std::string& value/* = ""*/,
         bool hidden/* = false*/) noexcept {
-    const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
+    const Coord newPosition = topShift + position;
     m_Labels.push_back({newPosition, tag, value, hidden});
     return *this;
 }
@@ -490,7 +490,7 @@ Display::Window& Display::Window::addButton(
         const std::string& value,
         const std::function<void()> feedback,
         bool hidden/* = false*/) noexcept {
-    const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
+    const Coord newPosition = topShift + position;
     m_Buttons.push_back({newPosition, dimensions, tag, value, feedback, hidden});
     return *this;
 }
@@ -499,7 +499,7 @@ Display::Window& Display::Window::addVLine(
         unsigned int length,
         const Color& color,
         const Tag tag) noexcept {
-    const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
+    const Coord newPosition = topShift + position;
     m_VLines.push_back({newPosition, length, color, tag});
     return *this;
 }
@@ -508,7 +508,7 @@ Display::Window& Display::Window::addHLine(
         unsigned int length,
         const Color& color,
         const Tag tag) noexcept {
-    const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
+    const Coord newPosition = topShift + position;
     m_HLines.push_back({newPosition, length, color, tag});
     return *this;
 }
@@ -591,6 +591,8 @@ void Display::Window::draw() const noexcept {
 // Display
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 const unsigned int Display::m_HeadHeight = 3;
+const Coord Display::topShift = Coord{Display::m_HeadHeight + 1, 1};
+const unsigned int Display::gallowsSteps = 10;
 
 
 Display::Display(unsigned int height, unsigned int width, Drawer* drawer) noexcept
@@ -747,10 +749,6 @@ void Display::drawWindows() const noexcept {
     for (const Button& button : m_WindowHeads) button.draw();
     // Draw actual current window
     m_Windows[toInt(m_ActiveWindowType)].draw();
-
-    if (m_ActiveWindowType == WindowType::Game) {
-        drawGallows();
-    }
 }
 
 void Display::drawCursor() const noexcept {
@@ -758,86 +756,74 @@ void Display::drawCursor() const noexcept {
     // m_Drawer->update();
 }
 
-void Display::drawGallows() const noexcept {
-    const unsigned int AMOUNT_OF_MISTAKES = 10;
-    const unsigned int X_SHIFT = 0;
-    const unsigned int Y_SHIFT = 0;
+void Display::drawGallows(Coord coord, unsigned int mistakes) const noexcept {
+    coord += topShift;
     m_Drawer->setColor({Color::YELLOW, Color::BLACK});
     m_Drawer->setAttribute(Drawer::Attribute::BOLD, true);
-    m_Drawer->goTo(5, 3);
-    m_Drawer->put('P');
-    m_Drawer->put('l');
-    m_Drawer->put('a');
-    m_Drawer->put('y');
-    m_Drawer->put('e');
-    m_Drawer->put('r');
-    m_Drawer->put('N');
-    m_Drawer->put('i');
-    m_Drawer->put('c');
-    m_Drawer->put('k');
-    m_Drawer->put(':');
+    // m_Drawer->goTo(5, 3);
+    // m_Drawer->put('P');
+    // m_Drawer->put('l');
+    // m_Drawer->put('a');
+    // m_Drawer->put('y');
+    // m_Drawer->put('e');
+    // m_Drawer->put('r');
+    // m_Drawer->put('N');
+    // m_Drawer->put('i');
+    // m_Drawer->put('c');
+    // m_Drawer->put('k');
+    // m_Drawer->put(':');
 
     // drawing the gallow depending on the amount of mistakes
-    switch (AMOUNT_OF_MISTAKES) {
-        case 10:
-            // 10 mistakes
-            m_Drawer->goTo(10 + Y_SHIFT, 35 + X_SHIFT);
+    switch (mistakes) {
+        case 10: // 10 mistakes
+            m_Drawer->goTo(3 + coord.y, 11 + coord.x);
             m_Drawer->put(Drawer::SpecialChar::URCORNER);
-            m_Drawer->goTo(11 + Y_SHIFT, 35 + X_SHIFT);
+            m_Drawer->goTo(4 + coord.y, 11 + coord.x);
             m_Drawer->put(Drawer::SpecialChar::LLCORNER);
             [[fallthrough]];
-        case 9:
-            // 9 mistakes
-            m_Drawer->goTo(10 + Y_SHIFT, 33 + X_SHIFT);
+        case 9: // 9 mistakes
+            m_Drawer->goTo(3 + coord.y, 9 + coord.x);
             m_Drawer->put(Drawer::SpecialChar::ULCORNER);
-            m_Drawer->goTo(11 + Y_SHIFT, 33 + X_SHIFT);
+            m_Drawer->goTo(4 + coord.y, 9 + coord.x);
             m_Drawer->put(Drawer::SpecialChar::LRCORNER);
             [[fallthrough]];
-        case 8:
-            // 8 mistakes
-            m_Drawer->goTo(9 + Y_SHIFT, 35 + X_SHIFT);
+        case 8: // 8 mistakes
+            m_Drawer->goTo(2 + coord.y, 11 + coord.x);
             m_Drawer->put(Drawer::SpecialChar::URCORNER);
             [[fallthrough]];
-        case 7:
-            // 7 mistakes
-            m_Drawer->goTo(9 + Y_SHIFT, 33 + X_SHIFT);
+        case 7: // 7 mistakes
+            m_Drawer->goTo(2 + coord.y, 9 + coord.x);
             m_Drawer->put(Drawer::SpecialChar::ULCORNER);
             [[fallthrough]];
-        case 6:
-            // 6 mistakes
-            m_Drawer->goTo(9 + Y_SHIFT, 34 + X_SHIFT);
+        case 6: // 6 mistakes
+            m_Drawer->goTo(2 + coord.y, 10 + coord.x);
             m_Drawer->put(Drawer::SpecialChar::PLUS);
-            m_Drawer->goTo(10 + Y_SHIFT, 34 + X_SHIFT);
+            m_Drawer->goTo(3 + coord.y, 10 + coord.x);
             m_Drawer->put(Drawer::SpecialChar::BTEE);
             [[fallthrough]];
-        case 5:
-            // 5 mistakes
-            m_Drawer->goTo(8 + Y_SHIFT, 34 + X_SHIFT);
+        case 5: // 5 mistakes
+            m_Drawer->goTo(1 + coord.y, 10 + coord.x);
             m_Drawer->put(Drawer::SpecialChar::CKBOARD);
             [[fallthrough]];
-        case 4:
-            // 4 mistakes
-            m_Drawer->goTo(7 + Y_SHIFT, 34 + X_SHIFT);
+        case 4: // 4 mistakes
+            m_Drawer->goTo(0 + coord.y, 10 + coord.x);
             m_Drawer->put(Drawer::SpecialChar::URCORNER);
             [[fallthrough]];
-        case 3:
-            // 3 mistakes
-            m_Drawer->goTo(7 + Y_SHIFT, 26 + X_SHIFT);
+        case 3: // 3 mistakes
+            m_Drawer->goTo(0 + coord.y, 2 + coord.x);
             m_Drawer->put(Drawer::SpecialChar::ULCORNER);
             for (unsigned int h = 0; h < 7; h++) {
                 m_Drawer->put(Drawer::SpecialChar::HLINE);
             }
             [[fallthrough]];
-        case 2:
-            // 2 mistakes
+        case 2: // 2 mistakes
             for (unsigned int v = 0; v < 4; v++) {
-                m_Drawer->goTo(v + 8 + Y_SHIFT, 26 + X_SHIFT);
+                m_Drawer->goTo(v + 1 + coord.y, 2 + coord.x);
                 m_Drawer->put(Drawer::SpecialChar::VLINE);
             }
             [[fallthrough]];
-        case 1:
-            // 1 mistake
-            m_Drawer->goTo(12 + Y_SHIFT, 24 + X_SHIFT);
+        case 1: // 1 mistake
+            m_Drawer->goTo(5 + coord.y, 0 + coord.x);
             for (unsigned int h = 1; h < 6; h++) {
                 if (h % 3 == 0) {
                     m_Drawer->put(Drawer::SpecialChar::BTEE);
@@ -847,6 +833,23 @@ void Display::drawGallows() const noexcept {
             }
         default:
             break;
+    }
+}
+
+void Display::drawWord(
+        unsigned int yLevel, const std::string& word,
+        const std::vector<bool> revealed) const noexcept {
+    // coord += topShift;
+    yLevel += topShift.y;
+    const unsigned int xCenter = m_Width / 2;
+    /* const unsigned int half = (word.size() / 2 + 1) * 2; */
+    // Each letter has 1 space after it
+    m_Drawer->setColor({Color::YELLOW, Color::BLACK});
+    m_Drawer->goTo(yLevel, xCenter - word.size());
+    for (unsigned int i = 0; i < word.size(); i++) {
+        const char c = revealed[i] ? word[i] : '_';
+        m_Drawer->put(c);
+        m_Drawer->put(' '); // space between letters
     }
 }
 
@@ -863,8 +866,8 @@ void Display::clearScreen() const noexcept {
 }
 
 bool Display::inbounds(const Coord& coord) const noexcept {
-    return (0 <= coord.y) && (coord.y <= static_cast<int>(m_Height))
-        && (0 <= coord.x) && (coord.x <= static_cast<int>(m_Width));
+    return (0 <= coord.y) && (coord.y < static_cast<int>(m_Height))
+        && (0 <= coord.x) && (coord.x < static_cast<int>(m_Width));
 }
 
 void Display::cleanup() const noexcept {

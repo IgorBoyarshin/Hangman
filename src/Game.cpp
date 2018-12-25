@@ -26,6 +26,11 @@ void Game::loop() {
         handleInput();
         handleIncoming();
         m_Display.draw();
+        if (m_GameContext) { // if a game is in progress now
+            static const Coord gallowsCoord = {1, 22};
+            m_Display.drawGallows(gallowsCoord, m_GameContext->mistakesMade);
+            m_Display.drawWord(7, m_GameContext->word, m_GameContext->revealed);
+        }
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
 }
@@ -34,7 +39,7 @@ void Game::loop() {
 void Game::handleIncoming() {
     if (auto receiveOpt = m_Communicator->receive()) {
         const std::string receivedMessage = *receiveOpt;
-        Log::info() << "Received:" << receivedMessage << std::endl;
+        /* Log::info() << "Received:" << receivedMessage << std::endl; */
 
         const Message message(receivedMessage);
         switch (message.type()) {
@@ -271,10 +276,116 @@ void Game::initDisplay() {
         )
         ;
 
-    m_Display.disableWindow(WindowType::Game);
+    m_Display.populateWindow(WindowType::Game)
+        .addLabel({2, 2}, m_Tags.gameInfoWho, "")
+        .addLabel({3, 2}, m_Tags.gameInfoConst, "is hanging")
+        .addLabel({4, 2}, m_Tags.gameInfoWhom, "")
+        .addLabel({3, 40}, m_Tags.gameStatus, "")
+        ;
 
-    m_Display.setActiveWindow(WindowType::Settings);
+    populateWithAlphabet(9);
+
+    setupNewGame(true, "Igorek", "Anka", "HEDGELOVESRACCON");
+
+    // TODO: restore
+    // m_Display.disableWindow(WindowType::Game);
+    // m_Display.setActiveWindow(WindowType::Settings);
+    m_Display.setActiveWindow(WindowType::Game);
 }
+
+void Game::populateWithAlphabet(int yLevel) noexcept {
+    auto& window = m_Display.populateWindow(WindowType::Game);
+    const int WIDTH = 3;
+    const int HEIGHT = 3;
+    const int half = 13;
+    const int xLevel = m_Display.getUiWidth() / 2 - half * WIDTH / 2;
+    for (char c = 'A'; c <= 'Z'; c++) {
+        const int index = c - 'A';
+        const int shiftX = (index >= half) ? (index - half) : index;
+        const int shiftY = (index >= half) ? 1 : 0;
+        window.addButton(
+                {yLevel + shiftY * HEIGHT, xLevel + shiftX * WIDTH},
+                {HEIGHT, WIDTH},
+                m_Tags.letters[index],
+                std::string(1, c),
+                [](){}
+        );
+    }
+}
+
+void Game::setupNewGame(
+        bool hangingSelf,
+        const std::string& selfNick,
+        const std::string& opponentNick,
+        std::string word) noexcept {
+
+    // Make uppercase
+    std::transform(word.begin(), word.end(), word.begin(),
+        [](char c) -> char { return std::toupper(c); });
+
+    // Create new context
+    m_GameContext = {GameContext{hangingSelf, selfNick, opponentNick, word}};
+
+    // Reset alphabet buttons
+    for (char c = 'A'; c <= 'Z'; c++) {
+        const unsigned int index = c - 'A';
+        m_Display.getButtonByTag(m_Tags.letters[index])->get().setStateColors({
+            {Color::GREEN, Color::BLACK},
+            {Color::BLACK, Color::GREEN},
+            {Color::BLACK, Color::RED}
+        }).setActive();
+    }
+
+    // Set appropriate Labels
+    if (m_GameContext->hangingSelf) {
+        m_Display.getLabelByTag(m_Tags.gameInfoWho)->get()
+            .changeTo(m_GameContext->selfNick);
+        m_Display.getLabelByTag(m_Tags.gameInfoWhom)->get()
+            .changeTo(m_GameContext->opponentNick);
+    } else {
+        m_Display.getLabelByTag(m_Tags.gameInfoWho)->get()
+            .changeTo(m_GameContext->opponentNick);
+        m_Display.getLabelByTag(m_Tags.gameInfoWhom)->get()
+            .changeTo(m_GameContext->selfNick);
+    }
+}
+
+
+void Game::markLetterAsUsed(char c, bool wrong) noexcept {
+    if ('A' <= c && c <= 'Z') {
+        const unsigned int index = c - 'A';
+        m_Display.getButtonByTag(m_Tags.letters[index])->get().setStateColors({
+            {Color::BLACK, wrong ? Color::RED : Color::YELLOW},
+            {Color::_, Color::_},
+            {Color::_, Color::_}
+        }).setPassive();
+    } else {
+        Log::error().setClass("Game").setFunc("markLetterAsUsed")
+            << "Called with invalid char:" << c << std::endl;
+    }
+}
+
+void Game::tryLetter(char c) noexcept {
+    if (!m_GameContext) {
+        Log::error().setClass("Game").setFunc("tryLetter")
+            << "Called outside of game context" << std::endl;
+        return;
+    }
+
+    bool present = false;
+    for (unsigned int i = 0; i < m_GameContext->word.size(); i++) {
+        const char letter = m_GameContext->word[i];
+        if (letter == c) {
+            present = true;
+            m_GameContext->revealed[i] = true;
+        }
+    }
+    markLetterAsUsed(c, !present);
+    if (!present) {
+        m_GameContext->mistakesMade++;
+    }
+}
+
 
 void Game::cleanup() {
     // TODO: need to finish Client/Server??
@@ -292,6 +403,12 @@ void Game::handleInput() {
 void Game::processInputKey(Key key) {
     if (key.is('q')) {
         m_Terminated = true;
+        return;
+    }
+
+    if (key.is('t')) {
+        static char counter = 'A';
+        tryLetter(counter++);
         return;
     }
 

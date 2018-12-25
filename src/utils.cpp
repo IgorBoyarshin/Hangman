@@ -27,6 +27,7 @@ unsigned int Color::BLUE = 4;
 unsigned int Color::PURPLE = 5;
 unsigned int Color::CYAN = 6;
 unsigned int Color::WHITE = 7;
+unsigned int Color::_ = BLACK; // "whatever"
 
 Color::Color(unsigned int fg, unsigned int bg) noexcept
     : fg(fg), bg(bg) {};

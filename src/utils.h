@@ -33,6 +33,7 @@ struct Color {
         static unsigned int PURPLE;
         static unsigned int CYAN;
         static unsigned int WHITE;
+        static unsigned int _; // "whatever"
 
     public:
         Color(unsigned int fg, unsigned int bg) noexcept;
