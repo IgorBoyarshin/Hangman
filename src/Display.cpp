@@ -748,8 +748,9 @@ void Display::drawWindows() const noexcept {
     // Draw actual current window
     m_Windows[toInt(m_ActiveWindowType)].draw();
 
-    drawGallows();
-
+    if (m_ActiveWindowType == WindowType::Game) {
+        drawGallows();
+    }
 }
 
 void Display::drawCursor() const noexcept {
@@ -784,34 +785,41 @@ void Display::drawGallows() const noexcept {
             m_Drawer->put(Drawer::SpecialChar::URCORNER);
             m_Drawer->goTo(11 + Y_SHIFT, 35 + X_SHIFT);
             m_Drawer->put(Drawer::SpecialChar::LLCORNER);
+            [[fallthrough]];
         case 9:
             // 9 mistakes
             m_Drawer->goTo(10 + Y_SHIFT, 33 + X_SHIFT);
             m_Drawer->put(Drawer::SpecialChar::ULCORNER);
             m_Drawer->goTo(11 + Y_SHIFT, 33 + X_SHIFT);
             m_Drawer->put(Drawer::SpecialChar::LRCORNER);
+            [[fallthrough]];
         case 8:
             // 8 mistakes
             m_Drawer->goTo(9 + Y_SHIFT, 35 + X_SHIFT);
             m_Drawer->put(Drawer::SpecialChar::URCORNER);
+            [[fallthrough]];
         case 7:
             // 7 mistakes
             m_Drawer->goTo(9 + Y_SHIFT, 33 + X_SHIFT);
             m_Drawer->put(Drawer::SpecialChar::ULCORNER);
+            [[fallthrough]];
         case 6:
             // 6 mistakes
             m_Drawer->goTo(9 + Y_SHIFT, 34 + X_SHIFT);
             m_Drawer->put(Drawer::SpecialChar::PLUS);
             m_Drawer->goTo(10 + Y_SHIFT, 34 + X_SHIFT);
             m_Drawer->put(Drawer::SpecialChar::BTEE);
+            [[fallthrough]];
         case 5:
             // 5 mistakes
             m_Drawer->goTo(8 + Y_SHIFT, 34 + X_SHIFT);
             m_Drawer->put(Drawer::SpecialChar::CKBOARD);
+            [[fallthrough]];
         case 4:
             // 4 mistakes
             m_Drawer->goTo(7 + Y_SHIFT, 34 + X_SHIFT);
             m_Drawer->put(Drawer::SpecialChar::URCORNER);
+            [[fallthrough]];
         case 3:
             // 3 mistakes
             m_Drawer->goTo(7 + Y_SHIFT, 26 + X_SHIFT);
@@ -819,12 +827,14 @@ void Display::drawGallows() const noexcept {
             for (unsigned int h = 0; h < 7; h++) {
                 m_Drawer->put(Drawer::SpecialChar::HLINE);
             }
+            [[fallthrough]];
         case 2:
             // 2 mistakes
             for (unsigned int v = 0; v < 4; v++) {
                 m_Drawer->goTo(v + 8 + Y_SHIFT, 26 + X_SHIFT);
                 m_Drawer->put(Drawer::SpecialChar::VLINE);
             }
+            [[fallthrough]];
         case 1:
             // 1 mistake
             m_Drawer->goTo(12 + Y_SHIFT, 24 + X_SHIFT);
