@@ -72,11 +72,13 @@ std::optional<Direction> Key::asDirection() const noexcept {
 
 std::optional<Key::SpecialKey> Key::toSpecialKey(int c) noexcept {
     static const int ENTER = 10; // Not correctly handled by ncurses, have to do like this
+    static const int BACKSPACE = 127; // Not correctly handled by ncurses, have to do like this
     if (c == KEY_DOWN)       return SpecialKey::DOWN;
     else if (c == KEY_UP)    return SpecialKey::UP;
     else if (c == KEY_RIGHT) return SpecialKey::RIGHT;
     else if (c == KEY_LEFT)  return SpecialKey::LEFT;
     else if (c == ENTER)     return SpecialKey::ENTER;
+    else if (c == BACKSPACE) return SpecialKey::BACKSPACE;
     else if (c == KEY_DC)    return SpecialKey::DELETE;
     else                     return std::nullopt;
 }

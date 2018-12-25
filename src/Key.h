@@ -22,7 +22,8 @@ struct Key {
             LEFT,
             RIGHT,
             ENTER,
-            DELETE
+            DELETE,
+            BACKSPACE
         };
 
     public:

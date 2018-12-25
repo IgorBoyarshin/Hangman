@@ -338,17 +338,14 @@ bool Display::Field::handleInputKey(const Key& key, const Coord& coord,
             }
             return true;
         }
-        // TODO: Investigate: Backspace doesn't work
-        /* if (c == KEY_BACKSPACE) { */
-        /*     if (0 < dx && dx <= m_Value.size()) { */
-        /*         m_Value.erase(m_Value.begin() + dx - 1); */
-        /*  */
-        /*         // will change current Display's Cursor, exactly what we want */
-        /*         setCursor(m_Position + Coord{0, */
-        /*                 static_cast<int>(cursorInsideValue ? dx : m_Value.size())}); */
-        /*     } */
-        /*     return true; */
-        /* } */
+
+        if (key.is(Key::SpecialKey::BACKSPACE)) {
+            if (0 < dx && dx <= m_Value.size()) {
+                m_Value.erase(m_Value.begin() + dx - 1); // erase one before current
+                setCursor(m_Position + Coord{0, static_cast<int>(dx - 1)});
+            }
+            return true;
+        }
     }
 
     return false;
