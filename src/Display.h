@@ -224,6 +224,7 @@ class Display {
                 void draw() const noexcept override;
                 bool isUnder(const Coord& coord) const noexcept override;
                 const std::string& value() const noexcept;
+                void changeTo(const std::string& newValue) noexcept;
         };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Window
@@ -271,6 +272,8 @@ class Display {
                         const Tag tag) noexcept;
                 std::optional<std::reference_wrapper<Interactable>>
                         getInteractableUnder(const Coord& coord) noexcept;
+                std::optional<std::reference_wrapper<Label>>
+                        getLabelByTag(const Tag& tag) noexcept;
                 std::optional<std::reference_wrapper<Button>>
                         getButtonByTag(const Tag& tag) noexcept;
                 std::optional<std::reference_wrapper<Field>>
@@ -301,6 +304,8 @@ class Display {
         Coord getCursor() const noexcept;
         std::optional<std::reference_wrapper<Interactable>>
                 getInteractableUnderCursor() noexcept;
+        std::optional<std::reference_wrapper<Label>>
+                getLabelByTag(const Tag& tag) noexcept;
         std::optional<std::reference_wrapper<Button>>
                 getButtonByTag(const Tag& tag) noexcept;
         std::optional<std::reference_wrapper<Field>>

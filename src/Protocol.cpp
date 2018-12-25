@@ -4,7 +4,7 @@
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // WannaPlay
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Protocol::MessageWannaPlay::MessageWannaPlay(
+MessageWannaPlay::MessageWannaPlay(
         const std::string& initiatorNick, const std::string& initiatorAddress,
         unsigned int initiatorPort, const std::string& word)
     : m_InitiatorNick(initiatorNick),
@@ -13,86 +13,112 @@ Protocol::MessageWannaPlay::MessageWannaPlay(
       m_Word(word) {}
 
 
-std::string Protocol::MessageWannaPlay::initiatorNick() const noexcept {
+std::string MessageWannaPlay::initiatorNick() const noexcept {
     return m_InitiatorNick;
 }
 
-std::string Protocol::MessageWannaPlay::initiatorAddress() const noexcept {
+std::string MessageWannaPlay::initiatorAddress() const noexcept {
     return m_InitiatorAddress;
 }
 
-unsigned int Protocol::MessageWannaPlay::initiatorPort() const noexcept {
+unsigned int MessageWannaPlay::initiatorPort() const noexcept {
     return m_InitiatorPort;
 }
 
-std::string Protocol::MessageWannaPlay::initiatorWord() const noexcept {
+std::string MessageWannaPlay::initiatorWord() const noexcept {
     return m_Word;
+}
+
+std::string MessageWannaPlay::asPacket() const noexcept {
+    return toLowerString(MessageType::WannaPlay) + Message::delimiter
+        + m_InitiatorNick + Message::delimiter
+        + m_InitiatorAddress + Message::delimiter
+        + std::to_string(m_InitiatorPort) + Message::delimiter
+        + m_Word;
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // AcceptedPlay
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Protocol::MessageAcceptedPlay::MessageAcceptedPlay(
+MessageAcceptedPlay::MessageAcceptedPlay(
         const std::string& accepteeNick)
     : m_AccepteeNick(accepteeNick) {}
 
 
-std::string Protocol::MessageAcceptedPlay::accepteeNick() const noexcept {
+std::string MessageAcceptedPlay::accepteeNick() const noexcept {
     return m_AccepteeNick;
+}
+
+std::string MessageAcceptedPlay::asPacket() const noexcept {
+    return toLowerString(MessageType::AcceptedPlay) + Message::delimiter
+        + m_AccepteeNick;
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // RejectedPlay
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Protocol::MessageRejectedPlay::MessageRejectedPlay(
+MessageRejectedPlay::MessageRejectedPlay(
         const std::string& rejecteeNick)
     : m_RejecteeNick(rejecteeNick) {}
 
 
-std::string Protocol::MessageRejectedPlay::rejecteeNick() const noexcept {
+std::string MessageRejectedPlay::rejecteeNick() const noexcept {
     return m_RejecteeNick;
+}
+
+std::string MessageRejectedPlay::asPacket() const noexcept {
+    return toLowerString(MessageType::RejectedPlay) + Message::delimiter
+        + m_RejecteeNick;
+}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// PlayNoMore
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+MessagePlayNoMore::MessagePlayNoMore() {}
+
+
+std::string MessagePlayNoMore::asPacket() const noexcept {
+    return toLowerString(MessageType::PlayNoMore);
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Message
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-const std::string Protocol::Message::delimiter = ":";
+const std::string Message::delimiter = ":";
 
-Protocol::MessageType Protocol::Message::retrieveMessageType(const std::string& source) noexcept {
+MessageType Message::retrieveMessageType(const std::string& source) noexcept {
     const size_t pos = source.find(delimiter);
     const size_t position = (pos == std::string::npos) ? source.size() : pos;
     const std::string first = source.substr(0, position);
-    if      (first == "wannaplay")    return MessageType::WannaPlay;
-    else if (first == "acceptedplay") return MessageType::AcceptedPlay;
-    else if (first == "rejectedplay") return MessageType::RejectedPlay;
-    else if (first == "playnomore")   return MessageType::PlayNoMore;
-
-    Log::error().setClass("Message").setFunc("retrieveMessageType")
-        << "Couldn't retrieve MessageType from:" << first << std::endl;
-    return MessageType::PlayNoMore;
+    return toMessageType(first);
 }
 
-std::vector<std::string> Protocol::Message::retrieveArguments(std::string source) noexcept {
+std::vector<std::string> Message::retrieveArguments(std::string source) noexcept {
     std::vector<std::string> arguments;
     size_t pos = 0;
+    bool isFirst = true;
     while ((pos = source.find(delimiter)) != std::string::npos) {
         // Skip first argument === message type
-        if (arguments.size() > 0) arguments.push_back(source.substr(0, pos));
+        if (isFirst) {
+            isFirst = false;
+        } else {
+            arguments.push_back(source.substr(0, pos));
+        }
         source.erase(0, pos + delimiter.length());
     }
+    arguments.push_back(source.substr(0, source.size()));
 
     return arguments;
 }
 
-Protocol::Message::Message(const std::string& message)
+Message::Message(const std::string& message)
     : m_MessageType(retrieveMessageType(message)),
       m_Arguments(retrieveArguments(message)) {}
 
 
-Protocol::Message::~Message() {}
+Message::~Message() {}
 
-Protocol::MessageType Protocol::Message::type() const noexcept {
+MessageType Message::type() const noexcept {
     return m_MessageType;
 }
 
-std::optional<Protocol::MessageWannaPlay> Protocol::Message::asWannaPlay() const noexcept {
+std::optional<MessageWannaPlay> Message::asWannaPlay() const noexcept {
     if (m_MessageType == MessageType::WannaPlay) {
         return {MessageWannaPlay(
             m_Arguments[0], // nick
@@ -103,7 +129,7 @@ std::optional<Protocol::MessageWannaPlay> Protocol::Message::asWannaPlay() const
     } else return std::nullopt;
 }
 
-std::optional<Protocol::MessageAcceptedPlay> Protocol::Message::asAcceptedPlay() const noexcept {
+std::optional<MessageAcceptedPlay> Message::asAcceptedPlay() const noexcept {
     if (m_MessageType == MessageType::AcceptedPlay) {
         return {MessageAcceptedPlay(
             m_Arguments[0] // nick
@@ -111,7 +137,7 @@ std::optional<Protocol::MessageAcceptedPlay> Protocol::Message::asAcceptedPlay()
     } else return std::nullopt;
 }
 
-std::optional<Protocol::MessageRejectedPlay> Protocol::Message::asRejectedPlay() const noexcept {
+std::optional<MessageRejectedPlay> Message::asRejectedPlay() const noexcept {
     if (m_MessageType == MessageType::RejectedPlay) {
         return {MessageRejectedPlay(
             m_Arguments[0] // nick
@@ -119,8 +145,38 @@ std::optional<Protocol::MessageRejectedPlay> Protocol::Message::asRejectedPlay()
     } else return std::nullopt;
 }
 
-std::optional<Protocol::MessagePlayNoMore> Protocol::Message::asPlayNoMore() const noexcept {
+std::optional<MessagePlayNoMore> Message::asPlayNoMore() const noexcept {
     if (m_MessageType == MessageType::PlayNoMore) {
         return {MessagePlayNoMore{}};
     } else return std::nullopt;
+}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Misc
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+std::string toLowerString(MessageType messageType) noexcept {
+    switch (messageType) {
+        case MessageType::WannaPlay:
+            return "wannaplay";
+        case MessageType::AcceptedPlay:
+            return "acceptedplay";
+        case MessageType::RejectedPlay:
+            return "rejectedplay";
+        case MessageType::PlayNoMore:
+            return "playnomore";
+        default:
+            Log::error().setClass("MessageType").setFunc("toString")
+                << "Unknown MessageType received." << std::endl;
+            return "";
+    }
+}
+
+MessageType toMessageType(const std::string& messageType) noexcept {
+    if      (messageType == "wannaplay")    return MessageType::WannaPlay;
+    else if (messageType == "acceptedplay") return MessageType::AcceptedPlay;
+    else if (messageType == "rejectedplay") return MessageType::RejectedPlay;
+    else if (messageType == "playnomore")   return MessageType::PlayNoMore;
+
+    Log::error().setClass("MessageType").setFunc("toMessageType")
+        << "Couldn't retrieve MessageType from:" << messageType << std::endl;
+    return MessageType::PlayNoMore;
 }

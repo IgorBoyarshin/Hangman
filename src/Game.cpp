@@ -23,106 +23,165 @@ void Game::init() {
 void Game::loop() {
     while(!m_Terminated) {
         handleInput();
+        handleIncoming();
         m_Display.draw();
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
-
-        /* // Receive */
-        /* if (auto receiveOpt = m_Communicator->receive()) { */
-        /*     Log::info() << "Received:" << *receiveOpt << std::endl; */
-        /* } */
     }
     cleanup();
 }
 
 
+void Game::handleIncoming() {
+    if (auto receiveOpt = m_Communicator->receive()) {
+        const std::string receivedMessage = *receiveOpt;
+        Log::info() << "Received:" << receivedMessage << std::endl;
+
+        const Message message(receivedMessage);
+        switch (message.type()) {
+            case MessageType::WannaPlay:
+                handleWannaPlay(*message.asWannaPlay());
+                break;
+            case MessageType::AcceptedPlay:
+                handleAcceptedPlay(*message.asAcceptedPlay());
+                break;
+            case MessageType::RejectedPlay:
+                handleRejectedPlay(*message.asRejectedPlay());
+                break;
+            case MessageType::PlayNoMore:
+                handlePlayNoMore(*message.asPlayNoMore());
+                break;
+            default:
+                Log::error().setClass("Game").setFunc("handleIncoming")
+                    << "Unhandled MessageType" << std::endl;
+                break;
+        }
+    }
+}
+
+
+void Game::handleWannaPlay(const MessageWannaPlay& message) noexcept {
+    // In case there are previious leftovers
+    m_Display.clearScreen();
+
+    // Make visible and insert opponent Nick
+    m_Display.getButtonByTag(m_Tags.acceptButton)->get().reveal();
+    m_Display.getButtonByTag(m_Tags.rejectButton)->get().reveal();
+    m_Display.getLabelByTag(m_Tags.oppoWants)->get().reveal();
+    m_Display.getLabelByTag(m_Tags.oppoWants)->get().changeTo(
+            "Oppotent " + message.initiatorNick() + " wants to play!");
+
+    m_PotentialOpponent = PotentialOpponent(
+            message.initiatorNick(),
+            message.initiatorAddress(),
+            message.initiatorPort(),
+            message.initiatorWord());
+}
+
+void Game::handleAcceptedPlay(const MessageAcceptedPlay& message) noexcept {
+
+}
+
+void Game::handleRejectedPlay(const MessageRejectedPlay& message) noexcept {
+    m_Display.clearScreen();
+    m_Display.getLabelByTag(m_Tags.connectionStatus)->get()
+        .changeTo(message.rejecteeNick() + " rejected!");
+}
+
+void Game::handlePlayNoMore(const MessagePlayNoMore& message) noexcept {
+
+}
+
+
+void Game::processConnectPress() noexcept {
+    // Collect all fields and check that they are valid
+    const std::string selfNick = m_Display.getFieldByTag(m_Tags.selfNick)->get().value();
+    const std::string selfAddr = m_Communicator->getAddress();
+    const unsigned int selfPort = m_Communicator->getPort();
+    const std::string oppoAddr = m_Display.getFieldByTag(m_Tags.oppoAddr)->get().value();
+    const std::string oppoPortStr = m_Display.getFieldByTag(m_Tags.oppoPort)->get().value();
+    const std::string word = m_Display.getFieldByTag(m_Tags.oppoWord)->get().value();
+    if (selfNick.empty() || oppoAddr.empty() || oppoPortStr.empty() || word.empty()) {
+        // Inform about the error and return
+        m_Display.getLabelByTag(m_Tags.connectionStatus)->get().changeTo("Fill the fields!");
+        return;
+    }
+    const unsigned int oppoPort = static_cast<unsigned int>(std::stoi(oppoPortStr));
+
+    // All data is ready, send the connect request
+    const std::string message =
+        MessageWannaPlay(selfNick, selfAddr, selfPort, word).asPacket();
+    m_Communicator->send(oppoAddr, oppoPort, message);
+
+    // Tell the user that we're waiting
+    m_Display.clearScreen();
+    m_Display.getLabelByTag(m_Tags.connectionStatus)->get().changeTo("Waiting reply...");
+}
+
+void Game::processAcceptPress() noexcept {
+}
+
+void Game::processRejectPress() noexcept {
+    // Hide
+    m_Display.getButtonByTag(m_Tags.acceptButton)->get().hide();
+    m_Display.getButtonByTag(m_Tags.rejectButton)->get().hide();
+    m_Display.getLabelByTag(m_Tags.oppoWants)->get().hide();
+    m_Display.getLabelByTag(m_Tags.oppoWants)->get().changeTo("");
+
+    // Just in case
+    m_Display.clearScreen();
+
+    // Notify opponent that we rejected
+    const std::string selfNick = m_Display.getFieldByTag(m_Tags.selfNick)->get().value();
+    const std::string message =
+        MessageRejectedPlay(selfNick).asPacket();
+    m_Communicator->send(m_PotentialOpponent.address, m_PotentialOpponent.port, message);
+}
+
+void Game::processDisconnectPress() noexcept {
+}
+
+
 void Game::initDisplay() {
     const unsigned int WIDTH = m_Display.getUiWidth();
-    const unsigned int HEIGHT = m_Display.getUiHeight();
-
-    /* const Tag selfAddrTag = Tag::createNew(); */
-    /* const Tag selfPortTag = Tag::createNew(); */
-    const Tag selfNickTag = Tag::createNew();
-    const Tag oppoAddrTag = Tag::createNew();
-    const Tag oppoPortTag = Tag::createNew();
-    const Tag oppoWord    = Tag::createNew();
-    const Tag connectButtonTag = Tag::createNew();
-    const Tag acceptButtonTag = Tag::createNew();
-    const Tag rejectButtonTag = Tag::createNew();
-    const Tag exitButtonTag = Tag::createNew();
-    const Tag disconnectButtonTag = Tag::createNew();
-    const Tag connectionStatusTag = Tag::createNew();
-    const Tag oppoWantsTag = Tag::createNew();
+    /* const unsigned int HEIGHT = m_Display.getUiHeight(); */
 
 
+    const bool HIDDEN = true;
     m_Display.populateWindow(WindowType::Settings)
         .addLabel({1,1}, Tag::createEmpty(), "YourAddr:")
         .addLabel({1,1+9}, Tag::createEmpty(), m_Communicator->getAddress())
         .addLabel({2,1}, Tag::createEmpty(), "YourPort:")
         .addLabel({2,1+9}, Tag::createEmpty(), std::to_string(m_Communicator->getPort()))
         .addLabel({3,1}, Tag::createEmpty(), "YourNick:")
-        .addField({3,1+9}, selfNickTag, 15, "Igorek")
+        .addField({3,1+9}, m_Tags.selfNick, 15, "Igorek")
 
         .addVLine({0, 27}, 7, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
 
         .addLabel({1,29}, Tag::createEmpty(), "OppoAddr:")
-        .addField({1,29+9}, oppoAddrTag, 15, "127.0.0.1")
+        .addField({1,29+9}, m_Tags.oppoAddr, 15, "127.0.0.1")
         .addLabel({2,29}, Tag::createEmpty(), "OppoPort:")
-        .addField({2,29+9}, oppoPortTag, 4, "3141")
+        .addField({2,29+9}, m_Tags.oppoPort, 4, "3141")
         .addLabel({3,29}, Tag::createEmpty(), "WordForOppo:")
-        .addField({3,29+12}, oppoWord, 15, "unpredictable")
-        .addButton({4,29}, {3,11}, connectButtonTag, "Connect",
-                [this, oppoAddrTag, oppoPortTag, selfNickTag]() {
-            const std::string name = m_Display.getFieldByTag(selfNickTag)->get().value();
-            const std::string address = m_Display.getFieldByTag(oppoAddrTag)->get().value();
-            const unsigned int port = static_cast<unsigned int>(std::stoi(
-                m_Display.getFieldByTag(oppoPortTag)->get().value()
-            ));
-            m_Communicator->send(address, port, "Hello from " + name);
-        })
-        .addLabel({4+1,29+10+2}, connectionStatusTag)
+        .addField({3,29+12}, m_Tags.oppoWord, 15, "unpredictable")
+        .addButton({4,29}, {3,11}, m_Tags.connectButton, "Connect",
+            std::bind(&Game::processConnectPress, this)
+        )
+        .addLabel({4+1,29+10+2}, m_Tags.connectionStatus)
 
         .addHLine({7, 0}, WIDTH, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
 
-        .addLabel({8,1}, oppoWantsTag, "Opponent Masik wants to play!")
-        .addButton({9, 1}, {3, 10}, acceptButtonTag, "Accept", [](){})
-        .addButton({9, 1 + 10 + 1}, {3, 10}, rejectButtonTag, "Reject", [](){})
+        .addLabel({8,1}, m_Tags.oppoWants, "Opponent Masik wants to play!", HIDDEN)
+        .addButton({9, 1}, {3, 10}, m_Tags.acceptButton, "Accept",
+            std::bind(&Game::processAcceptPress, this), HIDDEN)
+        .addButton({9, 1 + 10 + 1}, {3, 10}, m_Tags.rejectButton, "Reject",
+            std::bind(&Game::processRejectPress, this), HIDDEN)
 
         .addHLine({12, 0}, WIDTH, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
 
-        .addButton({13, 1}, {3, 6}, exitButtonTag, "Exit", [](){})
+        .addButton({13, 1}, {3, 6}, m_Tags.exitButton, "Exit", [](){})
         .addVLine({13, 27}, 3, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
-        .addButton({13, 27 + 2}, {3, 12}, disconnectButtonTag, "Disconnect", [](){})
+        .addButton({13, 27 + 2}, {3, 12}, m_Tags.disconnectButton, "Disconnect", [](){})
         ;
-
-
-            //     [this, oppoAddrTag, oppoPortTag, selfNickTag]() {
-            // const std::string name = m_Display.getFieldByTag(selfNickTag)->get().value();
-            // const std::string address = m_Display.getFieldByTag(oppoAddrTag)->get().value();
-            // const unsigned int port = static_cast<unsigned int>(std::stoi(
-            //     m_Display.getFieldByTag(oppoPortTag)->get().value()
-            // ));
-            // m_Communicator->send(address, port, "Hello from " + name);
-
-
-    // m_Display.populateWindow(WindowType::Game)
-    //     .addLabel({{5,2}, Tag::createNew(), "Inside Game"})
-    //     .addButton({{6,1}, {5, 12}, Tag::createNew(), "Press Me", [this](){
-    //             static int row = 10;
-    //             if (row >= 13) return; else row++;
-    //             m_Display.populateWindow(WindowType::Game)
-    //                 .addLabel({{row,3}, Tag::createNew(), "New text " + std::to_string(row - 10)});
-    //             }});
-    //     // .addField({{9,3}, Display::Tag::createNew(), 8, "abc"});
-    //
-    // m_Display.populateWindow(WindowType::Settings)
-    //     .addLabel({{5,6}, Tag::createNew(), "Inside Settings"})
-    //     .addButton({{6,5}, {3, 10}, Tag::createNew(), "Press Me", [this](){
-    //             static int row = 10;
-    //             if (row >= 13) return; else row++;
-    //             m_Display.populateWindow(WindowType::Settings)
-    //                 .addLabel({{row,7}, Tag::createNew(), "New text " + std::to_string(row - 10)});
-    //             }})
-    //     .addField({{9,7}, Tag::createNew(), 8, "abc"});
 
     m_Display.setActiveWindow(WindowType::Settings);
 }
@@ -146,15 +205,6 @@ void Game::processInputKey(Key key) {
         m_Terminated = true;
         return;
     }
-
-    /* if (key.is('t')) { */
-    /*     auto fieldOpt = m_Display.getFieldByTag(selfAddrTag); */
-    /*     if (!fieldOpt) { */
-    /*         std::cout << "No such tag" << std::endl; */
-    /*     } else { */
-    /*         std::cout << "Field:: " << fieldOpt->get().value() << std::endl; */
-    /*     } */
-    /* } */
 
     if (auto interactableUnderCursorOpt =
             m_Display.getInteractableUnderCursor();

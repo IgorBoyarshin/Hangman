@@ -3,7 +3,7 @@ mainFileName = main
 # The name of the executable
 executableName = Hangman
 # Files that have .h and .cpp versions
-classFiles = Client Server Display Game Log Renderer utils NetworkManager Key Keyboard
+classFiles = Client Server Display Game Log Renderer utils NetworkManager Key Keyboard Protocol
 # Files that only have the .h version
 justHeaderFiles = Drawer Communicator
 # Compilation flags
@@ -24,9 +24,11 @@ all: cleanExe describe $(executableName)
 # Compiler
 # %.o: %.cpp $(filesH)
 # 	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
-Client.o: Client.cpp Client.h
+Protocol.o: Protocol.cpp Protocol.h Log.h
 	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
-Server.o: Server.cpp Server.h
+Client.o: Client.cpp Client.h Log.h
+	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
+Server.o: Server.cpp Server.h Log.h
 	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
 NetworkManager.o: NetworkManager.cpp NetworkManager.h Communicator.h
 	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
@@ -34,7 +36,7 @@ Display.o: Display.cpp Display.h utils.h Drawer.h Key.h Keyboard.h Log.h
 	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
 Drawer.o: Drawer.cpp Drawer.h Log.h utils.h
 	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
-Game.o: Game.cpp Game.h Display.h Renderer.h Communicator.h Keyboard.h Key.h Drawer.h utils.h Log.h
+Game.o: Game.cpp Game.h Display.h Renderer.h Communicator.h Keyboard.h Key.h Drawer.h utils.h Log.h Protocol.h
 	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<
 Key.o: Key.cpp Key.h Log.h
 	$(CXX) $(COMPILER_FLAGS) $(OPTIMIZATION_FLAG) $(LANGUAGE_LEVEL) -c $<

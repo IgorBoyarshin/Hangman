@@ -403,6 +403,10 @@ bool Display::Field::isUnder(const Coord& coord) const noexcept {
 const std::string& Display::Field::value() const noexcept {
     return m_Value;
 }
+
+void Display::Field::changeTo(const std::string& newValue) noexcept {
+    m_Value = newValue;
+}
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::Window
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -489,7 +493,7 @@ Display::Window& Display::Window::addButton(
         const std::function<void()> feedback,
         bool hidden/* = false*/) noexcept {
     const Coord newPosition = Coord(Display::m_HeadHeight + 1, 1) + position;
-    m_Buttons.push_back({newPosition, dimensions, tag, value, feedback});
+    m_Buttons.push_back({newPosition, dimensions, tag, value, feedback, hidden});
     return *this;
 }
 Display::Window& Display::Window::addVLine(
@@ -521,6 +525,14 @@ std::optional<std::reference_wrapper<Display::Interactable>>
         if (interactable.isUnder(coord)) return {{interactable}};
     }
 
+    return std::nullopt;
+}
+
+std::optional<std::reference_wrapper<Display::Label>>
+        Display::Window::getLabelByTag(const Tag& tag) noexcept {
+    for (Label& label : m_Labels) {
+        if (label.getTag().is(tag)) return {{label}};
+    }
     return std::nullopt;
 }
 
@@ -656,6 +668,14 @@ std::optional<std::reference_wrapper<Display::Interactable>>
         if (interactable.isUnder(m_Cursor)) return {{interactable}};
     }
     return m_Windows[toInt(m_ActiveWindowType)].getInteractableUnder(m_Cursor);
+}
+
+std::optional<std::reference_wrapper<Display::Label>>
+        Display::getLabelByTag(const Tag& tag) noexcept {
+    for (Window& window : m_Windows) {
+        if (auto resultOpt = window.getLabelByTag(tag)) return resultOpt;
+    }
+    return std::nullopt;
 }
 
 std::optional<std::reference_wrapper<Display::Button>>
