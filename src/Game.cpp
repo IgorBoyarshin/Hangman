@@ -329,8 +329,8 @@ void Game::initDisplay() {
 
     populateWithAlphabet(9);
 
-    m_Display.disableWindow(WindowType::Game);
     m_Display.setActiveWindow(WindowType::Settings);
+    m_Display.disableWindow(WindowType::Game);
     // m_Display.setActiveWindow(WindowType::Game);
 }
 
@@ -503,27 +503,12 @@ void Game::checkEndgame() noexcept {
     }
 }
 
-/* void Game::fillCorrectAnswer() noexcept { */
-/*     if (!m_GameContext) { */
-/*         Log::error().setClass("Game").setFunc("checkEndgame") */
-/*             << "Called outside of game context" << std::endl; */
-/*         return; */
-/*     } */
-/*  */
-/*     for (unsigned int i = 0; i < m_GameContext->word.size(); i++) { */
-/*         if (!m_GameContext->revealed[i]) { */
-/*  */
-/*         } */
-/*     } */
-/* } */
-
 
 void Game::cleanup() {
     // TODO: need to finish Client/Server??
 }
 
 void Game::handleInput() {
-
     auto key = Keyboard::read();
     while (key) {
         processInputKey(*key);
@@ -534,16 +519,6 @@ void Game::handleInput() {
 void Game::processInputKey(Key key) {
     if (key.is('q')) {
         m_Terminated = true;
-        return;
-    }
-
-    if (key.is('t')) {
-        static char counter = 'A';
-        tryLetter(counter++);
-        return;
-    }
-    if (key.is('r')) {
-        setupNewGame(true, "Anka", "Igorek", "PLEASE");
         return;
     }
 

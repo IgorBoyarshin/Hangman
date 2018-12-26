@@ -144,7 +144,6 @@ class Game {
         void markLetterAsUsed(char c, bool wrong) noexcept;
         void tryLetter(char c) noexcept;
         void checkEndgame() noexcept;
-        /* void fillCorrectAnswer() noexcept; */
 };
 
 

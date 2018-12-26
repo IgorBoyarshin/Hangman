@@ -739,11 +739,11 @@ WindowType Display::getActiveWindow() const noexcept {
 }
 
 void Display::disableWindow(WindowType windowType) noexcept {
-    m_WindowHeads[toInt(windowType)].hide();
+    m_WindowHeads[toInt(windowType)].setPassive();
 }
 
 void Display::enableWindow(WindowType windowType) noexcept {
-    m_WindowHeads[toInt(windowType)].reveal();
+    m_WindowHeads[toInt(windowType)].setActive();
 }
 
 Display::Window& Display::populateWindow(WindowType windowType) {
