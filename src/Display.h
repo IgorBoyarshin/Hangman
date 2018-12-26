@@ -327,7 +327,7 @@ class Display {
         void drawCursor() const noexcept;
         void drawGallows(Coord coord, unsigned int mistakes) const noexcept;
         void drawWord(unsigned int yLevel, const std::string& word,
-                const std::vector<bool> revealed) const noexcept;
+                const std::vector<bool> revealed, bool endgame = false) const noexcept;
         unsigned int getUiWidth() const noexcept;
         unsigned int getUiHeight() const noexcept;
         void clearScreen() const noexcept;

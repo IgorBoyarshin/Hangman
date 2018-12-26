@@ -29,7 +29,8 @@ void Game::loop() {
         if (m_GameContext) { // if a game is in progress now
             static const Coord gallowsCoord = {1, 22};
             m_Display.drawGallows(gallowsCoord, m_GameContext->mistakesMade);
-            m_Display.drawWord(7, m_GameContext->word, m_GameContext->revealed);
+            m_Display.drawWord(7, m_GameContext->word,
+                    m_GameContext->revealed, m_GameContext->ended);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
@@ -304,11 +305,14 @@ void Game::populateWithAlphabet(int yLevel) noexcept {
         const int shiftX = (index >= half) ? (index - half) : index;
         const int shiftY = (index >= half) ? 1 : 0;
         window.addButton(
-                {yLevel + shiftY * HEIGHT, xLevel + shiftX * WIDTH},
-                {HEIGHT, WIDTH},
-                m_Tags.letters[index],
-                std::string(1, c),
-                [](){}
+            {yLevel + shiftY * HEIGHT, xLevel + shiftX * WIDTH},
+            {HEIGHT, WIDTH},
+            m_Tags.letters[index],
+            std::string(1, c),
+            [this, c](){
+                tryLetter(c);
+                checkEndgame();
+            }
         );
     }
 }
@@ -348,6 +352,9 @@ void Game::setupNewGame(
         m_Display.getLabelByTag(m_Tags.gameInfoWhom)->get()
             .changeTo(m_GameContext->selfNick);
     }
+    m_Display.getLabelByTag(m_Tags.gameStatus)->get().changeTo("");
+
+    m_Display.clearScreen();
 }
 
 
@@ -356,7 +363,7 @@ void Game::markLetterAsUsed(char c, bool wrong) noexcept {
         const unsigned int index = c - 'A';
         m_Display.getButtonByTag(m_Tags.letters[index])->get().setStateColors({
             {Color::BLACK, wrong ? Color::RED : Color::YELLOW},
-            {Color::_, Color::_},
+            {Color::BLACK, wrong ? Color::RED : Color::YELLOW},
             {Color::_, Color::_}
         }).setPassive();
     } else {
@@ -386,6 +393,58 @@ void Game::tryLetter(char c) noexcept {
     }
 }
 
+void Game::checkEndgame() noexcept {
+    if (!m_GameContext) {
+        Log::error().setClass("Game").setFunc("checkEndgame")
+            << "Called outside of game context" << std::endl;
+        return;
+    }
+
+    const bool haveBeenHanged = [](const GameContext& context){
+        return context.mistakesMade >= Display::gallowsSteps;
+    }(*m_GameContext);
+
+    const bool doneWithWord = [](const GameContext& context){
+        for (bool revealed : context.revealed)
+            if (!revealed) return false;
+        return true;
+    }(*m_GameContext);
+
+    if (haveBeenHanged) {
+        const std::string& result = m_GameContext->hangingSelf ?
+            "YOU LOST!" : "YOU WON!";
+        m_Display.getLabelByTag(m_Tags.gameStatus)->get().changeTo(result);
+    } else if (doneWithWord) {
+        const std::string& result = m_GameContext->hangingSelf ?
+            "YOU WON!" : "YOU SELF!";
+        m_Display.getLabelByTag(m_Tags.gameStatus)->get().changeTo(result);
+    }
+
+    if (haveBeenHanged || doneWithWord) { // then the game has ended
+        // disable buttons
+        for (char c = 'A'; c <= 'Z'; c++) {
+            const unsigned int index = c - 'A';
+            m_Display.getButtonByTag(m_Tags.letters[index])->get().setPassive();
+        }
+
+        m_GameContext->ended = true;
+    }
+}
+
+/* void Game::fillCorrectAnswer() noexcept { */
+/*     if (!m_GameContext) { */
+/*         Log::error().setClass("Game").setFunc("checkEndgame") */
+/*             << "Called outside of game context" << std::endl; */
+/*         return; */
+/*     } */
+/*  */
+/*     for (unsigned int i = 0; i < m_GameContext->word.size(); i++) { */
+/*         if (!m_GameContext->revealed[i]) { */
+/*  */
+/*         } */
+/*     } */
+/* } */
+
 
 void Game::cleanup() {
     // TODO: need to finish Client/Server??
@@ -409,6 +468,10 @@ void Game::processInputKey(Key key) {
     if (key.is('t')) {
         static char counter = 'A';
         tryLetter(counter++);
+        return;
+    }
+    if (key.is('r')) {
+        setupNewGame(true, "Anka", "Igorek", "PLEASE");
         return;
     }
 

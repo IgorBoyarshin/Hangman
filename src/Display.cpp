@@ -838,7 +838,7 @@ void Display::drawGallows(Coord coord, unsigned int mistakes) const noexcept {
 
 void Display::drawWord(
         unsigned int yLevel, const std::string& word,
-        const std::vector<bool> revealed) const noexcept {
+        const std::vector<bool> revealed, bool endgame/* = false*/) const noexcept {
     // coord += topShift;
     yLevel += topShift.y;
     const unsigned int xCenter = m_Width / 2;
@@ -847,8 +847,17 @@ void Display::drawWord(
     m_Drawer->setColor({Color::YELLOW, Color::BLACK});
     m_Drawer->goTo(yLevel, xCenter - word.size());
     for (unsigned int i = 0; i < word.size(); i++) {
-        const char c = revealed[i] ? word[i] : '_';
-        m_Drawer->put(c);
+        if (revealed[i]) {
+            m_Drawer->put(word[i]);
+        } else { // not revealed
+            if (endgame) {
+                m_Drawer->setColor({Color::RED, Color::BLACK});
+                m_Drawer->put(word[i]);
+                m_Drawer->setColor({Color::YELLOW, Color::BLACK});
+            } else {
+                m_Drawer->put('_');
+            }
+        }
         m_Drawer->put(' '); // space between letters
     }
 }

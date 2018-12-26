@@ -94,7 +94,8 @@ struct GameContext {
         selfNick(selfNick),
         opponentNick(opponentNick),
         word(word),
-        revealed(std::vector<bool>(word.size(), false))
+        revealed(std::vector<bool>(word.size(), false)),
+        ended(false)
         // address(address),
         // port(port),
     {}
@@ -107,6 +108,7 @@ struct GameContext {
     /* unsigned int port; */
     std::string word;
     std::vector<bool> revealed;
+    bool ended;
 };
 
 
@@ -151,6 +153,8 @@ class Game {
 
         void markLetterAsUsed(char c, bool wrong) noexcept;
         void tryLetter(char c) noexcept;
+        void checkEndgame() noexcept;
+        /* void fillCorrectAnswer() noexcept; */
 };
 
 
