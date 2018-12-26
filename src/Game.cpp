@@ -517,10 +517,10 @@ void Game::handleInput() {
 }
 
 void Game::processInputKey(Key key) {
-    if (key.is('q')) {
-        m_Terminated = true;
-        return;
-    }
+    /* if (key.is('q')) { */
+    /*     m_Terminated = true; */
+    /*     return; */
+    /* } */
 
     if (auto interactableUnderCursorOpt =
             m_Display.getInteractableUnderCursor();
