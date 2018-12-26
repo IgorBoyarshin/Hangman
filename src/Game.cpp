@@ -278,11 +278,15 @@ void Game::initDisplay() {
         ;
 
     m_Display.populateWindow(WindowType::Game)
-        .addLabel({2, 2}, m_Tags.gameInfoWho, "")
-        .addLabel({3, 2}, m_Tags.gameInfoConst, "is hanging")
-        .addLabel({4, 2}, m_Tags.gameInfoWhom, "")
-        .addLabel({3, 40}, m_Tags.gameStatus, "")
+        .addLabel({1, 2}, m_Tags.gameInfoWho, "")
+        .addLabel({2, 2}, m_Tags.gameInfoConst, "is hanging")
+        .addLabel({3, 2}, m_Tags.gameInfoWhom, "")
+        .addLabel({5, 2}, m_Tags.gameHint, "")
+        .addLabel({2, 40}, m_Tags.gameStatus, "")
         ;
+
+    m_Display.getLabelByTag(m_Tags.gameStatus)->get()
+        .setAttribute(Drawer::Attribute::BOLD, true);
 
     populateWithAlphabet(9);
 
@@ -343,14 +347,18 @@ void Game::setupNewGame(
     // Set appropriate Labels
     if (m_GameContext->hangingSelf) {
         m_Display.getLabelByTag(m_Tags.gameInfoWho)->get()
-            .changeTo(m_GameContext->selfNick);
-        m_Display.getLabelByTag(m_Tags.gameInfoWhom)->get()
             .changeTo(m_GameContext->opponentNick);
+        m_Display.getLabelByTag(m_Tags.gameInfoWhom)->get()
+            .changeTo(m_GameContext->selfNick);
+        m_Display.getLabelByTag(m_Tags.gameHint)->get()
+            .changeTo("Try your best!");
     } else {
         m_Display.getLabelByTag(m_Tags.gameInfoWho)->get()
-            .changeTo(m_GameContext->opponentNick);
-        m_Display.getLabelByTag(m_Tags.gameInfoWhom)->get()
             .changeTo(m_GameContext->selfNick);
+        m_Display.getLabelByTag(m_Tags.gameInfoWhom)->get()
+            .changeTo(m_GameContext->opponentNick);
+        m_Display.getLabelByTag(m_Tags.gameHint)->get()
+            .changeTo("Just watch!");
     }
     m_Display.getLabelByTag(m_Tags.gameStatus)->get().changeTo("");
 
@@ -411,13 +419,19 @@ void Game::checkEndgame() noexcept {
     }(*m_GameContext);
 
     if (haveBeenHanged) {
-        const std::string& result = m_GameContext->hangingSelf ?
+        const bool lost = m_GameContext->hangingSelf;
+        const std::string& result = lost ?
             "YOU LOST!" : "YOU WON!";
-        m_Display.getLabelByTag(m_Tags.gameStatus)->get().changeTo(result);
+        m_Display.getLabelByTag(m_Tags.gameStatus)->get()
+            .changeTo(result)
+            .setColor({lost ? Color::RED : Color::GREEN, Color::BLACK});
     } else if (doneWithWord) {
-        const std::string& result = m_GameContext->hangingSelf ?
-            "YOU WON!" : "YOU SELF!";
-        m_Display.getLabelByTag(m_Tags.gameStatus)->get().changeTo(result);
+        const bool lost = !m_GameContext->hangingSelf;
+        const std::string& result = lost ?
+            "YOU WON!" : "YOU LOST!";
+        m_Display.getLabelByTag(m_Tags.gameStatus)->get()
+            .changeTo(result)
+            .setColor({lost ? Color::RED : Color::GREEN, Color::BLACK});
     }
 
     if (haveBeenHanged || doneWithWord) { // then the game has ended

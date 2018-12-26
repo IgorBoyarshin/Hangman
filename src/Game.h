@@ -45,6 +45,7 @@ struct GameTags {
     const Tag gameInfoConst = Tag::createNew();
     const Tag gameInfoWhom = Tag::createNew();
     const Tag gameStatus = Tag::createNew();
+    const Tag gameHint = Tag::createNew();
     const std::vector<Tag> letters = [](){
         std::vector<Tag> tags;
         for (char c = 'A'; c <= 'Z'; c++) tags.push_back(Tag::createNew());

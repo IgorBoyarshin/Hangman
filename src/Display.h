@@ -143,12 +143,17 @@ class Display {
         class Label : public UiElement {
             private:
                 std::string m_Value;
+                Color m_Color;
+                std::optional<Drawer::Attribute> m_Attribute;
 
+                static Color getDefaultColor() noexcept;
             public:
                 void draw() const noexcept override;
                 Label(const Coord& position, const Tag& tag,
                         const std::string& value = "", bool hidden = false) noexcept;
-                void changeTo(const std::string& newValue) noexcept;
+                Label& changeTo(const std::string& newValue) noexcept;
+                Label& setColor(const Color& color) noexcept;
+                Label& setAttribute(const Drawer::Attribute attribute, bool on) noexcept;
         };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // StateColors
@@ -224,7 +229,7 @@ class Display {
                 void draw() const noexcept override;
                 bool isUnder(const Coord& coord) const noexcept override;
                 const std::string& value() const noexcept;
-                void changeTo(const std::string& newValue) noexcept;
+                Field& changeTo(const std::string& newValue) noexcept;
         };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Window
