@@ -22,6 +22,7 @@ class MockCommunicator : public Communicator {
         MOCK_METHOD0(receive, std::optional<std::string>());
         MOCK_METHOD0(blockReceive, std::string());
         MOCK_METHOD3(send, bool(const std::string&, unsigned int, const std::string&));
+        MOCK_METHOD3(sendAsync, void(const std::string&, unsigned int, const std::string&));
         MOCK_METHOD2(establishConnection, bool(const std::string&, const std::string&));
         MOCK_METHOD0(connectionEstablished, bool());
         MOCK_CONST_METHOD0(getAddress, std::string());
@@ -136,7 +137,7 @@ TEST (CursorTest, InBoundsTest) {
     Display display{60, 100, new Renderer()};
 
     ASSERT_TRUE(display.setCursor({30, 30}));
-    ASSERT_TRUE(display.setCursor({60, 99}));
+    ASSERT_TRUE(display.setCursor({59, 99}));
     ASSERT_FALSE(display.setCursor({30, 101}));
 }
 
