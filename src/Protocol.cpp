@@ -39,8 +39,7 @@ std::string MessageWannaPlay::asPacket() const noexcept {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // AcceptedPlay
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-MessageAcceptedPlay::MessageAcceptedPlay(
-        const std::string& accepteeNick)
+MessageAcceptedPlay::MessageAcceptedPlay(const std::string& accepteeNick)
     : m_AccepteeNick(accepteeNick) {}
 
 
@@ -55,8 +54,7 @@ std::string MessageAcceptedPlay::asPacket() const noexcept {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // RejectedPlay
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-MessageRejectedPlay::MessageRejectedPlay(
-        const std::string& rejecteeNick)
+MessageRejectedPlay::MessageRejectedPlay(const std::string& rejecteeNick)
     : m_RejecteeNick(rejecteeNick) {}
 
 
@@ -67,6 +65,21 @@ std::string MessageRejectedPlay::rejecteeNick() const noexcept {
 std::string MessageRejectedPlay::asPacket() const noexcept {
     return toLowerString(MessageType::RejectedPlay) + Message::delimiter
         + m_RejecteeNick;
+}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// TryLetter
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+MessageTryLetter::MessageTryLetter(char letter)
+    : m_Letter(letter) {}
+
+
+char MessageTryLetter::letter() const noexcept {
+    return m_Letter;
+}
+
+std::string MessageTryLetter::asPacket() const noexcept {
+    return toLowerString(MessageType::TryLetter) + Message::delimiter
+        + m_Letter;
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // PlayNoMore
@@ -145,6 +158,14 @@ std::optional<MessageRejectedPlay> Message::asRejectedPlay() const noexcept {
     } else return std::nullopt;
 }
 
+std::optional<MessageTryLetter> Message::asTryLetter() const noexcept {
+    if (m_MessageType == MessageType::TryLetter) {
+        return {MessageTryLetter(
+            m_Arguments[0][0] // letter
+        )};
+    } else return std::nullopt;
+}
+
 std::optional<MessagePlayNoMore> Message::asPlayNoMore() const noexcept {
     if (m_MessageType == MessageType::PlayNoMore) {
         return {MessagePlayNoMore{}};
@@ -161,6 +182,8 @@ std::string toLowerString(MessageType messageType) noexcept {
             return "acceptedplay";
         case MessageType::RejectedPlay:
             return "rejectedplay";
+        case MessageType::TryLetter:
+            return "tryletter";
         case MessageType::PlayNoMore:
             return "playnomore";
         default:
@@ -175,6 +198,7 @@ MessageType toMessageType(const std::string& messageType) noexcept {
     else if (messageType == "acceptedplay") return MessageType::AcceptedPlay;
     else if (messageType == "rejectedplay") return MessageType::RejectedPlay;
     else if (messageType == "playnomore")   return MessageType::PlayNoMore;
+    else if (messageType == "tryletter")    return MessageType::TryLetter;
 
     Log::error().setClass("MessageType").setFunc("toMessageType")
         << "Couldn't retrieve MessageType from:" << messageType << std::endl;

@@ -17,19 +17,6 @@
 
 
 struct GameTags {
-    // inline GameTags()
-    //     : selfNick(Tag::createNew()),
-    //       oppoAddr(Tag::createNew()),
-    //       oppoPort(Tag::createNew()),
-    //       oppoWord(Tag::createNew()),
-    //       connectButton(Tag::createNew()),
-    //       acceptButton(Tag::createNew()),
-    //       rejectButton(Tag::createNew()),
-    //       exitButton(Tag::createNew()),
-    //       disconnectButton(Tag::createNew()),
-    //       connectionStatus(Tag::createNew()),
-    //       oppoWants(Tag::createNew()) {}
-
     const Tag selfNick = Tag::createNew();
     const Tag oppoAddr = Tag::createNew();
     const Tag oppoPort = Tag::createNew();
@@ -46,6 +33,7 @@ struct GameTags {
     const Tag gameInfoWhom = Tag::createNew();
     const Tag gameStatus = Tag::createNew();
     const Tag gameHint = Tag::createNew();
+    const Tag gameTriesLeft = Tag::createNew();
     const std::vector<Tag> letters = [](){
         std::vector<Tag> tags;
         for (char c = 'A'; c <= 'Z'; c++) tags.push_back(Tag::createNew());
@@ -144,6 +132,7 @@ class Game {
         void handleWannaPlay(const MessageWannaPlay& message) noexcept;
         void handleAcceptedPlay(const MessageAcceptedPlay& message) noexcept;
         void handleRejectedPlay(const MessageRejectedPlay& message) noexcept;
+        void handleTryLetter(const MessageTryLetter& message) noexcept;
         void handlePlayNoMore(const MessagePlayNoMore& message) noexcept;
 
         void processConnectPress() noexcept;

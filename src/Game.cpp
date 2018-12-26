@@ -26,7 +26,7 @@ void Game::loop() {
         handleInput();
         handleIncoming();
         m_Display.draw();
-        if (m_GameContext) { // if a game is in progress now
+        if (m_GameContext && m_Display.getActiveWindow() == WindowType::Game) { // if a game is in progress now
             static const Coord gallowsCoord = {1, 22};
             m_Display.drawGallows(gallowsCoord, m_GameContext->mistakesMade);
             m_Display.drawWord(7, m_GameContext->word,
@@ -52,6 +52,9 @@ void Game::handleIncoming() {
                 break;
             case MessageType::RejectedPlay:
                 handleRejectedPlay(*message.asRejectedPlay());
+                break;
+            case MessageType::TryLetter:
+                handleTryLetter(*message.asTryLetter());
                 break;
             case MessageType::PlayNoMore:
                 handlePlayNoMore(*message.asPlayNoMore());
@@ -93,17 +96,33 @@ void Game::handleAcceptedPlay(const MessageAcceptedPlay& message) noexcept {
     // Just in case
     m_Display.clearScreen();
 
-
     // Start new game
     m_Display.enableWindow(WindowType::Game);
     m_Display.setActiveWindow(WindowType::Game);
-    // TODO: init the board
+    const std::string selfNick = m_Display.getFieldByTag(m_Tags.selfNick)->get().value();
+    const std::string opponentNick = message.accepteeNick();
+    const bool HANGING_SELF = false;
+    // If we received this message => we've pressed (and sent) Connect button =>
+    // => we have m_DesiredOpponent set => can use its field word
+    setupNewGame(HANGING_SELF, selfNick, opponentNick, m_DesiredOpponent->word);
 }
 
 void Game::handleRejectedPlay(const MessageRejectedPlay& message) noexcept {
     m_Display.clearScreen();
     m_Display.getLabelByTag(m_Tags.connectionStatus)->get()
         .changeTo(message.rejecteeNick() + " rejected!");
+}
+
+void Game::handleTryLetter(const MessageTryLetter& message) noexcept {
+    if (!m_GameContext) {
+        Log::error().setClass("Game").setFunc("handleTryLetter")
+            << "Called outside of game context" << std::endl;
+        return;
+    }
+
+    const char letter = message.letter();
+    tryLetter(letter);
+    checkEndgame();
 }
 
 void Game::handlePlayNoMore(const MessagePlayNoMore& message) noexcept {
@@ -116,7 +135,14 @@ void Game::handlePlayNoMore(const MessagePlayNoMore& message) noexcept {
     // Just in case
     m_Display.clearScreen();
 
-    // TODO: end current game
+    // End current game
+    m_GameContext.reset();
+    m_Display.setActiveWindow(WindowType::Settings);
+    m_Display.disableWindow(WindowType::Game);
+    m_Display.getLabelByTag(m_Tags.connectionStatus)->get().changeTo("Opponent quit!");
+
+    m_GameContext.reset();
+    m_DesiredOpponent.reset();
 }
 
 
@@ -166,15 +192,24 @@ void Game::processAcceptPress() noexcept {
 
     // Notify opponent that we've accepted
     const std::string message = MessageAcceptedPlay(selfNick).asPacket();
-    // There is sure to be valid data in m_InquiringOpponent because Reject button
+    // There is sure to be valid data in m_InquiringOpponent because Accept button
     // wouldn't've been pressable at all otherwise
     // (m_InquiringOpponent is filled upon WannaPlay request)
     m_Communicator->sendAsync(m_InquiringOpponent.address, m_InquiringOpponent.port, message);
 
+    // Need this field filled for various purposes. The meaning is "CurrentOpponent" here
+    m_DesiredOpponent = {DesiredOpponent{
+        m_InquiringOpponent.address,
+        m_InquiringOpponent.port,
+        m_InquiringOpponent.word
+    }};
+
     // Start new game
     m_Display.enableWindow(WindowType::Game);
     m_Display.setActiveWindow(WindowType::Game);
-    // TODO: init the board
+    const bool HANGING_SELF = true;
+    const std::string opponentNick = m_InquiringOpponent.nick;
+    setupNewGame(HANGING_SELF, selfNick, opponentNick, m_DesiredOpponent->word);
 }
 
 void Game::processRejectPress() noexcept {
@@ -213,7 +248,7 @@ void Game::processDisconnectPress() noexcept {
         m_DesiredOpponent.reset();
     }
 
-    // TODO: end current game
+    m_GameContext.reset();
     m_Display.disableWindow(WindowType::Game);
 }
 
@@ -281,21 +316,22 @@ void Game::initDisplay() {
         .addLabel({1, 2}, m_Tags.gameInfoWho, "")
         .addLabel({2, 2}, m_Tags.gameInfoConst, "is hanging")
         .addLabel({3, 2}, m_Tags.gameInfoWhom, "")
+        .addLabel({4, 2}, m_Tags.gameTriesLeft, "")
         .addLabel({5, 2}, m_Tags.gameHint, "")
         .addLabel({2, 40}, m_Tags.gameStatus, "")
         ;
 
     m_Display.getLabelByTag(m_Tags.gameStatus)->get()
         .setAttribute(Drawer::Attribute::BOLD, true);
+    m_Display.getLabelByTag(m_Tags.gameTriesLeft)->get()
+        .setColor({Color::YELLOW, Color::BLACK})
+        .changeTo("Tries left: " + std::to_string(Display::gallowsSteps));
 
     populateWithAlphabet(9);
 
-    setupNewGame(true, "Igorek", "Anka", "HEDGELOVESRACCON");
-
-    // TODO: restore
-    // m_Display.disableWindow(WindowType::Game);
-    // m_Display.setActiveWindow(WindowType::Settings);
-    m_Display.setActiveWindow(WindowType::Game);
+    m_Display.disableWindow(WindowType::Game);
+    m_Display.setActiveWindow(WindowType::Settings);
+    // m_Display.setActiveWindow(WindowType::Game);
 }
 
 void Game::populateWithAlphabet(int yLevel) noexcept {
@@ -337,11 +373,19 @@ void Game::setupNewGame(
     // Reset alphabet buttons
     for (char c = 'A'; c <= 'Z'; c++) {
         const unsigned int index = c - 'A';
-        m_Display.getButtonByTag(m_Tags.letters[index])->get().setStateColors({
-            {Color::GREEN, Color::BLACK},
-            {Color::BLACK, Color::GREEN},
-            {Color::BLACK, Color::RED}
-        }).setActive();
+        if (m_GameContext->hangingSelf) { // so self is playing
+            m_Display.getButtonByTag(m_Tags.letters[index])->get().setStateColors({
+                {Color::GREEN, Color::BLACK},
+                {Color::BLACK, Color::GREEN},
+                {Color::BLACK, Color::RED}
+            }).setActive();
+        } else { // so opponent is playing => I can't press buttons
+            m_Display.getButtonByTag(m_Tags.letters[index])->get().setStateColors({
+                {Color::GREEN, Color::BLACK},
+                {Color::BLACK, Color::GREEN},
+                {Color::BLACK, Color::RED}
+            }).setPassive();
+        }
     }
 
     // Set appropriate Labels
@@ -361,6 +405,9 @@ void Game::setupNewGame(
             .changeTo("Just watch!");
     }
     m_Display.getLabelByTag(m_Tags.gameStatus)->get().changeTo("");
+    m_Display.getLabelByTag(m_Tags.gameTriesLeft)->get()
+        .setColor({Color::YELLOW, Color::BLACK})
+        .changeTo("Tries left: " + std::to_string(Display::gallowsSteps));
 
     m_Display.clearScreen();
 }
@@ -398,6 +445,17 @@ void Game::tryLetter(char c) noexcept {
     markLetterAsUsed(c, !present);
     if (!present) {
         m_GameContext->mistakesMade++;
+        const auto triesLeft = Display::gallowsSteps - m_GameContext->mistakesMade;
+        m_Display.getLabelByTag(m_Tags.gameTriesLeft)->get()
+            // a trailing space to remove old leftovers but not use clearScreen()
+            .changeTo("Tries left: " + std::to_string(triesLeft) + " ");
+    }
+
+    // Send to opponent if we're the ones playing
+    if (m_GameContext->hangingSelf) {
+        const std::string message =
+            MessageTryLetter(c).asPacket();
+        m_Communicator->sendAsync(m_DesiredOpponent->address, m_DesiredOpponent->port, message);
     }
 }
 

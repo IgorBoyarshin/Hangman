@@ -734,6 +734,10 @@ void Display::setActiveWindow(WindowType windowType) {
     m_Drawer->clearScreen();
 }
 
+WindowType Display::getActiveWindow() const noexcept {
+    return m_ActiveWindowType;
+}
+
 void Display::disableWindow(WindowType windowType) noexcept {
     m_WindowHeads[toInt(windowType)].hide();
 }

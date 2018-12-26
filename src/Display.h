@@ -320,6 +320,7 @@ class Display {
         void disableWindow(WindowType windowType) noexcept;
         void enableWindow(WindowType windowType) noexcept;
         void setActiveWindow(WindowType windowType);
+        WindowType getActiveWindow() const noexcept;
         // Returns the specified window, initializing one if it is the first access
         Window& populateWindow(WindowType windowType);
         // Either completes completely or not at all
