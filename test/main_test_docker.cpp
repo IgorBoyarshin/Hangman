@@ -22,8 +22,11 @@ class MockCommunicator : public Communicator {
         MOCK_METHOD0(receive, std::optional<std::string>());
         MOCK_METHOD0(blockReceive, std::string());
         MOCK_METHOD3(send, bool(const std::string&, unsigned int, const std::string&));
+        MOCK_METHOD3(sendAsync, void(const std::string&, unsigned int, const std::string&));
         MOCK_METHOD2(establishConnection, bool(const std::string&, const std::string&));
         MOCK_METHOD0(connectionEstablished, bool());
+        MOCK_CONST_METHOD0(getAddress, std::string());
+        MOCK_CONST_METHOD0(getPort, unsigned int());
 };
 
 class MockDrawer : public Drawer {
@@ -134,7 +137,7 @@ TEST (CursorTest, InBoundsTest) {
     Display display{60, 100, new Renderer()};
 
     ASSERT_TRUE(display.setCursor({30, 30}));
-    ASSERT_TRUE(display.setCursor({60, 99}));
+    ASSERT_TRUE(display.setCursor({59, 99}));
     ASSERT_FALSE(display.setCursor({30, 101}));
 }
 
@@ -145,9 +148,11 @@ TEST (WindowTest, IsInteructableTest) {
         .addButton({{6, 1}, {5, 12}, Tag::createNew(), "Press Me", [](){}})
         .addField({{12, 1}, Tag::createNew(), 20, "Some field"});
 
-    ASSERT_TRUE(window.getInteractableUnder({8, 5}));
-    ASSERT_TRUE(window.getInteractableUnder({12, 19}));
-    ASSERT_FALSE(window.getInteractableUnder({5, 3}));
+    const unsigned int shiftY = 4;
+    const unsigned int shiftX = 1;
+    ASSERT_TRUE(window.getInteractableUnder({8 + shiftY, 5 + shiftX}));
+    ASSERT_TRUE(window.getInteractableUnder({12 + shiftY, 19 + shiftX}));
+    ASSERT_FALSE(window.getInteractableUnder({5 + shiftY, 3 + shiftX}));
 }
 
 
