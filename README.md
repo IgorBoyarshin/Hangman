@@ -16,6 +16,7 @@ For in-depth instructions on all of these options, see below.
 
 ## Usage
 Upon launcing the application, you must specify your IP address in the local network as the 1st argument and the port where you would like to launch the application as the 2nd argument. Example:
+    
     ```sh
     $ cd src
     $ make
