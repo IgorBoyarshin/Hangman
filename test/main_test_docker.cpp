@@ -144,9 +144,9 @@ TEST (CursorTest, InBoundsTest) {
 
 TEST (WindowTest, IsInteructableTest) {
     Display::Window window{{0,0}, {60, 100}, {20, 30}, {Color::CYAN, Color::BLACK}};
-    window.addLabel({{5, 2}, Tag::createNew(), "Test Window"})
-        .addButton({{6, 1}, {5, 12}, Tag::createNew(), "Press Me", [](){}})
-        .addField({{12, 1}, Tag::createNew(), 20, "Some field"});
+    window.addLabel({5, 2}, Tag::createNew(), "Test Window")
+        .addButton({6, 1}, {5, 12}, Tag::createNew(), "Press Me", [](){})
+        .addField({12, 1}, Tag::createNew(), 20, "Some field");
 
     const unsigned int shiftY = 4;
     const unsigned int shiftX = 1;
