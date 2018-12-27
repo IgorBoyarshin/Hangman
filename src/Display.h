@@ -143,12 +143,17 @@ class Display {
         class Label : public UiElement {
             private:
                 std::string m_Value;
+                Color m_Color;
+                std::optional<Drawer::Attribute> m_Attribute;
 
+                static Color getDefaultColor() noexcept;
             public:
                 void draw() const noexcept override;
                 Label(const Coord& position, const Tag& tag,
                         const std::string& value = "", bool hidden = false) noexcept;
-                void changeTo(const std::string& newValue) noexcept;
+                Label& changeTo(const std::string& newValue) noexcept;
+                Label& setColor(const Color& color) noexcept;
+                Label& setAttribute(const Drawer::Attribute attribute, bool on) noexcept;
         };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // StateColors
@@ -224,7 +229,7 @@ class Display {
                 void draw() const noexcept override;
                 bool isUnder(const Coord& coord) const noexcept override;
                 const std::string& value() const noexcept;
-                void changeTo(const std::string& newValue) noexcept;
+                Field& changeTo(const std::string& newValue) noexcept;
         };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Window
@@ -315,6 +320,7 @@ class Display {
         void disableWindow(WindowType windowType) noexcept;
         void enableWindow(WindowType windowType) noexcept;
         void setActiveWindow(WindowType windowType);
+        WindowType getActiveWindow() const noexcept;
         // Returns the specified window, initializing one if it is the first access
         Window& populateWindow(WindowType windowType);
         // Either completes completely or not at all
@@ -327,7 +333,7 @@ class Display {
         void drawCursor() const noexcept;
         void drawGallows(Coord coord, unsigned int mistakes) const noexcept;
         void drawWord(unsigned int yLevel, const std::string& word,
-                const std::vector<bool> revealed) const noexcept;
+                const std::vector<bool> revealed, bool endgame = false) const noexcept;
         unsigned int getUiWidth() const noexcept;
         unsigned int getUiHeight() const noexcept;
         void clearScreen() const noexcept;

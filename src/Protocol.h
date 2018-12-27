@@ -18,6 +18,7 @@ enum class MessageType {
     WannaPlay,
     AcceptedPlay,
     RejectedPlay,
+    TryLetter,
     PlayNoMore
 };
 
@@ -65,6 +66,18 @@ class MessageRejectedPlay : public Packet {
         std::string asPacket() const noexcept override;
 };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// TryLetter
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+class MessageTryLetter : public Packet {
+    private:
+        const char m_Letter;
+
+    public:
+        MessageTryLetter(char letter);
+        char letter() const noexcept;
+        std::string asPacket() const noexcept override;
+};
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // PlayNoMore
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class MessagePlayNoMore : public Packet {
@@ -92,6 +105,7 @@ class Message {
         std::optional<MessageWannaPlay> asWannaPlay() const noexcept;
         std::optional<MessageAcceptedPlay> asAcceptedPlay() const noexcept;
         std::optional<MessageRejectedPlay> asRejectedPlay() const noexcept;
+        std::optional<MessageTryLetter> asTryLetter() const noexcept;
         std::optional<MessagePlayNoMore> asPlayNoMore() const noexcept;
 };
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

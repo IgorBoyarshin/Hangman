@@ -74,17 +74,43 @@ Display::Label::Label(
         const Tag& tag,
         const std::string& initialValue/* = ""*/,
         bool hidden/* = false*/) noexcept
-    : UiElement(position, tag, hidden), m_Value(initialValue) {}
+    : UiElement(position, tag, hidden), m_Value(initialValue), m_Color(getDefaultColor()) {}
+
+Color Display::Label::getDefaultColor() noexcept {
+    return {Color::WHITE, Color::BLACK};
+}
 
 void Display::Label::draw() const noexcept {
     if (m_Hidden) return;
-    m_Drawer->setColor({Color::WHITE, Color::BLACK});
+    if (m_Attribute) {
+        m_Drawer->setAttribute(*m_Attribute, true);
+    }
+    m_Drawer->setColor(m_Color);
     m_Drawer->goTo(m_Position.y, m_Position.x);
     m_Drawer->put(m_Value);
+    if (m_Attribute) {
+        m_Drawer->setAttribute(*m_Attribute, false);
+    }
 }
 
-void Display::Label::changeTo(const std::string& newValue) noexcept {
+Display::Label& Display::Label::changeTo(const std::string& newValue) noexcept {
     m_Value = newValue;
+    return *this;
+}
+
+Display::Label& Display::Label::setColor(const Color& color) noexcept {
+    m_Color = color;
+    return *this;
+}
+
+Display::Label& Display::Label::setAttribute(
+        const Drawer::Attribute attribute, bool on) noexcept {
+    if (on) {
+        m_Attribute = {attribute};
+    } else {
+        m_Attribute.reset();
+    }
+    return *this;
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::StateColors
@@ -402,8 +428,9 @@ const std::string& Display::Field::value() const noexcept {
     return m_Value;
 }
 
-void Display::Field::changeTo(const std::string& newValue) noexcept {
+Display::Field& Display::Field::changeTo(const std::string& newValue) noexcept {
     m_Value = newValue;
+    return *this;
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Display::Window
@@ -707,12 +734,16 @@ void Display::setActiveWindow(WindowType windowType) {
     m_Drawer->clearScreen();
 }
 
+WindowType Display::getActiveWindow() const noexcept {
+    return m_ActiveWindowType;
+}
+
 void Display::disableWindow(WindowType windowType) noexcept {
-    m_WindowHeads[toInt(windowType)].hide();
+    m_WindowHeads[toInt(windowType)].setPassive();
 }
 
 void Display::enableWindow(WindowType windowType) noexcept {
-    m_WindowHeads[toInt(windowType)].reveal();
+    m_WindowHeads[toInt(windowType)].setActive();
 }
 
 Display::Window& Display::populateWindow(WindowType windowType) {
@@ -838,7 +869,7 @@ void Display::drawGallows(Coord coord, unsigned int mistakes) const noexcept {
 
 void Display::drawWord(
         unsigned int yLevel, const std::string& word,
-        const std::vector<bool> revealed) const noexcept {
+        const std::vector<bool> revealed, bool endgame/* = false*/) const noexcept {
     // coord += topShift;
     yLevel += topShift.y;
     const unsigned int xCenter = m_Width / 2;
@@ -847,8 +878,17 @@ void Display::drawWord(
     m_Drawer->setColor({Color::YELLOW, Color::BLACK});
     m_Drawer->goTo(yLevel, xCenter - word.size());
     for (unsigned int i = 0; i < word.size(); i++) {
-        const char c = revealed[i] ? word[i] : '_';
-        m_Drawer->put(c);
+        if (revealed[i]) {
+            m_Drawer->put(word[i]);
+        } else { // not revealed
+            if (endgame) {
+                m_Drawer->setColor({Color::RED, Color::BLACK});
+                m_Drawer->put(word[i]);
+                m_Drawer->setColor({Color::YELLOW, Color::BLACK});
+            } else {
+                m_Drawer->put('_');
+            }
+        }
         m_Drawer->put(' '); // space between letters
     }
 }

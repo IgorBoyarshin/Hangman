@@ -20,14 +20,18 @@ Client::~Client() {
 
 bool Client::connect(int socketHandle, sockaddr_in& serverSocketInfo) noexcept {
     static const unsigned int RETRIES_COUNT = 5;
+    unsigned int seconds = 1;
     for (unsigned int i = 0; i < RETRIES_COUNT; i++) {
         if (::connect(socketHandle,
                     reinterpret_cast<sockaddr*>(&serverSocketInfo),
                     sizeof(serverSocketInfo)) < 0) {
             Log::error().setClass("Client").setFunc("connect()")
-                << "Client " << m_Name << ": Could not establish connection. Retrying..." << std::endl;
-            static const unsigned int SECONDS = 1;
-            sleep(SECONDS);
+                << "Client " << m_Name << ": Could not establish connection. "
+                << "Will try again in " << seconds << "s..." << std::endl;
+            if (i < RETRIES_COUNT - 1) {
+                sleep(seconds);
+                if (seconds < 4) seconds *= 2;
+            }
         } else {
             return true;
         }
