@@ -4,6 +4,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
 
 
 class Log {
@@ -19,6 +22,7 @@ class Log {
         LogLevel m_LogLevel;
         Destination m_Destination;
         std::ofstream m_File;
+        std::chrono::system_clock::time_point m_Start;
 
         Log();
         Log(OutputLevel outputLevel);
