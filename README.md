@@ -16,12 +16,10 @@ For in-depth instructions on all of these options, see below.
 
 ## Usage
 Upon launcing the application, you must specify your IP address in the local network as the 1st argument and the port where you would like to launch the application as the 2nd argument. Example:
-    
-    ```sh
+
     $ cd src
     $ make
     $ ./Hangman 192.168.1.1 1234
-    ```
 
 ## Controls ##
 You can navigate around the screen using either `hjkl` or arrow keys.
