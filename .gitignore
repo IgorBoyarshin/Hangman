@@ -5,9 +5,9 @@ a.out
 version.h
 main
 Hangman
-*.png
 test/main_test
 *.a
 *.log
 out
 mockplayer
+ncurses_colors.png
