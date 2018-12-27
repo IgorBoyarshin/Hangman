@@ -312,6 +312,23 @@ void Game::initDisplay() {
         )
         ;
 
+    m_Display.populateWindow(WindowType::About)
+        .addLabel({1, 1}, Tag::createEmpty(),
+                "Welcome to the Hangman,")
+        .addLabel({2, 15}, Tag::createEmpty(),
+                "a game where you get to hang your friends!")
+        .addLabel({4, 1}, Tag::createEmpty(),
+                "Use either hjkl or arrow keys to navigate.")
+        .addLabel({5, 1}, Tag::createEmpty(),
+                "Press Enter to interact with a button.")
+        .addLabel({6, 1}, Tag::createEmpty(),
+                "Press Enter to start editing a Field")
+        .addLabel({7, 25}, Tag::createEmpty(),
+                "and Enter again to save changes.")
+        .addLabel({10, 25}, Tag::createEmpty(),
+                "Have fun!!!")
+        ;
+
     m_Display.populateWindow(WindowType::Game)
         .addLabel({1, 2}, m_Tags.gameInfoWho, "")
         .addLabel({2, 2}, m_Tags.gameInfoConst, "is hanging")
@@ -320,6 +337,7 @@ void Game::initDisplay() {
         .addLabel({5, 2}, m_Tags.gameHint, "")
         .addLabel({2, 40}, m_Tags.gameStatus, "")
         ;
+
 
     m_Display.getLabelByTag(m_Tags.gameStatus)->get()
         .setAttribute(Drawer::Attribute::BOLD, true);
@@ -486,7 +504,7 @@ void Game::checkEndgame() noexcept {
     } else if (doneWithWord) {
         const bool lost = !m_GameContext->hangingSelf;
         const std::string& result = lost ?
-            "YOU WON!" : "YOU LOST!";
+            "YOU LOST!" : "YOU WON!";
         m_Display.getLabelByTag(m_Tags.gameStatus)->get()
             .changeTo(result)
             .setColor({lost ? Color::RED : Color::GREEN, Color::BLACK});

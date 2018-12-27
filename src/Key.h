@@ -37,6 +37,7 @@ struct Key {
         std::optional<SpecialKey> getSpecial() const noexcept;
         bool isLetter() const noexcept;
         bool isNumber() const noexcept;
+        bool isPunctuation() const noexcept;
         bool operator==(const Key& other) const noexcept;
         bool is(char c) const noexcept;
         bool is(SpecialKey sk) const noexcept;

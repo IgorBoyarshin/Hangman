@@ -34,6 +34,12 @@ bool Key::isNumber() const noexcept {
     return ('0' <= c) && (c <= '9');
 }
 
+bool Key::isPunctuation() const noexcept {
+    if (!isRegular()) return false;
+    const char c = *getRegular();
+    return (c == '.') || (c == ',') || (c == '!') || (c == '?');
+}
+
 bool Key::operator==(const Key& other) const noexcept {
     if (other.isRegular() && isRegular()) {
         return *other.getRegular() == *getRegular();

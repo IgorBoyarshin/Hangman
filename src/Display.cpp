@@ -352,7 +352,7 @@ bool Display::Field::handleInputKey(const Key& key, const Coord& coord,
             }
             return true;
         }
-        if (key.isLetter() || key.isNumber()) {
+        if (key.isLetter() || key.isNumber() || key.isPunctuation()) {
             const char c = *key.getRegular();
             if (m_Value.size() < m_Width - 1) {
                 m_Value.insert(m_Value.begin() + dx, c);
