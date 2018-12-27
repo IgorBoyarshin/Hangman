@@ -8,7 +8,7 @@
 
 
 int main(int argc, char* argv[]) {
-    std::cout << "---------- Start ----------" << std::endl;
+    /* std::cout << "---------- Start ----------" << std::endl; */
 
     if (argc == 3 && static_cast<unsigned int>(std::stoi(std::string(argv[2]))) == 3142) {
         Log::setDestination(Log::Destination::File, "default2.log");
@@ -42,6 +42,6 @@ int main(int argc, char* argv[]) {
         delete communicator;
     }
 
-    std::cout << "----------  End  ----------" << std::endl;
+    /* std::cout << "----------  End  ----------" << std::endl; */
     return 0;
 }
