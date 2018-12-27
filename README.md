@@ -14,6 +14,11 @@ You can also download a pre-compiled executable (for `Ubuntu` or `Arch linux`) f
 
 For in-depth instructions on all of these options, see below.
 
+## Controls ##
+You can navigate around the screen using either `hjkl` or arrow keys.
+
+Use `Enter` to press a button or start editing a Field (press `Enter` again in order to save changes).
+
 ## Compile from source and run (with Docker) ##
 This way you don't have to install anything (apart from `Docker`). The most *clean* way to build and run the app.
 * Download the project source code and navigate into the project folder:
