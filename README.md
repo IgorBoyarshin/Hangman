@@ -4,6 +4,9 @@
 
 Welcome to the **Hangman**, a game where you get to hang your friends!
 
+![alt text](examples/example1.png)
+![alt text](examples/example2.png)
+
 There are a couple of ways to run the app, depending on your preferences and environment.
 
 The easiest way to try the app is to compile-and-run it using `Docker`.
