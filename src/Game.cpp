@@ -277,7 +277,7 @@ void Game::initDisplay() {
         .addLabel({2,1+9}, Tag::createEmpty(), std::to_string(m_Communicator->getPort()))
         .addLabel({3,1}, Tag::createEmpty(), "YourNick:")
         // TODO: remove ternary
-        .addField({3,1+9}, m_Tags.selfNick, 15, m_Communicator->getPort() == 3141 ? "Igorek" : "Masik")
+        .addField({3,1+9}, m_Tags.selfNick, 15, m_Communicator->getPort() == 3141 ? "TomCruise" : "Tortoise")
 
         .addVLine({0, 27}, 7, {Color::GREEN, Color::CYAN}, Tag::createEmpty())
 
